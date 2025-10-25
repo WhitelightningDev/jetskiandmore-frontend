@@ -18,6 +18,7 @@ import { Route as HomeIndexRouteImport } from './routes/home/index'
 import { Route as ContactIndexRouteImport } from './routes/contact/index'
 import { Route as AddOnsIndexRouteImport } from './routes/add-ons/index'
 import { Route as BookingsIndexRouteImport } from './routes/Bookings/index'
+import { Route as WeatherCalmSlotsIndexRouteImport } from './routes/weather/calm-slots/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -64,6 +65,11 @@ const BookingsIndexRoute = BookingsIndexRouteImport.update({
   path: '/Bookings/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WeatherCalmSlotsIndexRoute = WeatherCalmSlotsIndexRouteImport.update({
+  id: '/weather/calm-slots/',
+  path: '/weather/calm-slots/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -75,6 +81,7 @@ export interface FileRoutesByFullPath {
   '/rides': typeof RidesIndexRoute
   '/safety': typeof SafetyIndexRoute
   '/weather': typeof WeatherIndexRoute
+  '/weather/calm-slots': typeof WeatherCalmSlotsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -86,6 +93,7 @@ export interface FileRoutesByTo {
   '/rides': typeof RidesIndexRoute
   '/safety': typeof SafetyIndexRoute
   '/weather': typeof WeatherIndexRoute
+  '/weather/calm-slots': typeof WeatherCalmSlotsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -98,6 +106,7 @@ export interface FileRoutesById {
   '/rides/': typeof RidesIndexRoute
   '/safety/': typeof SafetyIndexRoute
   '/weather/': typeof WeatherIndexRoute
+  '/weather/calm-slots/': typeof WeatherCalmSlotsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -111,6 +120,7 @@ export interface FileRouteTypes {
     | '/rides'
     | '/safety'
     | '/weather'
+    | '/weather/calm-slots'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -122,6 +132,7 @@ export interface FileRouteTypes {
     | '/rides'
     | '/safety'
     | '/weather'
+    | '/weather/calm-slots'
   id:
     | '__root__'
     | '/'
@@ -133,6 +144,7 @@ export interface FileRouteTypes {
     | '/rides/'
     | '/safety/'
     | '/weather/'
+    | '/weather/calm-slots/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -145,6 +157,7 @@ export interface RootRouteChildren {
   RidesIndexRoute: typeof RidesIndexRoute
   SafetyIndexRoute: typeof SafetyIndexRoute
   WeatherIndexRoute: typeof WeatherIndexRoute
+  WeatherCalmSlotsIndexRoute: typeof WeatherCalmSlotsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -212,6 +225,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BookingsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/weather/calm-slots/': {
+      id: '/weather/calm-slots/'
+      path: '/weather/calm-slots'
+      fullPath: '/weather/calm-slots'
+      preLoaderRoute: typeof WeatherCalmSlotsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -225,6 +245,7 @@ const rootRouteChildren: RootRouteChildren = {
   RidesIndexRoute: RidesIndexRoute,
   SafetyIndexRoute: SafetyIndexRoute,
   WeatherIndexRoute: WeatherIndexRoute,
+  WeatherCalmSlotsIndexRoute: WeatherCalmSlotsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

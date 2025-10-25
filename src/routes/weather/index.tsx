@@ -167,7 +167,7 @@ function RouteComponent() {
             </CardContent>
             <CardFooter className="flex items-center justify-between">
               <span className="text-xs text-muted-foreground">Ask us for the day’s sweet spot.</span>
-              <Link to="/Bookings">
+              <Link to="/weather/calm-slots">
                 <Button size="sm" className="flex items-center gap-2">
                   <CalendarDays className="h-4 w-4" />
                   Book a calm slot
