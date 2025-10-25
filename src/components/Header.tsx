@@ -2,13 +2,14 @@ import { Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Home, Menu, X, Waves, MapPin, ShieldCheck, Phone, CalendarDays } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
+import jetskilogo from '@/lib/images/JetSkiLogo.png'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-background text-foreground border-b border-border/80 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/80">
+      <header className="sticky top-0 z-50 bg-background text-foreground border-b border-border/80 shadow-sm backdrop-blur">
         <div className="mx-auto max-w-7xl w-full px-4">
           <div className="h-16 flex items-center gap-3">
             {/* Mobile menu button */}
@@ -24,11 +25,14 @@ export default function Header() {
 
             {/* Brand */}
             <Link to="/home" className="flex items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md">
-              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 border border-primary/30 overflow-hidden">
+              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 border border-primary/30 ring-1 ring-border overflow-hidden">
                 <img
-                  src="/src/lib/images/JetSkiLogo.png"
+                  src={jetskilogo}
                   alt="JetSki & More"
-                  className="h-30 w-30 object-contain"
+                  loading="eager"
+                  decoding="async"
+                  fetchPriority="high"
+                  className="h-10 w-10 object-contain"
                 />
               </div>
               <span className="hidden sm:inline text-lg font-semibold tracking-tight">JET SKI AND MORE</span>
