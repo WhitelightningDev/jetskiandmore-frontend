@@ -154,31 +154,107 @@ function RouteComponent() {
   const addonsTotal = droneCost + wetsuitCost + boatCost + extraPeopleCost + goproCost
   const estimatedTotal = baseTotal + addonsTotal
 
-  // Current weather for Gordon's Bay via Open-Meteo
-  type Weather = { temperature: number; wind: number; code: number; label: string } | null
+  // Weather for Gordon's Bay via Open-Meteo (current + selected day)
+  type Severity = 'good' | 'ok' | 'bad'
+  type Weather = {
+    temperature: number | null
+    wind: number | null
+    gust: number | null
+    direction: number | null
+    code: number | null
+    label: string
+    severity: Severity
+  } | null
+  type Forecast = {
+    date: string
+    tempMax: number | null
+    tempMin: number | null
+    windMax: number | null
+    gustMax: number | null
+    direction: number | null
+    code: number | null
+    label: string
+    severity: Severity
+  } | null
+
   const [weather, setWeather] = React.useState<Weather>(null)
+  const [forecast, setForecast] = React.useState<Forecast>(null)
+
+  function classifySeverity(speed?: number | null, gust?: number | null): Severity {
+    const s = Number(speed ?? 0)
+    const g = Number(gust ?? 0)
+    if (s >= 29 || g >= 30) return 'bad'
+    if (s >= 20 || g >= 25) return 'ok'
+    return 'good'
+  }
+
+  function degToCompass(deg?: number | null): string {
+    const d = Number(deg)
+    if (!Number.isFinite(d)) return '—'
+    const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
+    return dirs[Math.round(d / 45) % 8]
+  }
+
+  function severityClasses(sev: Severity) {
+    if (sev === 'bad') return 'bg-gradient-to-r from-rose-50 to-rose-100 border-rose-200'
+    if (sev === 'ok') return 'bg-gradient-to-r from-amber-50 to-amber-100 border-amber-200'
+    return 'bg-gradient-to-r from-emerald-50 to-emerald-100 border-emerald-200'
+  }
+
   React.useEffect(() => {
     const controller = new AbortController()
     ;(async () => {
       try {
         const lat = -34.157
         const lon = 18.884
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m,weather_code&timezone=Africa%2FJohannesburg&forecast_days=1`
+        const tz = 'Africa/Johannesburg'
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m,wind_gusts_10m,wind_direction_10m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant&timezone=${encodeURIComponent(tz)}&forecast_days=7`
         const res = await fetch(url, { signal: controller.signal })
         if (!res.ok) return
         const data = await res.json()
-        const code = Number(data?.current?.weather_code ?? NaN)
-        const label = weatherCodeToText(code)
+        const curCode = Number(data?.current?.weather_code ?? NaN)
+        const curLabel = weatherCodeToText(curCode)
+        const curWind = Number(data?.current?.wind_speed_10m ?? NaN)
+        const curGust = Number(data?.current?.wind_gusts_10m ?? NaN)
+        const curDir = Number(data?.current?.wind_direction_10m ?? NaN)
         setWeather({
           temperature: Number(data?.current?.temperature_2m ?? NaN),
-          wind: Number(data?.current?.wind_speed_10m ?? NaN),
-          code,
-          label,
+          wind: curWind,
+          gust: curGust,
+          direction: curDir,
+          code: curCode,
+          label: curLabel,
+          severity: classifySeverity(curWind, curGust),
         })
+
+        // Selected date daily forecast
+        const dayStr = date ? new Date(date).toISOString().split('T')[0] : undefined
+        const days: string[] = data?.daily?.time ?? []
+        const idx = dayStr ? days.indexOf(dayStr) : 0
+        if (idx > 0 && days[idx]) {
+          const dCode = Number(data?.daily?.weather_code?.[idx] ?? NaN)
+          const dLabel = weatherCodeToText(dCode)
+          const dWind = Number(data?.daily?.wind_speed_10m_max?.[idx] ?? NaN)
+          const dGust = Number(data?.daily?.wind_gusts_10m_max?.[idx] ?? NaN)
+          const dDir = Number(data?.daily?.wind_direction_10m_dominant?.[idx] ?? NaN)
+          setForecast({
+            date: days[idx],
+            tempMax: Number(data?.daily?.temperature_2m_max?.[idx] ?? NaN),
+            tempMin: Number(data?.daily?.temperature_2m_min?.[idx] ?? NaN),
+            windMax: dWind,
+            gustMax: dGust,
+            direction: dDir,
+            code: dCode,
+            label: dLabel,
+            severity: classifySeverity(dWind, dGust),
+          })
+        } else {
+          setForecast(null)
+        }
       } catch {}
     })()
     return () => controller.abort()
-  }, [])
+  }, [date])
 
   function weatherCodeToText(code: number): string {
     const map: Record<number, string> = {
@@ -409,20 +485,59 @@ function handleSubmit(e?: React.FormEvent) {
               <CardDescription>Review your selection</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Current weather snapshot */}
-              <div className="rounded-md border p-3 flex items-center gap-4">
-                <CloudSun className="h-5 w-5 text-primary" />
-                {weather ? (
-                  <div className="text-sm flex flex-wrap gap-x-4 gap-y-1">
-                    <span className="font-medium">Current weather:</span>
-                    <span className="text-muted-foreground">{weather.label}</span>
-                    <span className="flex items-center gap-1"><Thermometer className="h-4 w-4" /> {Number.isFinite(weather.temperature) ? weather.temperature.toFixed(0) : '—'}°C</span>
-                    <span className="flex items-center gap-1"><Wind className="h-4 w-4" /> {Number.isFinite(weather.wind) ? weather.wind.toFixed(0) : '—'} km/h</span>
+              {/* Weather snapshot: current + selected day with severity */}
+              {(() => {
+                const showForecast = Boolean(forecast)
+                return (
+                  <div className={`grid grid-cols-1 ${showForecast ? 'md:grid-cols-2' : ''} gap-3`}>
+                    <div className={`rounded-md border p-3 ${weather ? severityClasses(weather.severity) : 'border-muted bg-muted'}`}>
+                      <div className="flex items-center gap-2 mb-1">
+                        <CloudSun className="h-5 w-5" />
+                        <span className="font-medium">Now</span>
+                      </div>
+                      {weather ? (
+                        <div className="text-sm flex flex-wrap items-center gap-x-3 gap-y-1">
+                          <span className="text-muted-foreground">{weather.label}</span>
+                          <span className="flex items-center gap-1"><Thermometer className="h-4 w-4" /> {Number.isFinite(weather.temperature) ? weather.temperature!.toFixed(0) : '—'}°C</span>
+                          <span className="flex items-center gap-1"><Wind className="h-4 w-4" /> {Number.isFinite(weather.wind) ? weather.wind!.toFixed(0) : '—'} km/h</span>
+                          <span className="flex items-center gap-1"><Wind className="h-4 w-4 rotate-45" /> Gusts {Number.isFinite(weather.gust) ? weather.gust!.toFixed(0) : '—'} km/h</span>
+                          <span className="flex items-center gap-1">Dir {degToCompass(weather.direction)}</span>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">Fetching current weather…</p>
+                      )}
+                      {weather && weather.severity === 'bad' ? (
+                        <p className="mt-2 text-xs text-foreground"><strong>Warning:</strong> Ocean may be rough. South‑easter (SE) winds in Gordon&apos;s Bay are typically the worst.</p>
+                      ) : weather && weather.severity === 'ok' ? (
+                        <p className="mt-2 text-xs text-foreground">Caution: moderate winds; conditions may be choppy at times.</p>
+                      ) : null}
+                    </div>
+
+                    {showForecast ? (
+                      <div className={`rounded-md border p-3 ${forecast ? severityClasses(forecast.severity) : 'border-muted bg-muted'}`}>
+                        <div className="flex items-center gap-2 mb-1">
+                          <CloudSun className="h-5 w-5" />
+                          <span className="font-medium">Selected day</span>
+                        </div>
+                        {forecast ? (
+                          <div className="text-sm flex flex-wrap items-center gap-x-3 gap-y-1">
+                            <span className="text-muted-foreground">{forecast.label}</span>
+                            <span className="flex items-center gap-1"><Thermometer className="h-4 w-4" /> {Number.isFinite(forecast.tempMax) ? forecast.tempMax!.toFixed(0) : '—'}°C max</span>
+                            <span className="flex items-center gap-1"><Wind className="h-4 w-4" /> Max wind {Number.isFinite(forecast.windMax) ? forecast.windMax!.toFixed(0) : '—'} km/h</span>
+                            <span className="flex items-center gap-1"><Wind className="h-4 w-4 rotate-45" /> Max gusts {Number.isFinite(forecast.gustMax) ? forecast.gustMax!.toFixed(0) : '—'} km/h</span>
+                            <span className="flex items-center gap-1">Dir {degToCompass(forecast.direction)}</span>
+                          </div>
+                        ) : null}
+                        {forecast && forecast.severity === 'bad' ? (
+                          <p className="mt-2 text-xs text-foreground"><strong>Warning:</strong> Ocean may be rough. South‑easter (SE) winds in Gordon&apos;s Bay are typically the worst.</p>
+                        ) : forecast && forecast.severity === 'ok' ? (
+                          <p className="mt-2 text-xs text-foreground">Caution: moderate winds; conditions may be choppy at times.</p>
+                        ) : null}
+                      </div>
+                    ) : null}
                   </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">Fetching current weather for Gordon's Bay…</p>
-                )}
-              </div>
+                )
+              })()}
               <div className="space-y-1">
                 <p className="text-sm font-medium">{selectedRide.title}</p>
                 <p className="text-xs text-muted-foreground">{selectedRide.subtitle}</p>
