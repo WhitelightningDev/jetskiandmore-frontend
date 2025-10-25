@@ -43,7 +43,6 @@ export default function Header() {
               {[
                 { to: '/home', label: 'Home' },
                 { to: '/rides', label: 'Rides' },
-                { to: '/locations', label: 'Locations' },
                 { to: '/safety', label: 'Safety' },
                 { to: '/weather', label: 'Weather' },
                 { to: '/contact', label: 'Contact' },

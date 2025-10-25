@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { CalendarDays, Clock, Users, Gift, MapPin, Info, Wind, Thermometer, CloudSun } from 'lucide-react'
+import { CalendarDays, Clock, Users, Gift, MapPin, Info } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,9 +10,12 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
+
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
 import { Calendar } from '@/components/ui/calendar'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
+import { AddOnsSection } from '@/features/bookings/AddOnsSection'
+import { WeatherSnapshot } from '@/features/weather/WeatherSnapshot'
 
 export const Route = createFileRoute('/Bookings/')({
   component: RouteComponent,
@@ -154,6 +157,8 @@ function RouteComponent() {
   const addonsTotal = droneCost + wetsuitCost + boatCost + extraPeopleCost + goproCost
   const estimatedTotal = baseTotal + addonsTotal
 
+  // Fixed location: Gordon's Bay Harbour (do NOT replace with geolocation)
+  const GBAY = { lat: -34.165, lon: 18.866, tz: 'Africa/Johannesburg' as const }
   // Weather for Gordon's Bay via Open-Meteo (current + selected day)
   type Severity = 'good' | 'ok' | 'bad'
   type Weather = {
@@ -180,35 +185,27 @@ function RouteComponent() {
   const [weather, setWeather] = React.useState<Weather>(null)
   const [forecast, setForecast] = React.useState<Forecast>(null)
 
-  function classifySeverity(speed?: number | null, gust?: number | null): Severity {
-    const s = Number(speed ?? 0)
-    const g = Number(gust ?? 0)
-    if (s >= 29 || g >= 30) return 'bad'
-    if (s >= 20 || g >= 25) return 'ok'
-    return 'good'
-  }
+function classifySeverity(speed?: number | null, gust?: number | null): Severity {
+  const s = Number(speed ?? 0)
+  const g = Number(gust ?? 0)
+  // Align thresholds with Weather page: tuned for rider comfort
+  // bad: strong winds/gusts
+  if (s >= 25 || g >= 35) return 'bad'
+  // ok: moderate winds/gusts
+  if (s >= 12 || g >= 20) return 'ok'
+  // good: calm to light breeze
+  return 'good'
+}
 
-  function degToCompass(deg?: number | null): string {
-    const d = Number(deg)
-    if (!Number.isFinite(d)) return '—'
-    const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
-    return dirs[Math.round(d / 45) % 8]
-  }
+ 
 
-  function severityClasses(sev: Severity) {
-    if (sev === 'bad') return 'bg-gradient-to-r from-rose-50 to-rose-100 border-rose-200'
-    if (sev === 'ok') return 'bg-gradient-to-r from-amber-50 to-amber-100 border-amber-200'
-    return 'bg-gradient-to-r from-emerald-50 to-emerald-100 border-emerald-200'
-  }
+ 
 
   React.useEffect(() => {
     const controller = new AbortController()
     ;(async () => {
       try {
-        const lat = -34.157
-        const lon = 18.884
-        const tz = 'Africa/Johannesburg'
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m,wind_gusts_10m,wind_direction_10m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant&timezone=${encodeURIComponent(tz)}&forecast_days=7`
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${GBAY.lat}&longitude=${GBAY.lon}&current=temperature_2m,wind_speed_10m,wind_gusts_10m,wind_direction_10m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant&timezone=${encodeURIComponent(GBAY.tz)}&forecast_days=7`
         const res = await fetch(url, { signal: controller.signal })
         if (!res.ok) return
         const data = await res.json()
@@ -394,75 +391,7 @@ function handleSubmit(e?: React.FormEvent) {
                 <Separator />
 
                 {/* Add-ons */}
-                <div className="space-y-3">
-                  <Label>Optional add‑ons</Label>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <label className="flex items-center justify-between gap-2 rounded-md border p-3">
-                      <div className="flex items-center gap-2">
-                        <Checkbox checked={addons.drone} onCheckedChange={(v: any) => setAddons(a => ({ ...a, drone: Boolean(v) }))} />
-                        <span className="text-sm">Drone video</span>
-                      </div>
-                      <span className="text-xs text-muted-foreground">
-                        {rideId === FREE_DRONE_RIDE_ID ? 'Included with 2 skis (60m)' : formatZAR(DRONE_PRICE)}
-                      </span>
-                    </label>
-                    <label className="flex items-center justify-between gap-2 rounded-md border p-3">
-                      <div className="flex items-center gap-2">
-                        <Checkbox checked={addons.gopro} onCheckedChange={(v: any) => setAddons(a => ({ ...a, gopro: Boolean(v) }))} />
-                        <span className="text-sm">GoPro footage</span>
-                      </div>
-                      <span className="text-xs text-muted-foreground">On request</span>
-                    </label>
-                    <label className="flex items-center justify-between gap-2 rounded-md border p-3">
-                      <div className="flex items-center gap-2">
-                        <Checkbox checked={addons.wetsuit} onCheckedChange={(v: any) => setAddons(a => ({ ...a, wetsuit: Boolean(v) }))} />
-                        <span className="text-sm">Wetsuit hire</span>
-                      </div>
-                      <span className="text-xs text-muted-foreground">{formatZAR(WETSUIT_PRICE)}</span>
-                    </label>
-                    <div className="flex items-center justify-between gap-2 rounded-md border p-3">
-                      <label className="flex items-center gap-2">
-                        <Checkbox
-                          checked={addons.boat}
-                          onCheckedChange={(v: any) => setAddons((a) => ({ ...a, boat: Boolean(v) }))}
-                        />
-                        <span className="text-sm">Boat ride</span>
-                      </label>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <span>R{BOAT_PRICE_PER_PERSON} pp</span>
-                      <input
-                        type="number"
-                        min={1}
-                        max={10}
-                        value={addons.boatCount}
-                        disabled={!addons.boat}
-                        onChange={(e) => setAddons((a) => ({ ...a, boatCount: Math.max(1, Math.min(10, Number(e.target.value) || 1)) }))}
-                        className="w-16 px-2 py-1 border rounded disabled:opacity-60"
-                      />
-                    </div>
-                  </div>
-                  {/* Additional passengers */}
-                  <div className="flex items-center justify-between gap-2 rounded-md border p-3">
-                    <div className="flex flex-col gap-1">
-                      <span className="text-sm">Additional passenger(s)</span>
-                      <span className="text-xs text-muted-foreground">R{EXTRA_PERSON_PRICE} each • Max {maxExtraPeople}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <input
-                        type="number"
-                        min={0}
-                        max={maxExtraPeople}
-                        value={addons.extraPeople || 0}
-                        onChange={(e) => setAddons((a) => ({ ...a, extraPeople: Math.max(0, Math.min(maxExtraPeople, Number(e.target.value) || 0)) }))}
-                        className="w-16 px-2 py-1 border rounded"
-                      />
-                    </div>
-                  </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Drone footage is <strong>free</strong> for the <em>2 Jet‑Skis • 60 min</em> ride, otherwise {formatZAR(DRONE_PRICE)}. Wetsuit hire is {formatZAR(WETSUIT_PRICE)}. Boat ride costs R{BOAT_PRICE_PER_PERSON} per person. Additional passenger(s) cost R{EXTRA_PERSON_PRICE} each.
-                  </p>
-                </div>
+                <AddOnsSection rideId={rideId} addons={addons} setAddons={setAddons} maxExtraPeople={maxExtraPeople} />
 
                 <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between pt-2">
                   <div className="text-xs text-muted-foreground flex items-center gap-2">
@@ -486,58 +415,7 @@ function handleSubmit(e?: React.FormEvent) {
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Weather snapshot: current + selected day with severity */}
-              {(() => {
-                const showForecast = Boolean(forecast)
-                return (
-                  <div className={`grid grid-cols-1 ${showForecast ? 'md:grid-cols-2' : ''} gap-3`}>
-                    <div className={`rounded-md border p-3 ${weather ? severityClasses(weather.severity) : 'border-muted bg-muted'}`}>
-                      <div className="flex items-center gap-2 mb-1">
-                        <CloudSun className="h-5 w-5" />
-                        <span className="font-medium">Now</span>
-                      </div>
-                      {weather ? (
-                        <div className="text-sm flex flex-wrap items-center gap-x-3 gap-y-1">
-                          <span className="text-muted-foreground">{weather.label}</span>
-                          <span className="flex items-center gap-1"><Thermometer className="h-4 w-4" /> {Number.isFinite(weather.temperature) ? weather.temperature!.toFixed(0) : '—'}°C</span>
-                          <span className="flex items-center gap-1"><Wind className="h-4 w-4" /> {Number.isFinite(weather.wind) ? weather.wind!.toFixed(0) : '—'} km/h</span>
-                          <span className="flex items-center gap-1"><Wind className="h-4 w-4 rotate-45" /> Gusts {Number.isFinite(weather.gust) ? weather.gust!.toFixed(0) : '—'} km/h</span>
-                          <span className="flex items-center gap-1">Dir {degToCompass(weather.direction)}</span>
-                        </div>
-                      ) : (
-                        <p className="text-sm text-muted-foreground">Fetching current weather…</p>
-                      )}
-                      {weather && weather.severity === 'bad' ? (
-                        <p className="mt-2 text-xs text-foreground"><strong>Warning:</strong> Ocean may be rough. South‑easter (SE) winds in Gordon&apos;s Bay are typically the worst.</p>
-                      ) : weather && weather.severity === 'ok' ? (
-                        <p className="mt-2 text-xs text-foreground">Caution: moderate winds; conditions may be choppy at times.</p>
-                      ) : null}
-                    </div>
-
-                    {showForecast ? (
-                      <div className={`rounded-md border p-3 ${forecast ? severityClasses(forecast.severity) : 'border-muted bg-muted'}`}>
-                        <div className="flex items-center gap-2 mb-1">
-                          <CloudSun className="h-5 w-5" />
-                          <span className="font-medium">Selected day</span>
-                        </div>
-                        {forecast ? (
-                          <div className="text-sm flex flex-wrap items-center gap-x-3 gap-y-1">
-                            <span className="text-muted-foreground">{forecast.label}</span>
-                            <span className="flex items-center gap-1"><Thermometer className="h-4 w-4" /> {Number.isFinite(forecast.tempMax) ? forecast.tempMax!.toFixed(0) : '—'}°C max</span>
-                            <span className="flex items-center gap-1"><Wind className="h-4 w-4" /> Max wind {Number.isFinite(forecast.windMax) ? forecast.windMax!.toFixed(0) : '—'} km/h</span>
-                            <span className="flex items-center gap-1"><Wind className="h-4 w-4 rotate-45" /> Max gusts {Number.isFinite(forecast.gustMax) ? forecast.gustMax!.toFixed(0) : '—'} km/h</span>
-                            <span className="flex items-center gap-1">Dir {degToCompass(forecast.direction)}</span>
-                          </div>
-                        ) : null}
-                        {forecast && forecast.severity === 'bad' ? (
-                          <p className="mt-2 text-xs text-foreground"><strong>Warning:</strong> Ocean may be rough. South‑easter (SE) winds in Gordon&apos;s Bay are typically the worst.</p>
-                        ) : forecast && forecast.severity === 'ok' ? (
-                          <p className="mt-2 text-xs text-foreground">Caution: moderate winds; conditions may be choppy at times.</p>
-                        ) : null}
-                      </div>
-                    ) : null}
-                  </div>
-                )
-              })()}
+              <WeatherSnapshot weather={weather} forecast={forecast} date={date} />
               <div className="space-y-1">
                 <p className="text-sm font-medium">{selectedRide.title}</p>
                 <p className="text-xs text-muted-foreground">{selectedRide.subtitle}</p>
