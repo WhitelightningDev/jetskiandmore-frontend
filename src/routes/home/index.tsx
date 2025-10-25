@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { Link } from '@tanstack/react-router'
-import { Waves, CalendarDays, MapPin, Clock, ShieldCheck, Ship, Gift } from 'lucide-react'
+import { Waves, CalendarDays, MapPin, Clock, ShieldCheck, Ship, Gift, Star, Wind, Users } from 'lucide-react'
 
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
@@ -16,62 +16,81 @@ export const Route = createFileRoute('/home/')({
 
 function App() {
   return (
-    <div className="bg-white">
+    <div className="bg-background">
       {/* HERO */}
-      <section className="relative mx-auto max-w-6xl px-4 py-16 md:py-24">
-        <div className="flex flex-col items-center text-center gap-6">
-          <Badge className="uppercase tracking-wide" variant="secondary">
-            Gordon&apos;s Bay Harbour • Western Cape
-          </Badge>
-          <h1 className="text-4xl md:text-6xl font-extrabold leading-tight">
-            Jet Ski Rentals &amp; Guided Rides
-          </h1>
-          <p className="text-base md:text-lg text-muted-foreground max-w-2xl">
-            Book a thrilling ride on crystal waters. Flexible time slots, safety-first briefings,
-            and optional drone video add‑ons.
-          </p>
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-primary/10 via-cyan-50 to-background" />
+        <div className="absolute -top-28 left-1/2 -translate-x-1/2 -z-10 blur-3xl opacity-40 size-[600px] rounded-full bg-[radial-gradient(circle_at_center,theme(colors.cyan.300),transparent_60%)]" />
+        <div className="mx-auto max-w-6xl px-4 py-16 md:py-24">
+          <div className="flex flex-col items-center text-center gap-6">
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <Badge className="uppercase tracking-wide" variant="secondary">
+                Gordon&apos;s Bay Harbour • Western Cape
+              </Badge>
+              <Badge className="bg-primary/15 text-primary border-primary/30">Summer season open</Badge>
+            </div>
+            <h1 className="text-4xl md:text-6xl font-extrabold leading-tight bg-gradient-to-r from-primary to-cyan-600 bg-clip-text text-transparent">
+              Jet Ski Rentals &amp; Guided Rides
+            </h1>
+            <p className="text-base md:text-lg text-muted-foreground max-w-2xl">
+              Book a thrilling ride on crystal waters. Flexible time slots, safety‑first briefings,
+              and optional drone video add‑ons.
+            </p>
 
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Link to="/Bookings" className={buttonVariants({ size: "lg" })}>
-              <CalendarDays className="mr-2 h-5 w-5" />
-              Book now
-            </Link>
-            <Link to="/rides" className={buttonVariants({ variant: "outline", size: "lg" })}>
-              <Waves className="mr-2 h-5 w-5" />
-              Explore rides
-            </Link>
-          </div>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Link to="/Bookings" className={buttonVariants({ size: "lg" })}>
+                <CalendarDays className="mr-2 h-5 w-5" />
+                Book now
+              </Link>
+              <Link to="/rides" className={buttonVariants({ variant: "outline", size: "lg" })}>
+                <Waves className="mr-2 h-5 w-5" />
+                Explore rides
+              </Link>
+            </div>
 
-          <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 w-full">
-            <Card>
-              <CardHeader className="space-y-1">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Clock className="h-5 w-5" />
-                  Flexible sessions
-                </CardTitle>
-                <CardDescription>30, 60 or 90-minute options</CardDescription>
-              </CardHeader>
-            </Card>
-            <Card>
-              <CardHeader className="space-y-1">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <ShieldCheck className="h-5 w-5" />
-                  Safety included
-                </CardTitle>
-                <CardDescription>Briefing + life jackets</CardDescription>
-              </CardHeader>
-            </Card>
-            <Card>
-              <CardHeader className="space-y-1">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <MapPin className="h-5 w-5" />
-                  Our launch spot
-                </CardTitle>
-                <CardDescription>Gordon&apos;s Bay Harbour only</CardDescription>
-              </CardHeader>
-            </Card>
+            {/* Key highlights */}
+            <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 w-full">
+              <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-cyan-50">
+                <CardHeader className="space-y-1">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <span className="inline-flex items-center justify-center size-7 rounded-md bg-primary/15 text-primary"><Clock className="size-4" /></span>
+                    Flexible sessions
+                  </CardTitle>
+                  <CardDescription>30 and 60 minute, and up to 2 hours for group bookings</CardDescription>
+                </CardHeader>
+              </Card>
+              <Card className="border-emerald-300/40 bg-gradient-to-br from-emerald-50 to-emerald-100/40">
+                <CardHeader className="space-y-1">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <span className="inline-flex items-center justify-center size-7 rounded-md bg-emerald-600/15 text-emerald-700"><ShieldCheck className="size-4" /></span>
+                    Safety included
+                  </CardTitle>
+                  <CardDescription>Briefing + life jackets</CardDescription>
+                </CardHeader>
+              </Card>
+              <Card className="border-cyan-300/40 bg-gradient-to-br from-cyan-50 to-cyan-100/40">
+                <CardHeader className="space-y-1">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <span className="inline-flex items-center justify-center size-7 rounded-md bg-cyan-600/15 text-cyan-700"><MapPin className="size-4" /></span>
+                    Our launch spot
+                  </CardTitle>
+                  <CardDescription>Gordon&apos;s Bay Harbour only</CardDescription>
+                </CardHeader>
+              </Card>
+            </div>
+
+            {/* Stats */}
+            <div className="mt-4 grid grid-cols-3 gap-6 text-sm text-muted-foreground">
+              <div className="flex flex-col items-center"><Star className="h-4 w-4 text-amber-500" /> <span className="font-semibold text-foreground">4.9★</span> Reviews</div>
+              <div className="flex flex-col items-center"><Users className="h-4 w-4 text-primary" /> <span className="font-semibold text-foreground">1,000+</span> Riders</div>
+              <div className="flex flex-col items-center"><Wind className="h-4 w-4 text-cyan-600" /> <span className="font-semibold text-foreground">Safety‑first</span> Briefings</div>
+            </div>
           </div>
         </div>
+        {/* Wave divider */}
+        <svg className="absolute bottom-0 left-0 w-full text-background" viewBox="0 0 1440 80" preserveAspectRatio="none" aria-hidden>
+          <path fill="currentColor" d="M0,32L48,37.3C96,43,192,53,288,48C384,43,480,21,576,26.7C672,32,768,64,864,69.3C960,75,1056,53,1152,48C1248,43,1344,53,1392,58.7L1440,64L1440,80L1392,80C1344,80,1248,80,1152,80C1056,80,960,80,864,80C768,80,672,80,576,80C480,80,384,80,288,80C192,80,96,80,48,80L0,80Z" />
+        </svg>
       </section>
 
       <Separator className="my-2" />
@@ -83,7 +102,7 @@ function App() {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Badge variant="outline" className="cursor-help">What’s included?</Badge>
+                <Badge variant="outline" className="cursor-help bg-primary/5 border-primary/20 text-foreground">What’s included?</Badge>
               </TooltipTrigger>
               <TooltipContent>
                 Life jackets, safety briefing &amp; fuel. Skipper on request.
@@ -93,7 +112,7 @@ function App() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="flex flex-col">
+          <Card className="flex flex-col border-primary/30 hover:border-primary/50 hover:shadow-lg transition-all bg-white/80 backdrop-blur">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Ship className="h-5 w-5" />
@@ -110,7 +129,7 @@ function App() {
             </CardFooter>
           </Card>
 
-          <Card className="flex flex-col">
+          <Card className="flex flex-col border-primary/30 hover:border-primary/50 hover:shadow-lg transition-all bg-white/80 backdrop-blur">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Clock className="h-5 w-5" />
@@ -127,7 +146,7 @@ function App() {
             </CardFooter>
           </Card>
 
-          <Card className="flex flex-col">
+          <Card className="flex flex-col border-amber-300/40 hover:border-amber-500/60 hover:shadow-lg transition-all bg-gradient-to-br from-amber-50 to-amber-100/60">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Gift className="h-5 w-5" />
@@ -151,7 +170,7 @@ function App() {
       <section className="mx-auto max-w-6xl px-4 py-12">
         <h2 className="text-2xl md:text-3xl font-bold mb-6">What riders say</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card>
+          <Card className="bg-gradient-to-br from-primary/5 to-cyan-50 border-primary/20">
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
                 <Avatar>
@@ -168,7 +187,7 @@ function App() {
               </p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="bg-gradient-to-br from-amber-50 to-amber-100/60 border-amber-200/60">
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
                 <Avatar>
@@ -185,7 +204,7 @@ function App() {
               </p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 border-emerald-200/60">
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
                 <Avatar>
@@ -210,7 +229,7 @@ function App() {
       {/* SAFETY & INFO */}
       <section className="mx-auto max-w-6xl px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
+          <Card className="border-amber-200 bg-amber-50/60">
             <CardHeader>
               <CardTitle>Safety &amp; requirements</CardTitle>
               <CardDescription>Read before you ride</CardDescription>
@@ -228,7 +247,7 @@ function App() {
             </CardFooter>
           </Card>
 
-          <Card>
+          <Card className="border-cyan-200 bg-cyan-50/60">
             <CardHeader>
               <CardTitle>Where we launch</CardTitle>
               <CardDescription>We operate only from Gordon&apos;s Bay Harbour</CardDescription>
@@ -257,7 +276,7 @@ function App() {
 
       {/* FINAL CTA */}
       <section className="mx-auto max-w-6xl px-4 pb-20">
-        <Card className="border-primary/30">
+        <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-cyan-50">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl md:text-3xl">Ready to ride?</CardTitle>
             <CardDescription>Pick a time. We’ll handle the rest.</CardDescription>

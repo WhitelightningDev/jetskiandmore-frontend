@@ -1,11 +1,133 @@
 
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { Wind, Sun, CloudRain, Waves, Info, MapPin, CalendarDays, Umbrella } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+
+// Live conditions for Gordon's Bay via Open-Meteo (no API key, CORS-friendly)
+// Coords: ~-34.165, 18.866 (Gordon's Bay Harbour)
+
+type Conditions = {
+  loading: boolean
+  error?: string
+  temperature?: number
+  windSpeed?: number
+  windGusts?: number
+  precipitation?: number
+}
+
+function severityFromWind(windSpeed?: number, windGusts?: number): 'bad' | 'ok' | 'good' {
+  const s = windSpeed ?? 0
+  const g = windGusts ?? 0
+  // Tune thresholds for small craft comfort
+  if (s >= 25 || g >= 35) return 'bad'
+  if (s >= 12 || g >= 20) return 'ok'
+  return 'good'
+}
+
+function severityClasses(sev: 'bad' | 'ok' | 'good') {
+  if (sev === 'bad') return 'bg-gradient-to-r from-rose-50 to-rose-100 border-rose-200'
+  if (sev === 'ok') return 'bg-gradient-to-r from-amber-50 to-amber-100 border-amber-200'
+  return 'bg-gradient-to-r from-emerald-50 to-emerald-100 border-emerald-200'
+}
+
+function CurrentConditionsCard() {
+  const [cond, setCond] = useState<Conditions>({ loading: true })
+
+  useEffect(() => {
+    const ac = new AbortController()
+    const url = 'https://api.open-meteo.com/v1/forecast?latitude=-34.165&longitude=18.866&current=temperature_2m,wind_speed_10m,wind_gusts_10m,precipitation&timezone=Africa%2FJohannesburg'
+    fetch(url, { signal: ac.signal })
+      .then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`)
+        return r.json()
+      })
+      .then((j) => {
+        const c = j.current || {}
+        setCond({
+          loading: false,
+          temperature: typeof c.temperature_2m === 'number' ? c.temperature_2m : undefined,
+          windSpeed: typeof c.wind_speed_10m === 'number' ? c.wind_speed_10m : undefined,
+          windGusts: typeof c.wind_gusts_10m === 'number' ? c.wind_gusts_10m : undefined,
+          precipitation: typeof c.precipitation === 'number' ? c.precipitation : undefined,
+        })
+      })
+      .catch((e) => {
+        if (e.name === 'AbortError') return
+        setCond((prev) => ({ ...prev, loading: false, error: e.message || 'Failed to load weather' }))
+      })
+    return () => ac.abort()
+  }, [])
+
+  const sev = severityFromWind(cond.windSpeed, cond.windGusts)
+
+  return (
+    <Card className={`border mb-4 ${severityClasses(sev)}`}>
+      <CardHeader className="flex flex-row items-start justify-between">
+        <div>
+          <CardTitle className="flex items-center gap-2">
+            <Sun className="h-5 w-5" />
+            Today’s conditions
+          </CardTitle>
+          <CardDescription>Live snapshot for Gordon's Bay Harbour</CardDescription>
+        </div>
+        <Badge variant="outline" className="capitalize">
+          {sev === 'good' ? 'good' : sev}
+        </Badge>
+      </CardHeader>
+      <CardContent>
+        {cond.loading ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="h-12 rounded-md bg-muted animate-pulse" />
+            <div className="h-12 rounded-md bg-muted animate-pulse" />
+            <div className="h-12 rounded-md bg-muted animate-pulse" />
+            <div className="h-12 rounded-md bg-muted animate-pulse" />
+          </div>
+        ) : cond.error ? (
+          <div className="text-sm text-destructive">{cond.error}</div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="flex items-center gap-2 text-sm p-3 rounded-md border bg-background">
+              <Sun className="h-4 w-4" />
+              <div>
+                <div className="text-muted-foreground">Temp</div>
+                <div className="font-medium">{cond.temperature?.toFixed(0)}°C</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-sm p-3 rounded-md border bg-background">
+              <Wind className="h-4 w-4" />
+              <div>
+                <div className="text-muted-foreground">Wind</div>
+                <div className="font-medium">{cond.windSpeed?.toFixed(0)} km/h</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-sm p-3 rounded-md border bg-background">
+              <Wind className="h-4 w-4 rotate-12" />
+              <div>
+                <div className="text-muted-foreground">Gusts</div>
+                <div className="font-medium">{cond.windGusts?.toFixed(0)} km/h</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-sm p-3 rounded-md border bg-background">
+              <CloudRain className="h-4 w-4" />
+              <div>
+                <div className="text-muted-foreground">Precip</div>
+                <div className="font-medium">{(cond.precipitation ?? 0).toFixed(1)} mm</div>
+              </div>
+            </div>
+          </div>
+        )}
+      </CardContent>
+      <CardFooter className="text-xs text-muted-foreground">
+        Updated for the current hour. Thresholds tuned for rider comfort.
+      </CardFooter>
+    </Card>
+  )
+}
 
 export const Route = createFileRoute('/weather/')({
   component: RouteComponent,
@@ -27,6 +149,7 @@ function RouteComponent() {
           </Badge>
         </div>
 
+        <CurrentConditionsCard />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Best times */}
           <Card>
