@@ -366,6 +366,45 @@ function handleSubmit(e?: React.FormEvent) {
                   </div>
                 </div>
 
+                {/* Passengers */}
+                <div className="space-y-2">
+                  <Label>Passenger(s)</Label>
+                  {maxExtraPeople <= 0 ? (
+                    <p className="text-xs text-muted-foreground">No additional passengers for this selection.</p>
+                  ) : maxExtraPeople === 1 ? (
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant={(addons.extraPeople || 0) === 0 ? 'default' : 'outline'}
+                        onClick={() => setAddons((a) => ({ ...a, extraPeople: 0 }))}
+                      >
+                        Just me (1)
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={(addons.extraPeople || 0) === 1 ? 'default' : 'outline'}
+                        onClick={() => setAddons((a) => ({ ...a, extraPeople: 1 }))}
+                      >
+                        +1 Passenger (2)
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      {[0, 1, 2].map((n) => (
+                        <Button
+                          key={n}
+                          type="button"
+                          variant={(addons.extraPeople || 0) === n ? 'default' : 'outline'}
+                          onClick={() => setAddons((a) => ({ ...a, extraPeople: n }))}
+                        >
+                          {n} passenger{n === 1 ? '' : 's'}
+                        </Button>
+                      ))}
+                    </div>
+                  )}
+                  <p className="text-xs text-muted-foreground">Each jet ski can carry up to 2 people. Extra passengers cost R{EXTRA_PERSON_PRICE} each.</p>
+                </div>
+
                 <Separator />
 
                 {/* Contact */}
@@ -391,7 +430,7 @@ function handleSubmit(e?: React.FormEvent) {
                 <Separator />
 
                 {/* Add-ons */}
-                <AddOnsSection rideId={rideId} addons={addons} setAddons={setAddons} maxExtraPeople={maxExtraPeople} />
+                <AddOnsSection rideId={rideId} addons={addons} setAddons={setAddons} />
 
                 <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between pt-2">
                   <div className="text-xs text-muted-foreground flex items-center gap-2">
