@@ -524,7 +524,8 @@ function handleSubmit(e?: React.FormEvent) {
             <CardContent className="text-sm text-muted-foreground">
               Early mornings are typically smoother; late afternoons can be good on low‑wind days.
             </CardContent>
-            <CardFooter>
+            <CardFooter className="flex gap-2">
+              <Link to="/weather/calm-slots" className={buttonVariants({ size: 'sm' })}>Find calm day</Link>
               <Link to="/weather" className={buttonVariants({ variant: 'outline', size: 'sm' })}>Weather tips</Link>
             </CardFooter>
           </Card>
