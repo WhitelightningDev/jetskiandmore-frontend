@@ -14,6 +14,8 @@ import { Separator } from '@/components/ui/separator'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
 import { Calendar } from '@/components/ui/calendar'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
+import { postJSON, getPaymentQuote, chargeWithBooking, initiatePayment, createPaymentLink } from '@/lib/api'
+import { createYocoToken } from '@/lib/yoco'
 import { AddOnsSection } from '@/features/bookings/AddOnsSection'
 import { WeatherSnapshot } from '@/features/weather/WeatherSnapshot'
 
@@ -134,6 +136,12 @@ function RouteComponent() {
     },
   )
 
+  // Payment state
+  const [quoteCents, setQuoteCents] = React.useState<number | null>(null)
+  const [paying, setPaying] = React.useState(false)
+  const [paidId, setPaidId] = React.useState<string | null>(null)
+  const [payOpen, setPayOpen] = React.useState(false)
+
   // Limit additional passenger counts based on ride selection
   const maxExtraPeople = React.useMemo(() => {
     if (rideId === '30-1' || rideId === '60-1') return 1
@@ -144,6 +152,18 @@ function RouteComponent() {
   React.useEffect(() => {
     setAddons((a) => ({ ...a, extraPeople: Math.min(a.extraPeople, maxExtraPeople) }))
   }, [maxExtraPeople])
+
+  // Fetch authoritative payment quote from backend when inputs change
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const q = await getPaymentQuote(rideId, addons as any)
+        setQuoteCents(q.amountInCents)
+      } catch {
+        setQuoteCents(null)
+      }
+    })()
+  }, [rideId, addons])
 
   const selectedRide = React.useMemo(() => RIDES.find(r => r.id === rideId) ?? RIDES[0], [rideId])
   const baseTotal = selectedRide?.price ?? 0
@@ -269,14 +289,18 @@ function classifySeverity(speed?: number | null, gust?: number | null): Severity
 const [confirmOpen, setConfirmOpen] = React.useState(false)
 const [ack, setAck] = React.useState(false)
 
-function handleSubmit(e?: React.FormEvent) {
+async function handleSubmit(e?: React.FormEvent) {
   if (e) e.preventDefault()
   const formattedDate = date ? date.toISOString().split('T')[0] : null
-  // For now, just print to console. Hook this up to your backend or email action later.
-  console.log({
-    rideId, date: formattedDate, time, fullName, email, phone, notes, addons
-  })
-  alert('Thanks! We\'ve recorded your details. We\'ll confirm availability shortly.')
+  try {
+    await postJSON<{ ok: boolean; id: string }>(
+      '/api/bookings',
+      { rideId, date: formattedDate, time, fullName, email, phone, notes, addons }
+    )
+    alert("Thanks! We've recorded your details. We'll confirm availability shortly.")
+  } catch (err: any) {
+    alert(`Sorry, we couldn't submit your booking: ${err?.message || 'Unknown error'}`)
+  }
 }
 
   return (
@@ -432,6 +456,8 @@ function handleSubmit(e?: React.FormEvent) {
                 {/* Add-ons */}
                 <AddOnsSection rideId={rideId} addons={addons} setAddons={setAddons} />
 
+                {/* Payment section removed; flow handled by single button and modal */}
+
                 <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between pt-2">
                   <div className="text-xs text-muted-foreground flex items-center gap-2">
                     <Info className="h-4 w-4" />
@@ -439,7 +465,7 @@ function handleSubmit(e?: React.FormEvent) {
                   </div>
                   <div className="flex gap-3">
                     <Link to="/safety" className={buttonVariants({ variant: 'outline' })}>Safety &amp; info</Link>
-                    <Button type="submit">Request booking</Button>
+                    <Button type="button" onClick={(e) => { e.preventDefault(); setConfirmOpen(true) }}>Book &amp; Pay</Button>
                   </div>
                 </div>
               </form>
@@ -604,7 +630,39 @@ function handleSubmit(e?: React.FormEvent) {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setConfirmOpen(false)}>Cancel</Button>
-            <Button onClick={() => { if (!ack) return; setConfirmOpen(false); handleSubmit(); }} disabled={!ack}>Proceed</Button>
+            <Button onClick={() => { if (!ack) return; setConfirmOpen(false); setPayOpen(true) }} disabled={!ack}>Proceed</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Payment modal */}
+      <Dialog open={payOpen} onOpenChange={(o) => { setPayOpen(o) }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Pay securely with Yoco</DialogTitle>
+            <DialogDescription>
+              Amount: {quoteCents != null ? `ZAR ${(quoteCents/100).toFixed(0)}` : 'Loading...'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="text-sm text-muted-foreground">A secure Yoco payment window will open. Your card details are handled by Yoco.</div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPayOpen(false)}>Cancel</Button>
+            <Button onClick={async () => {
+              try {
+                setPaying(true)
+                const formattedDate = date ? date.toISOString().split('T')[0] : null
+                const link = await createPaymentLink({ rideId, date: formattedDate, time, fullName, email, phone, notes, addons })
+                if (!link?.linkUrl) throw new Error('Failed to obtain payment link')
+                // Redirect to hosted Yoco payment page
+                window.location.href = link.linkUrl
+              } catch (err: any) {
+                alert(err?.message || 'Payment failed')
+              } finally {
+                setPaying(false)
+              }
+            }} disabled={paying || !quoteCents}>
+              {paying ? 'Processing…' : 'Proceed to payment'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

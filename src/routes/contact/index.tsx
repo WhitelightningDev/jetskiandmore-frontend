@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
+import { postJSON } from '@/lib/api'
 
 export const Route = createFileRoute('/contact/')({
   component: RouteComponent,
@@ -20,11 +21,18 @@ function RouteComponent() {
   const [phone, setPhone] = React.useState('')
   const [message, setMessage] = React.useState('')
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    // For now, just log. We can wire this to your backend/email later.
-    console.log({ fullName, email, phone, message })
-    alert("Thanks! We've received your message and will get back to you shortly.")
+    try {
+      await postJSON<{ ok: boolean; id: string }>(
+        '/api/contact',
+        { fullName, email, phone, message }
+      )
+      alert("Thanks! We've received your message and will get back to you shortly.")
+      setFullName(''); setEmail(''); setPhone(''); setMessage('')
+    } catch (err: any) {
+      alert(`Sorry, we couldn't send your message: ${err?.message || 'Unknown error'}`)
+    }
   }
 
   return (
