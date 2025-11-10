@@ -18,6 +18,7 @@ import { Route as HomeIndexRouteImport } from './routes/home/index'
 import { Route as ContactIndexRouteImport } from './routes/contact/index'
 import { Route as AddOnsIndexRouteImport } from './routes/add-ons/index'
 import { Route as BookingsIndexRouteImport } from './routes/Bookings/index'
+import { Route as PaymentsResultRouteImport } from './routes/payments/result'
 import { Route as WeatherCalmSlotsIndexRouteImport } from './routes/weather/calm-slots/index'
 
 const IndexRoute = IndexRouteImport.update({
@@ -65,6 +66,11 @@ const BookingsIndexRoute = BookingsIndexRouteImport.update({
   path: '/Bookings/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PaymentsResultRoute = PaymentsResultRouteImport.update({
+  id: '/payments/result',
+  path: '/payments/result',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WeatherCalmSlotsIndexRoute = WeatherCalmSlotsIndexRouteImport.update({
   id: '/weather/calm-slots/',
   path: '/weather/calm-slots/',
@@ -73,6 +79,7 @@ const WeatherCalmSlotsIndexRoute = WeatherCalmSlotsIndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/payments/result': typeof PaymentsResultRoute
   '/Bookings': typeof BookingsIndexRoute
   '/add-ons': typeof AddOnsIndexRoute
   '/contact': typeof ContactIndexRoute
@@ -85,6 +92,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/payments/result': typeof PaymentsResultRoute
   '/Bookings': typeof BookingsIndexRoute
   '/add-ons': typeof AddOnsIndexRoute
   '/contact': typeof ContactIndexRoute
@@ -98,6 +106,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/payments/result': typeof PaymentsResultRoute
   '/Bookings/': typeof BookingsIndexRoute
   '/add-ons/': typeof AddOnsIndexRoute
   '/contact/': typeof ContactIndexRoute
@@ -112,6 +121,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/payments/result'
     | '/Bookings'
     | '/add-ons'
     | '/contact'
@@ -124,6 +134,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/payments/result'
     | '/Bookings'
     | '/add-ons'
     | '/contact'
@@ -136,6 +147,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/payments/result'
     | '/Bookings/'
     | '/add-ons/'
     | '/contact/'
@@ -149,6 +161,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  PaymentsResultRoute: typeof PaymentsResultRoute
   BookingsIndexRoute: typeof BookingsIndexRoute
   AddOnsIndexRoute: typeof AddOnsIndexRoute
   ContactIndexRoute: typeof ContactIndexRoute
@@ -225,6 +238,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BookingsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/payments/result': {
+      id: '/payments/result'
+      path: '/payments/result'
+      fullPath: '/payments/result'
+      preLoaderRoute: typeof PaymentsResultRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/weather/calm-slots/': {
       id: '/weather/calm-slots/'
       path: '/weather/calm-slots'
@@ -237,6 +257,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  PaymentsResultRoute: PaymentsResultRoute,
   BookingsIndexRoute: BookingsIndexRoute,
   AddOnsIndexRoute: AddOnsIndexRoute,
   ContactIndexRoute: ContactIndexRoute,

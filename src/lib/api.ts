@@ -56,8 +56,29 @@ export async function initiatePayment(booking: any) {
 }
 
 export async function createPaymentLink(booking: any) {
-  return postJSON<{ ok: boolean; linkUrl: string; id?: string }>(
+  return postJSON<{ ok: boolean; linkUrl: string; id?: string; orderId?: string }>(
     '/api/payments/link',
     { token: 'init', booking }
+  )
+}
+
+export async function verifyPayment(orderId: string, booking: any) {
+  return postJSON<{ ok: boolean; orderId: string; status: string }>(
+    '/api/payments/verify',
+    { orderId, booking }
+  )
+}
+
+export async function createCheckout(booking: any) {
+  return postJSON<{ ok: boolean; id: string; redirectUrl: string }>(
+    '/api/payments/checkout',
+    { token: 'init', booking }
+  )
+}
+
+export async function verifyPaymentById(paymentId: string, booking: any) {
+  return postJSON<{ ok: boolean; paymentId: string; orderId?: string; status: string }>(
+    '/api/payments/verify-by-payment',
+    { paymentId, booking }
   )
 }

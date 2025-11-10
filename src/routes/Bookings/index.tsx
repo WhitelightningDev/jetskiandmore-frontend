@@ -14,7 +14,7 @@ import { Separator } from '@/components/ui/separator'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
 import { Calendar } from '@/components/ui/calendar'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
-import { postJSON, getPaymentQuote, chargeWithBooking, initiatePayment, createPaymentLink } from '@/lib/api'
+import { postJSON, getPaymentQuote, chargeWithBooking, initiatePayment, createPaymentLink, createCheckout } from '@/lib/api'
 import { createYocoToken } from '@/lib/yoco'
 import { AddOnsSection } from '@/features/bookings/AddOnsSection'
 import { WeatherSnapshot } from '@/features/weather/WeatherSnapshot'
@@ -648,15 +648,35 @@ async function handleSubmit(e?: React.FormEvent) {
           <DialogFooter>
             <Button variant="outline" onClick={() => setPayOpen(false)}>Cancel</Button>
             <Button onClick={async () => {
+              setPaying(true)
+              const formattedDate = date ? date.toISOString().split('T')[0] : null
+              const booking = { rideId, date: formattedDate, time, fullName, email, phone, notes, addons }
               try {
-                setPaying(true)
-                const formattedDate = date ? date.toISOString().split('T')[0] : null
-                const link = await createPaymentLink({ rideId, date: formattedDate, time, fullName, email, phone, notes, addons })
-                if (!link?.linkUrl) throw new Error('Failed to obtain payment link')
-                // Redirect to hosted Yoco payment page
-                window.location.href = link.linkUrl
+                // Preferred: Checkout API (Bearer token)
+                const co = await createCheckout(booking)
+                if (!co?.redirectUrl) throw new Error('Failed to obtain checkout link')
+                try { window.localStorage.setItem('jsm_last_payment', JSON.stringify({ checkoutId: co.id, booking })) } catch {}
+                window.location.href = co.redirectUrl
               } catch (err: any) {
-                alert(err?.message || 'Payment failed')
+                // Fallback: Payment Link (OAuth)
+                try {
+                  const link = await createPaymentLink(booking)
+                  if (!link?.linkUrl) throw new Error('Failed to obtain payment link')
+                  try { window.localStorage.setItem('jsm_last_payment', JSON.stringify({ orderId: link.orderId, booking })) } catch {}
+                  window.location.href = link.linkUrl
+                  return
+                } catch {}
+                // Fallback: tokenize via Yoco popup and charge server-side (no OAuth required)
+                try {
+                  const { amountInCents, currency, reference } = await initiatePayment(booking)
+                  const token = await createYocoToken(amountInCents || 0, currency, { productName: selectedRide.title, description: reference, customerName: fullName, customerEmail: email })
+                  const res = await chargeWithBooking(token, booking)
+                  setPaidId(res.id)
+                  setPayOpen(false)
+                  alert("Payment successful — booking confirmed! We've emailed your receipt.")
+                } catch (inner: any) {
+                  alert(inner?.message || 'Payment failed')
+                }
               } finally {
                 setPaying(false)
               }
