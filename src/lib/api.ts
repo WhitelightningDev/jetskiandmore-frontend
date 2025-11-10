@@ -82,3 +82,10 @@ export async function verifyPaymentById(paymentId: string, booking: any) {
     { paymentId, booking }
   )
 }
+
+export async function verifyCheckout(checkoutId: string, booking: any) {
+  return postJSON<{ ok: boolean; checkoutId: string; status: string; paymentId?: string }>(
+    '/api/payments/verify-checkout',
+    { checkoutId, booking }
+  )
+}

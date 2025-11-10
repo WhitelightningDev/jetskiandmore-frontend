@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { verifyPayment, verifyPaymentById } from '@/lib/api'
+import { verifyPayment, verifyPaymentById, verifyCheckout } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 
 export const Route = createFileRoute('/payments/success')({
@@ -17,6 +17,7 @@ function SuccessPage() {
     const stored = window.localStorage.getItem('jsm_last_payment')
     const data = stored ? JSON.parse(stored) : null
     const booking = data?.booking
+    const checkoutId = data?.checkoutId
     if (!booking) {
       setStatus('pending')
       setMsg('Payment received. We could not find your booking context to email a receipt, but we will reconcile shortly.')
@@ -47,10 +48,22 @@ function SuccessPage() {
             setStatus('pending')
             setMsg('Payment is processing. Please refresh in a moment.')
           }
-        } else {
-          setStatus('pending')
-          setMsg('Payment received. We will email your receipt shortly.')
+          return
         }
+        if (checkoutId) {
+          const res = await verifyCheckout(checkoutId, booking)
+          if (res.ok) {
+            setStatus('approved')
+            setMsg('Payment confirmed! We\'ve emailed your receipt and booking confirmation.')
+            window.localStorage.removeItem('jsm_last_payment')
+          } else {
+            setStatus('pending')
+            setMsg('Payment is processing. Please refresh in a moment.')
+          }
+          return
+        }
+        setStatus('pending')
+        setMsg('Payment received. We will email your receipt shortly.')
       } catch (e: any) {
         setStatus('pending')
         setMsg(e?.message || 'Payment confirmed. We will email your receipt shortly.')
@@ -69,4 +82,3 @@ function SuccessPage() {
     </div>
   )
 }
-
