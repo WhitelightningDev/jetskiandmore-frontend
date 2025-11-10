@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { MapPin, Phone, Mail, Clock, MessageSquare, CalendarDays, Info } from 'lucide-react'
+import { MapPin, Phone, Mail, Clock, MessageSquare, CalendarDays, Info, CheckCircle2 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { postJSON } from '@/lib/api'
 
 export const Route = createFileRoute('/contact/')({
@@ -20,6 +21,7 @@ function RouteComponent() {
   const [email, setEmail] = React.useState('')
   const [phone, setPhone] = React.useState('')
   const [message, setMessage] = React.useState('')
+  const [successOpen, setSuccessOpen] = React.useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -28,8 +30,8 @@ function RouteComponent() {
         '/api/contact',
         { fullName, email, phone, message }
       )
-      alert("Thanks! We've received your message and will get back to you shortly.")
       setFullName(''); setEmail(''); setPhone(''); setMessage('')
+      setSuccessOpen(true)
     } catch (err: any) {
       alert(`Sorry, we couldn't send your message: ${err?.message || 'Unknown error'}`)
     }
@@ -147,6 +149,24 @@ function RouteComponent() {
           </Card>
         </div>
       </section>
+
+      {/* Success dialog */}
+      <Dialog open={successOpen} onOpenChange={setSuccessOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+              Message sent
+            </DialogTitle>
+            <DialogDescription>
+              Thanks! We've received your message and will get back to you shortly.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => setSuccessOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
