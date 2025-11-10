@@ -18,7 +18,10 @@ import { Route as HomeIndexRouteImport } from './routes/home/index'
 import { Route as ContactIndexRouteImport } from './routes/contact/index'
 import { Route as AddOnsIndexRouteImport } from './routes/add-ons/index'
 import { Route as BookingsIndexRouteImport } from './routes/Bookings/index'
+import { Route as PaymentsSuccessRouteImport } from './routes/payments/success'
 import { Route as PaymentsResultRouteImport } from './routes/payments/result'
+import { Route as PaymentsFailedRouteImport } from './routes/payments/failed'
+import { Route as PaymentsCancelledRouteImport } from './routes/payments/cancelled'
 import { Route as WeatherCalmSlotsIndexRouteImport } from './routes/weather/calm-slots/index'
 
 const IndexRoute = IndexRouteImport.update({
@@ -66,9 +69,24 @@ const BookingsIndexRoute = BookingsIndexRouteImport.update({
   path: '/Bookings/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PaymentsSuccessRoute = PaymentsSuccessRouteImport.update({
+  id: '/payments/success',
+  path: '/payments/success',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PaymentsResultRoute = PaymentsResultRouteImport.update({
   id: '/payments/result',
   path: '/payments/result',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PaymentsFailedRoute = PaymentsFailedRouteImport.update({
+  id: '/payments/failed',
+  path: '/payments/failed',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PaymentsCancelledRoute = PaymentsCancelledRouteImport.update({
+  id: '/payments/cancelled',
+  path: '/payments/cancelled',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WeatherCalmSlotsIndexRoute = WeatherCalmSlotsIndexRouteImport.update({
@@ -79,7 +97,10 @@ const WeatherCalmSlotsIndexRoute = WeatherCalmSlotsIndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/payments/cancelled': typeof PaymentsCancelledRoute
+  '/payments/failed': typeof PaymentsFailedRoute
   '/payments/result': typeof PaymentsResultRoute
+  '/payments/success': typeof PaymentsSuccessRoute
   '/Bookings': typeof BookingsIndexRoute
   '/add-ons': typeof AddOnsIndexRoute
   '/contact': typeof ContactIndexRoute
@@ -92,7 +113,10 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/payments/cancelled': typeof PaymentsCancelledRoute
+  '/payments/failed': typeof PaymentsFailedRoute
   '/payments/result': typeof PaymentsResultRoute
+  '/payments/success': typeof PaymentsSuccessRoute
   '/Bookings': typeof BookingsIndexRoute
   '/add-ons': typeof AddOnsIndexRoute
   '/contact': typeof ContactIndexRoute
@@ -106,7 +130,10 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/payments/cancelled': typeof PaymentsCancelledRoute
+  '/payments/failed': typeof PaymentsFailedRoute
   '/payments/result': typeof PaymentsResultRoute
+  '/payments/success': typeof PaymentsSuccessRoute
   '/Bookings/': typeof BookingsIndexRoute
   '/add-ons/': typeof AddOnsIndexRoute
   '/contact/': typeof ContactIndexRoute
@@ -121,7 +148,10 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/payments/cancelled'
+    | '/payments/failed'
     | '/payments/result'
+    | '/payments/success'
     | '/Bookings'
     | '/add-ons'
     | '/contact'
@@ -134,7 +164,10 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/payments/cancelled'
+    | '/payments/failed'
     | '/payments/result'
+    | '/payments/success'
     | '/Bookings'
     | '/add-ons'
     | '/contact'
@@ -147,7 +180,10 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/payments/cancelled'
+    | '/payments/failed'
     | '/payments/result'
+    | '/payments/success'
     | '/Bookings/'
     | '/add-ons/'
     | '/contact/'
@@ -161,7 +197,10 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  PaymentsCancelledRoute: typeof PaymentsCancelledRoute
+  PaymentsFailedRoute: typeof PaymentsFailedRoute
   PaymentsResultRoute: typeof PaymentsResultRoute
+  PaymentsSuccessRoute: typeof PaymentsSuccessRoute
   BookingsIndexRoute: typeof BookingsIndexRoute
   AddOnsIndexRoute: typeof AddOnsIndexRoute
   ContactIndexRoute: typeof ContactIndexRoute
@@ -238,11 +277,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BookingsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/payments/success': {
+      id: '/payments/success'
+      path: '/payments/success'
+      fullPath: '/payments/success'
+      preLoaderRoute: typeof PaymentsSuccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/payments/result': {
       id: '/payments/result'
       path: '/payments/result'
       fullPath: '/payments/result'
       preLoaderRoute: typeof PaymentsResultRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/payments/failed': {
+      id: '/payments/failed'
+      path: '/payments/failed'
+      fullPath: '/payments/failed'
+      preLoaderRoute: typeof PaymentsFailedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/payments/cancelled': {
+      id: '/payments/cancelled'
+      path: '/payments/cancelled'
+      fullPath: '/payments/cancelled'
+      preLoaderRoute: typeof PaymentsCancelledRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/weather/calm-slots/': {
@@ -257,7 +317,10 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  PaymentsCancelledRoute: PaymentsCancelledRoute,
+  PaymentsFailedRoute: PaymentsFailedRoute,
   PaymentsResultRoute: PaymentsResultRoute,
+  PaymentsSuccessRoute: PaymentsSuccessRoute,
   BookingsIndexRoute: BookingsIndexRoute,
   AddOnsIndexRoute: AddOnsIndexRoute,
   ContactIndexRoute: ContactIndexRoute,
