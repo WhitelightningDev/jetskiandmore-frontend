@@ -5,6 +5,11 @@ import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Camera, Droplets, Ship, Users, Gift, MapPin } from 'lucide-react'
+import droneImg from '@/lib/images/drone-video.png'
+import goproImg from '@/lib/images/gopro-footage.png'
+import wetsuitImg from '@/lib/images/wetsuit-hire.png'
+import boatImg from '@/lib/images/Spectatorboatride.png'
+import passengersImg from '@/lib/images/additional-passengers.png'
 import { formatZAR, DRONE_PRICE, WETSUIT_PRICE, BOAT_PRICE_PER_PERSON, EXTRA_PERSON_PRICE } from '@/features/bookings/AddOnsSection'
 
 export const Route = createFileRoute('/add-ons/')({
@@ -19,6 +24,7 @@ type AddOn = {
   priceLabel: string
   bullets: string[]
   highlight?: string
+  image?: string
 }
 
 const addons: AddOn[] = [
@@ -34,6 +40,7 @@ const addons: AddOn[] = [
       'Included with some 2‑ski sessions; otherwise priced per ride',
     ],
     highlight: 'Most popular',
+    image: droneImg,
   },
   {
     id: 'gopro',
@@ -46,6 +53,7 @@ const addons: AddOn[] = [
       'Capture splashes, speed and smiles up close',
       'Ideal for birthdays, proposals and group outings',
     ],
+    image: goproImg,
   },
   {
     id: 'wetsuit',
@@ -58,6 +66,7 @@ const addons: AddOn[] = [
       'Recommended for early mornings and cooler days',
       'Helps you stay out longer and enjoy the ride',
     ],
+    image: wetsuitImg,
   },
   {
     id: 'boat',
@@ -70,6 +79,7 @@ const addons: AddOn[] = [
       'Stay close to the action with great photo angles',
       'Subject to weather and availability',
     ],
+    image: boatImg,
   },
   {
     id: 'passengers',
@@ -83,6 +93,7 @@ const addons: AddOn[] = [
       'Limits and safety rules confirmed during briefing',
     ],
     highlight: 'Family favourite',
+    image: passengersImg,
   },
 ]
 
@@ -99,7 +110,7 @@ function RouteComponent() {
         </div>
 
         <div className="mb-8 grid gap-4 md:grid-cols-[minmax(0,2fr)_minmax(0,1.2fr)]">
-          <Card className="border-amber-300/60 bg-gradient-to-br from-amber-50 to-amber-100/50">
+          <Card className="border-amber-300/60 bg-linear-to-br from-amber-50 to-amber-100/50">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Gift className="h-5 w-5 text-amber-700" />
@@ -156,12 +167,23 @@ function RouteComponent() {
                   ) : null}
                 </div>
 
-                {/* Per‑add‑on image placeholder */}
-                <div className="mt-4 rounded-md border border-dashed border-muted bg-muted/30 aspect-[16/9] flex items-center justify-center">
-                  <span className="text-[11px] text-muted-foreground">
-                    Visual placeholder – add a photo or frame from this add‑on.
-                  </span>
-                </div>
+                {/* Per‑add‑on media */}
+                {addon.image ? (
+                  <div className="mt-4 rounded-md border border-muted bg-black/5 aspect-[16/9] overflow-hidden">
+                    <img
+                      src={addon.image}
+                      alt={addon.title}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                ) : (
+                  <div className="mt-4 rounded-md border border-dashed border-muted bg-muted/30 aspect-[16/9] flex items-center justify-center">
+                    <span className="text-[11px] text-muted-foreground">
+                      Visual placeholder – add a photo or frame from this add‑on.
+                    </span>
+                  </div>
+                )}
               </CardHeader>
 
               <CardContent className="flex-1">
