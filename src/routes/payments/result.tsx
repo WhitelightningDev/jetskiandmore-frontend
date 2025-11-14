@@ -65,7 +65,7 @@ function ResultPage() {
       <p className="text-sm text-muted-foreground mb-6">Use this page after returning from Yoco to confirm your payment status.</p>
       <div className="mb-4 text-sm">{message || 'No pending payment found.'}</div>
       <div className="flex gap-2">
-        <Link to="/Bookings/" className="underline">Back to bookings</Link>
+        <Link to="/Bookings" className="underline">Back to bookings</Link>
         {status === 'pending' || status === 'failed' || status === 'idle' ? (
           <Button onClick={() => window.location.reload()}>Check again</Button>
         ) : null}
