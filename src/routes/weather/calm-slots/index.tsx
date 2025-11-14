@@ -42,8 +42,9 @@ function severityClasses(sev: Severity) {
 function classifySeverity(wind?: number | null, gust?: number | null): Severity {
   const s = Number(wind ?? 0)
   const g = Number(gust ?? 0)
-  if (s >= 29 || g >= 30) return 'bad'
-  if (s >= 20 || g >= 25) return 'ok'
+  // Align with site-wide thresholds (Weather & Booking pages)
+  if (s >= 25 || g >= 35) return 'bad'
+  if (s >= 12 || g >= 20) return 'ok'
   return 'good'
 }
 
@@ -68,9 +69,9 @@ function CalmSlotsPage() {
     const ac = new AbortController()
     ;(async () => {
       try {
-        // Gordon's Bay
-        const lat = -34.157
-        const lon = 18.884
+        // Gordon's Bay Harbour (accurate fixed location)
+        const lat = -34.165
+        const lon = 18.866
         const tz = 'Africa/Johannesburg'
         const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weather_code,temperature_2m_max,temperature_2m_min,wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant&timezone=${encodeURIComponent(tz)}&forecast_days=16`
         const res = await fetch(url, { signal: ac.signal })

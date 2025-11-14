@@ -217,6 +217,30 @@ function App() {
 export default App;
 ```
 
+## Backend API (FastAPI)
+
+This repo is wired to a Python FastAPI backend in `../jetskiandmore-backend` with endpoints:
+
+- `POST /api/contact` — send contact form via Gmail
+- `POST /api/bookings` — submit booking request via Gmail
+- `POST /api/payments/charge` — create a Yoco charge (server-side)
+
+Frontend base URL is controlled by `VITE_API_BASE` (e.g., `http://localhost:8000`).
+
+Backend quickstart (in jetskiandmore-backend):
+
+1. Copy `.env.example` to `.env` and set:
+   - `JSM_GMAIL_USER` + `JSM_GMAIL_APP_PASSWORD` (use a Gmail App Password)
+   - `JSM_EMAIL_TO` (your inbox for notifications)
+   - `JSM_YOCO_SECRET_KEY` (your Yoco secret)
+2. Install deps and run:
+   ```bash
+   pip install -r requirements.txt
+   uvicorn app.main:app --reload --port 8000
+   ```
+3. In this frontend, set `VITE_API_BASE=http://localhost:8000` and run `npm run dev`.
+
+
 You can find out everything you need to know on how to use React-Query in the [React-Query documentation](https://tanstack.com/query/latest/docs/framework/react/overview).
 
 ## State Management
