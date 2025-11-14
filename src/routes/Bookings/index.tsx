@@ -14,7 +14,7 @@ import { Separator } from '@/components/ui/separator'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
 import { Calendar } from '@/components/ui/calendar'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
-import { postJSON, getPaymentQuote, chargeWithBooking, initiatePayment, createPaymentLink, createCheckout } from '@/lib/api'
+import { getPaymentQuote, chargeWithBooking, initiatePayment, createPaymentLink, createCheckout } from '@/lib/api'
 import { createYocoToken } from '@/lib/yoco'
 import { AddOnsSection } from '@/features/bookings/AddOnsSection'
 import { WeatherSnapshot } from '@/features/weather/WeatherSnapshot'
@@ -139,7 +139,7 @@ function RouteComponent() {
   // Payment state
   const [quoteCents, setQuoteCents] = React.useState<number | null>(null)
   const [paying, setPaying] = React.useState(false)
-  const [paidId, setPaidId] = React.useState<string | null>(null)
+  const [, setPaidId] = React.useState<string | null>(null)
   const [payOpen, setPayOpen] = React.useState(false)
 
   // Limit additional passenger counts based on ride selection
@@ -288,20 +288,6 @@ function classifySeverity(speed?: number | null, gust?: number | null): Severity
 // Terms modal control
 const [confirmOpen, setConfirmOpen] = React.useState(false)
 const [ack, setAck] = React.useState(false)
-
-async function handleSubmit(e?: React.FormEvent) {
-  if (e) e.preventDefault()
-  const formattedDate = date ? date.toISOString().split('T')[0] : null
-  try {
-    await postJSON<{ ok: boolean; id: string }>(
-      '/api/bookings',
-      { rideId, date: formattedDate, time, fullName, email, phone, notes, addons }
-    )
-    alert("Thanks! We've recorded your details. We'll confirm availability shortly.")
-  } catch (err: any) {
-    alert(`Sorry, we couldn't submit your booking: ${err?.message || 'Unknown error'}`)
-  }
-}
 
   return (
     <div className="bg-white">

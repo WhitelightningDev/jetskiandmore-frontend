@@ -15,10 +15,9 @@ function CancelledPage() {
       <h1 className="text-2xl font-bold mb-2">Payment cancelled</h1>
       <p className="text-sm text-muted-foreground mb-6">Your payment was cancelled. You can try again any time.</p>
       <div className="flex gap-2 items-center">
-        <Link to="/Bookings/" className="underline">Back to bookings</Link>
+        <Link to="/Bookings" className="underline">Back to bookings</Link>
         <Button onClick={() => history.back()} variant="outline">Go back</Button>
       </div>
     </div>
   )
 }
-
