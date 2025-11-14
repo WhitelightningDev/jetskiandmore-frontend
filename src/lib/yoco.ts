@@ -1,3 +1,5 @@
+import { getPaymentConfig } from '@/lib/api'
+
 declare global {
   interface Window {
     YocoSDK?: any
@@ -35,10 +37,8 @@ export async function createYocoToken(
   const YocoSDK = await loadYoco()
   let publicKey = import.meta.env.VITE_YOCO_PUBLIC_KEY
   if (!publicKey) {
-    // Fallback: fetch from backend
-    const res = await fetch((import.meta.env.VITE_API_BASE || '') + '/api/payments/config')
-    if (!res.ok) throw new Error('Failed to load payment config')
-    const data = await res.json()
+    // Fallback: fetch from backend via shared API client
+    const data = await getPaymentConfig()
     publicKey = data?.publicKey
   }
   if (!publicKey) throw new Error('Missing Yoco public key')
