@@ -138,7 +138,7 @@ function RouteComponent() {
                       inputMode="tel"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      placeholder="+27 82 123 4567"
+                      placeholder="+27 74 658 8885"
                       required
                     />
                   </div>
@@ -149,7 +149,7 @@ function RouteComponent() {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="you@example.com"
+                      placeholder="jetskiadventures1@gmail.com"
                       required
                     />
                   </div>
@@ -248,7 +248,7 @@ function RouteComponent() {
                   </span>
                   <div className="space-y-0.5">
                     <p className="text-xs font-medium text-foreground">Phone / WhatsApp</p>
-                    <p className="text-xs text-muted-foreground">Add number</p>
+                    <p className="text-xs text-muted-foreground">+27 74 658 8885</p>
                   </div>
                 </a>
 
@@ -261,7 +261,7 @@ function RouteComponent() {
                   </span>
                   <div className="space-y-0.5">
                     <p className="text-xs font-medium text-foreground">Email</p>
-                    <p className="text-xs text-muted-foreground">Add address</p>
+                    <p className="text-xs text-muted-foreground">jetskiadventures1@gmail.com</p>
                   </div>
                 </a>
 
