@@ -1,5 +1,8 @@
 export const API_BASE =
   import.meta.env.VITE_API_BASE || 'https://jetskiandmore-backend.onrender.com'
+  import.meta.env.NODE_ENV === 'development'
+    ? 'http://localhost:8000'
+    : 'https://jetskiandmore-backend.onrender.com'
 
 export async function postJSON<T>(path: string, body: unknown, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {

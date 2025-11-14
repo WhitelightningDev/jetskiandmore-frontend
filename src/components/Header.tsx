@@ -46,6 +46,7 @@ export default function Header() {
                 { to: '/safety', label: 'Safety' },
                 { to: '/weather', label: 'Weather' },
                 { to: '/contact', label: 'Contact' },
+                { to: '/admin', label: 'Admin' },
               ].map((item) => (
                 <Link
                   key={item.to}
@@ -103,6 +104,7 @@ export default function Header() {
             { to: '/safety', label: 'Safety', icon: <ShieldCheck size={20} /> },
             { to: '/weather', label: 'Weather', icon: <Waves size={20} /> },
             { to: '/contact', label: 'Contact', icon: <Phone size={20} /> },
+            { to: '/admin', label: 'Admin', icon: <ShieldCheck size={20} /> },
           ].map((item) => (
             <Link
               key={item.to}

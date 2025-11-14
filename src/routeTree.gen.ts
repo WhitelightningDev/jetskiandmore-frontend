@@ -16,6 +16,7 @@ import { Route as RidesIndexRouteImport } from './routes/rides/index'
 import { Route as LocationsIndexRouteImport } from './routes/locations/index'
 import { Route as HomeIndexRouteImport } from './routes/home/index'
 import { Route as ContactIndexRouteImport } from './routes/contact/index'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AddOnsIndexRouteImport } from './routes/add-ons/index'
 import { Route as BookingsIndexRouteImport } from './routes/Bookings/index'
 import { Route as PaymentsSuccessRouteImport } from './routes/payments/success'
@@ -57,6 +58,11 @@ const HomeIndexRoute = HomeIndexRouteImport.update({
 const ContactIndexRoute = ContactIndexRouteImport.update({
   id: '/contact/',
   path: '/contact/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AddOnsIndexRoute = AddOnsIndexRouteImport.update({
@@ -103,6 +109,7 @@ export interface FileRoutesByFullPath {
   '/payments/success': typeof PaymentsSuccessRoute
   '/Bookings': typeof BookingsIndexRoute
   '/add-ons': typeof AddOnsIndexRoute
+  '/admin': typeof AdminIndexRoute
   '/contact': typeof ContactIndexRoute
   '/home': typeof HomeIndexRoute
   '/locations': typeof LocationsIndexRoute
@@ -119,6 +126,7 @@ export interface FileRoutesByTo {
   '/payments/success': typeof PaymentsSuccessRoute
   '/Bookings': typeof BookingsIndexRoute
   '/add-ons': typeof AddOnsIndexRoute
+  '/admin': typeof AdminIndexRoute
   '/contact': typeof ContactIndexRoute
   '/home': typeof HomeIndexRoute
   '/locations': typeof LocationsIndexRoute
@@ -136,6 +144,7 @@ export interface FileRoutesById {
   '/payments/success': typeof PaymentsSuccessRoute
   '/Bookings/': typeof BookingsIndexRoute
   '/add-ons/': typeof AddOnsIndexRoute
+  '/admin/': typeof AdminIndexRoute
   '/contact/': typeof ContactIndexRoute
   '/home/': typeof HomeIndexRoute
   '/locations/': typeof LocationsIndexRoute
@@ -154,6 +163,7 @@ export interface FileRouteTypes {
     | '/payments/success'
     | '/Bookings'
     | '/add-ons'
+    | '/admin'
     | '/contact'
     | '/home'
     | '/locations'
@@ -170,6 +180,7 @@ export interface FileRouteTypes {
     | '/payments/success'
     | '/Bookings'
     | '/add-ons'
+    | '/admin'
     | '/contact'
     | '/home'
     | '/locations'
@@ -186,6 +197,7 @@ export interface FileRouteTypes {
     | '/payments/success'
     | '/Bookings/'
     | '/add-ons/'
+    | '/admin/'
     | '/contact/'
     | '/home/'
     | '/locations/'
@@ -203,6 +215,7 @@ export interface RootRouteChildren {
   PaymentsSuccessRoute: typeof PaymentsSuccessRoute
   BookingsIndexRoute: typeof BookingsIndexRoute
   AddOnsIndexRoute: typeof AddOnsIndexRoute
+  AdminIndexRoute: typeof AdminIndexRoute
   ContactIndexRoute: typeof ContactIndexRoute
   HomeIndexRoute: typeof HomeIndexRoute
   LocationsIndexRoute: typeof LocationsIndexRoute
@@ -261,6 +274,13 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/add-ons/': {
@@ -323,6 +343,7 @@ const rootRouteChildren: RootRouteChildren = {
   PaymentsSuccessRoute: PaymentsSuccessRoute,
   BookingsIndexRoute: BookingsIndexRoute,
   AddOnsIndexRoute: AddOnsIndexRoute,
+  AdminIndexRoute: AdminIndexRoute,
   ContactIndexRoute: ContactIndexRoute,
   HomeIndexRoute: HomeIndexRoute,
   LocationsIndexRoute: LocationsIndexRoute,
