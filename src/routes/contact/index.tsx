@@ -191,7 +191,7 @@ function RouteComponent() {
           </Card>
 
           {/* Contact details / map */}
-          <Card className="border-slate-200/80 bg-gradient-to-b from-sky-50/60 via-white to-white shadow-sm">
+          <Card className="border-slate-200/80 bg-linear-to-b from-sky-50/60 via-white to-white shadow-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <span className="flex h-9 w-9 items-center justify-center rounded-full bg-sky-50">
