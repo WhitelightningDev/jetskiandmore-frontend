@@ -25,6 +25,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart'
+import { Textarea } from '@/components/ui/textarea'
 
 type Booking = {
   id: string
@@ -528,11 +529,19 @@ function AdminDashboardRoute() {
                 </p>
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Message to customer</Label>
-                <div className="rounded-md border bg-muted/40 px-3 py-2 text-xs whitespace-pre-line">
-                  {statusMessage.trim() ||
-                    'No message entered yet. Close this and add a short status change message in the field above the table.'}
-                </div>
+                <Label htmlFor="status-popup-message" className="text-xs">
+                  Message to customer
+                </Label>
+                <Textarea
+                  id="status-popup-message"
+                  value={statusMessage}
+                  onChange={(e) => setStatusMessage(e.target.value)}
+                  placeholder="Short message explaining this status change"
+                  className="text-xs min-h-[80px]"
+                />
+                <p className="text-[11px] text-muted-foreground">
+                  This message will be included in the email / notification sent with this status update.
+                </p>
               </div>
             </div>
             <DialogFooter>
