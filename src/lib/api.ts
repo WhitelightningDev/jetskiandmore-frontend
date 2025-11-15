@@ -1,8 +1,5 @@
 export const API_BASE =
   import.meta.env.VITE_API_BASE || 'https://jetskiandmore-backend.onrender.com'
-  import.meta.env.NODE_ENV === 'development'
-    ? 'http://localhost:8000'
-    : 'https://jetskiandmore-backend.onrender.com'
 
 export async function postJSON<T>(path: string, body: unknown, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
@@ -50,6 +47,13 @@ export async function getPaymentConfig() {
   const res = await fetch(`${API_BASE}/api/payments/config`)
   if (!res.ok) throw new Error('Failed to fetch payment config')
   return (await res.json()) as { publicKey: string; currency: 'ZAR' }
+}
+
+export async function getAvailableTimes(rideId: string, date: string) {
+  const params = new URLSearchParams({ rideId, date })
+  const res = await fetch(`${API_BASE}/api/timeslots?${params.toString()}`)
+  if (!res.ok) throw new Error('Failed to load available times')
+  return (await res.json()) as { rideId: string; date: string; times: string[] }
 }
 
 export async function initiatePayment(booking: any) {

@@ -14,7 +14,7 @@ import { Separator } from '@/components/ui/separator'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
 import { Calendar } from '@/components/ui/calendar'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
-import { getPaymentQuote, chargeWithBooking, initiatePayment, createPaymentLink, createCheckout } from '@/lib/api'
+import { getPaymentQuote, chargeWithBooking, initiatePayment, createPaymentLink, createCheckout, getAvailableTimes } from '@/lib/api'
 import { createYocoToken } from '@/lib/yoco'
 import { AddOnsSection } from '@/features/bookings/AddOnsSection'
 import { WeatherSnapshot } from '@/features/weather/WeatherSnapshot'
@@ -142,6 +142,15 @@ function RouteComponent() {
   const [, setPaidId] = React.useState<string | null>(null)
   const [payOpen, setPayOpen] = React.useState(false)
 
+  // Timeslot availability
+  const [availableTimes, setAvailableTimes] = React.useState<string[]>([])
+  const [timesLoading, setTimesLoading] = React.useState(false)
+  const [timesError, setTimesError] = React.useState<string | null>(null)
+
+  // Step-by-step flow
+  const [step, setStep] = React.useState<1 | 2 | 3 | 4>(1)
+  const [passengers, setPassengers] = React.useState<{ name: string }[]>([])
+
   // Limit additional passenger counts based on ride selection
   const maxExtraPeople = React.useMemo(() => {
     if (rideId === '30-1' || rideId === '60-1') return 1
@@ -152,6 +161,39 @@ function RouteComponent() {
   React.useEffect(() => {
     setAddons((a) => ({ ...a, extraPeople: Math.min(a.extraPeople, maxExtraPeople) }))
   }, [maxExtraPeople])
+
+  // Keep passenger detail fields in sync with extraPeople count
+  React.useEffect(() => {
+    const count = addons.extraPeople || 0
+    setPassengers((prev) => {
+      const next = prev.slice(0, count)
+      while (next.length < count) {
+        next.push({ name: '' })
+      }
+      return next
+    })
+  }, [addons.extraPeople])
+
+  // Fetch available times when ride or date changes
+  React.useEffect(() => {
+    setTime('')
+    setAvailableTimes([])
+    setTimesError(null)
+    if (!date) return
+    const dateStr = date.toISOString().split('T')[0]
+    setTimesLoading(true)
+    ;(async () => {
+      try {
+        const res = await getAvailableTimes(rideId, dateStr)
+        setAvailableTimes(res.times || [])
+      } catch (e: any) {
+        setTimesError(e?.message || 'Failed to load available times')
+        setAvailableTimes([])
+      } finally {
+        setTimesLoading(false)
+      }
+    })()
+  }, [rideId, date])
 
   // Fetch authoritative payment quote from backend when inputs change
   React.useEffect(() => {
@@ -285,9 +327,33 @@ function classifySeverity(speed?: number | null, gust?: number | null): Severity
     return map[code] ?? 'Unknown'
   }
 
-// Terms modal control
-const [confirmOpen, setConfirmOpen] = React.useState(false)
-const [ack, setAck] = React.useState(false)
+  // Step validation helpers
+  const basicsComplete = Boolean(rideId && date && time)
+  const contactComplete = Boolean(fullName.trim() && phone.trim() && email.trim())
+  const passengersComplete = (addons.extraPeople || 0) === 0 || passengers.every((p) => p.name.trim())
+  const step1Valid = basicsComplete
+  const step2Valid = contactComplete && passengersComplete
+  const allRequiredComplete = step1Valid && step2Valid
+
+  const goNext = () => {
+    if (step === 1 && !step1Valid) {
+      alert('Please choose a date and time to continue.')
+      return
+    }
+    if (step === 2 && !step2Valid) {
+      alert('Please fill in your contact details and passenger names.')
+      return
+    }
+    setStep((prev) => (prev < 4 ? ((prev + 1) as 1 | 2 | 3 | 4) : prev))
+  }
+
+  const goBack = () => {
+    setStep((prev) => (prev > 1 ? ((prev - 1) as 1 | 2 | 3 | 4) : prev))
+  }
+
+  // Terms modal control
+  const [confirmOpen, setConfirmOpen] = React.useState(false)
+  const [ack, setAck] = React.useState(false)
 
   return (
     <div className="bg-white">
@@ -327,134 +393,296 @@ const [ack, setAck] = React.useState(false)
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CalendarDays className="h-5 w-5" />
-                Your details &amp; preferred time
+                Step-by-step booking
               </CardTitle>
-              <CardDescription>We’ll confirm availability and get you riding</CardDescription>
+              <CardDescription>Follow the steps to complete your booking and pay securely.</CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={(e) => { e.preventDefault(); setConfirmOpen(true) }} className="space-y-6">
-                {/* Ride selection */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="ride">Choose a ride</Label>
-                    <Select value={rideId} onValueChange={setRideId}>
-                      <SelectTrigger id="ride">
-                        <SelectValue placeholder="Select a ride" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {RIDES.map((r) => (
-                          <SelectItem key={r.id} value={r.id}>
-                            {r.title} — {r.displayPrice}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="date">Preferred date</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button id="date" variant="outline" className="w-full justify-start font-normal">
-                          <CalendarDays className="mr-2 h-4 w-4" />
-                          {date ? date.toLocaleDateString('en-ZA', { year: 'numeric', month: 'short', day: 'numeric' }) : <span>Pick a date</span>}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={date}
-                          onSelect={setDate}
-                          disabled={(d) => d < new Date(new Date().setHours(0,0,0,0))}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="time">Preferred time</Label>
-                    <Input id="time" type="time" value={time} onChange={(e) => setTime(e.target.value)} required />
-                  </div>
-                </div>
-
-                {/* Passengers */}
-                <div className="space-y-2">
-                  <Label>Passenger(s)</Label>
-                  {maxExtraPeople <= 0 ? (
-                    <p className="text-xs text-muted-foreground">No additional passengers for this selection.</p>
-                  ) : maxExtraPeople === 1 ? (
-                    <div className="flex items-center gap-2">
-                      <Button
-                        type="button"
-                        variant={(addons.extraPeople || 0) === 0 ? 'default' : 'outline'}
-                        onClick={() => setAddons((a) => ({ ...a, extraPeople: 0 }))}
-                      >
-                        Just me (1)
-                      </Button>
-                      <Button
-                        type="button"
-                        variant={(addons.extraPeople || 0) === 1 ? 'default' : 'outline'}
-                        onClick={() => setAddons((a) => ({ ...a, extraPeople: 1 }))}
-                      >
-                        +1 Passenger (2)
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      {[0, 1, 2].map((n) => (
-                        <Button
-                          key={n}
-                          type="button"
-                          variant={(addons.extraPeople || 0) === n ? 'default' : 'outline'}
-                          onClick={() => setAddons((a) => ({ ...a, extraPeople: n }))}
+              <div className="space-y-6">
+                {/* Step indicator */}
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center justify-between text-xs md:text-sm">
+                    {[
+                      { id: 1, label: 'Ride & time' },
+                      { id: 2, label: 'Rider details' },
+                      { id: 3, label: 'Extras' },
+                      { id: 4, label: 'Review & pay' },
+                    ].map((s, idx, arr) => (
+                      <div key={s.id} className="flex items-center gap-2 flex-1">
+                        <div
+                          className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold ${
+                            step >= s.id ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                          }`}
                         >
-                          {n} passenger{n === 1 ? '' : 's'}
-                        </Button>
-                      ))}
+                          {s.id}
+                        </div>
+                        <span className={step === s.id ? 'font-semibold' : ''}>{s.label}</span>
+                        {idx < arr.length - 1 && <div className="hidden md:block h-px flex-1 bg-border ml-2" />}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Step 1: ride, date, time, passengers */}
+                {step === 1 && (
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="ride">Choose a ride</Label>
+                        <Select value={rideId} onValueChange={setRideId}>
+                          <SelectTrigger id="ride">
+                            <SelectValue placeholder="Select a ride" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {RIDES.map((r) => (
+                              <SelectItem key={r.id} value={r.id}>
+                                {r.title} — {r.displayPrice}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="date">Preferred date</Label>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button id="date" variant="outline" className="w-full justify-start font-normal">
+                              <CalendarDays className="mr-2 h-4 w-4" />
+                              {date
+                                ? date.toLocaleDateString('en-ZA', {
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric',
+                                  })
+                                : <span>Pick a date</span>}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={date}
+                              onSelect={setDate}
+                              disabled={(d) => d < new Date(new Date().setHours(0, 0, 0, 0))}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="time">Preferred time</Label>
+                        <Select
+                          value={time}
+                          onValueChange={setTime}
+                          disabled={!date || timesLoading || availableTimes.length === 0}
+                        >
+                          <SelectTrigger id="time">
+                            <SelectValue
+                              placeholder={
+                                !date
+                                  ? 'Select a date first'
+                                  : timesLoading
+                                  ? 'Loading times…'
+                                  : availableTimes.length === 0
+                                  ? 'No slots available'
+                                  : 'Select a time'
+                              }
+                            />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {availableTimes.map((t) => (
+                              <SelectItem key={t} value={t}>
+                                {t}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {timesError && (
+                          <p className="text-xs text-red-500">{timesError}</p>
+                        )}
+                      </div>
                     </div>
-                  )}
-                  <p className="text-xs text-muted-foreground">Each jet ski can carry up to 2 people. Extra passengers cost R{EXTRA_PERSON_PRICE} each.</p>
-                </div>
 
-                <Separator />
-
-                {/* Contact */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="fullName">Full name</Label>
-                    <Input id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+                    <div className="space-y-2">
+                      <Label>Passenger(s)</Label>
+                      {maxExtraPeople <= 0 ? (
+                        <p className="text-xs text-muted-foreground">
+                          No additional passengers for this selection.
+                        </p>
+                      ) : maxExtraPeople === 1 ? (
+                        <div className="flex items-center gap-2">
+                          <Button
+                            type="button"
+                            variant={(addons.extraPeople || 0) === 0 ? 'default' : 'outline'}
+                            onClick={() => setAddons((a) => ({ ...a, extraPeople: 0 }))}
+                          >
+                            Just me (1)
+                          </Button>
+                          <Button
+                            type="button"
+                            variant={(addons.extraPeople || 0) === 1 ? 'default' : 'outline'}
+                            onClick={() => setAddons((a) => ({ ...a, extraPeople: 1 }))}
+                          >
+                            +1 Passenger (2)
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          {[0, 1, 2].map((n) => (
+                            <Button
+                              key={n}
+                              type="button"
+                              variant={(addons.extraPeople || 0) === n ? 'default' : 'outline'}
+                              onClick={() => setAddons((a) => ({ ...a, extraPeople: n }))}
+                            >
+                              {n} passenger{n === 1 ? '' : 's'}
+                            </Button>
+                          ))}
+                        </div>
+                      )}
+                      <p className="text-xs text-muted-foreground">
+                        Each jet ski can carry up to 2 people. Extra passengers cost R{EXTRA_PERSON_PRICE} each.
+                      </p>
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone</Label>
-                    <Input id="phone" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required />
+                )}
+
+                {/* Step 2: contact + passenger details */}
+                {step === 2 && (
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="fullName">Full name</Label>
+                        <Input
+                          id="fullName"
+                          value={fullName}
+                          onChange={(e) => setFullName(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">Phone</Label>
+                        <Input
+                          id="phone"
+                          inputMode="tel"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2 md:col-span-2">
+                        <Label htmlFor="email">Email</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2 md:col-span-2">
+                        <Label htmlFor="notes">Notes (optional)</Label>
+                        <Textarea
+                          id="notes"
+                          placeholder="Any special requests or questions?"
+                          value={notes}
+                          onChange={(e) => setNotes(e.target.value)}
+                        />
+                      </div>
+                    </div>
+
+                    {addons.extraPeople > 0 && (
+                      <div className="space-y-3">
+                        <Label>Additional passenger details</Label>
+                        <p className="text-xs text-muted-foreground">
+                          We use this for safety and check‑in. One field per extra passenger.
+                        </p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {passengers.map((p, idx) => (
+                            <div key={idx} className="space-y-1">
+                              <Label htmlFor={`passenger-${idx}`}>Passenger {idx + 1} full name</Label>
+                              <Input
+                                id={`passenger-${idx}`}
+                                value={p.name}
+                                onChange={(e) =>
+                                  setPassengers((prev) => {
+                                    const next = [...prev]
+                                    next[idx] = { ...next[idx], name: e.target.value }
+                                    return next
+                                  })
+                                }
+                                placeholder="Full name"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                )}
+
+                {/* Step 3: extras */}
+                {step === 3 && (
+                  <div className="space-y-4">
+                    <AddOnsSection rideId={rideId} addons={addons} setAddons={setAddons} />
+                    <p className="text-xs text-muted-foreground">
+                      Add-ons are optional. You can skip this step or adjust extras later by contacting us,
+                      subject to availability.
+                    </p>
                   </div>
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="notes">Notes (optional)</Label>
-                    <Textarea id="notes" placeholder="Any special requests or questions?" value={notes} onChange={(e: { target: { value: React.SetStateAction<string> } }) => setNotes(e.target.value)} />
+                )}
+
+                {/* Step 4: review & pay */}
+                {step === 4 && (
+                  <div className="space-y-4 text-sm text-muted-foreground">
+                    <p>
+                      Review your ride, date, time, passengers and extras in the summary on the right. When you&apos;re
+                      ready, continue to secure payment.
+                    </p>
+                    <ul className="list-disc pl-5 space-y-1">
+                      <li>Payments are processed securely via Yoco.</li>
+                      <li>Our weather policy allows rescheduling if conditions are unsafe.</li>
+                    </ul>
                   </div>
-                </div>
+                )}
 
-                <Separator />
-
-                {/* Add-ons */}
-                <AddOnsSection rideId={rideId} addons={addons} setAddons={setAddons} />
-
-                {/* Payment section removed; flow handled by single button and modal */}
-
+                {/* Footer actions */}
                 <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between pt-2">
                   <div className="text-xs text-muted-foreground flex items-center gap-2">
                     <Info className="h-4 w-4" />
-                    By booking you acknowledge our safety briefing and weather policy.
+                    <span>By booking you acknowledge our safety briefing and weather policy.</span>
                   </div>
-                  <div className="flex gap-3">
-                    <Link to="/safety" className={buttonVariants({ variant: 'outline' })}>Safety &amp; info</Link>
-                    <Button type="button" onClick={(e) => { e.preventDefault(); setConfirmOpen(true) }}>Book &amp; Pay</Button>
+                  <div className="flex gap-2 flex-wrap justify-end">
+                    <Link to="/safety" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
+                      Safety &amp; info
+                    </Link>
+                    {step > 1 && (
+                      <Button type="button" variant="outline" size="sm" onClick={goBack}>
+                        Back
+                      </Button>
+                    )}
+                    {step < 4 && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={goNext}
+                        disabled={(step === 1 && !step1Valid) || (step === 2 && !step2Valid)}
+                      >
+                        Next
+                      </Button>
+                    )}
+                    {step === 4 && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => setConfirmOpen(true)}
+                        disabled={!allRequiredComplete}
+                      >
+                        Book &amp; Pay
+                      </Button>
+                    )}
                   </div>
                 </div>
-              </form>
+              </div>
             </CardContent>
           </Card>
 
@@ -614,7 +842,7 @@ const [ack, setAck] = React.useState(false)
             </label>
             <p className="text-xs text-muted-foreground">By proceeding you accept the terms and conditions.</p>
           </div>
-          <DialogFooter>
+              <DialogFooter>
             <Button variant="outline" onClick={() => setConfirmOpen(false)}>Cancel</Button>
             <Button onClick={() => { if (!ack) return; setConfirmOpen(false); setPayOpen(true) }} disabled={!ack}>Proceed</Button>
           </DialogFooter>
@@ -635,8 +863,8 @@ const [ack, setAck] = React.useState(false)
             <Button variant="outline" onClick={() => setPayOpen(false)}>Cancel</Button>
             <Button onClick={async () => {
               setPaying(true)
-              const formattedDate = date ? date.toISOString().split('T')[0] : null
-              const booking = { rideId, date: formattedDate, time, fullName, email, phone, notes, addons }
+                  const formattedDate = date ? date.toISOString().split('T')[0] : null
+                  const booking = { rideId, date: formattedDate, time, fullName, email, phone, notes, addons, passengers }
               try {
                 // Preferred: Checkout API (Bearer token)
                 const co = await createCheckout(booking)
