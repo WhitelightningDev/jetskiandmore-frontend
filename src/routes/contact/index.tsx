@@ -170,10 +170,10 @@ function RouteComponent() {
                 </div>
 
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Info className="h-4 w-4" />
-                    <span>We’ll never share your contact details with anyone else.</span>
-                  </div>
+                  <Badge className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Info className="h-4 w-4 bg-yellow-500 rounded" />
+                    <span className='text-white'>We’ll never share your contact details with anyone else.</span>
+                  </Badge>
                   <div className="flex gap-3">
                     <Link
                       to="/Bookings"

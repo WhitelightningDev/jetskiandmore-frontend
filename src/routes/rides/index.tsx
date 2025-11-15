@@ -202,7 +202,8 @@ function RouteComponent() {
                   />
                   <span className="text-sm">Drone video</span>
                 </div>
-                <span className="text-xs text-muted-foreground">+ ZAR 700 (or included)</span>
+                <Badge variant="secondary"
+          className="bg-green-500 text-white dark:bg-green-600">+ ZAR 700 (or included)</Badge>
               </label>
               <label className="flex items-center justify-between gap-2 rounded-md border p-3">
                 <div className="flex items-center gap-2">
@@ -213,7 +214,8 @@ function RouteComponent() {
                   />
                   <span className="text-sm">Wetsuit hire</span>
                 </div>
-                <span className="text-xs text-muted-foreground">+ ZAR 150</span>
+                <Badge variant="secondary"
+          className="bg-green-500 text-white dark:bg-green-600">+ ZAR 150</Badge>
               </label>
               <div className="flex items-center justify-between gap-2 rounded-md border p-3">
                 <label className="flex items-center gap-2">
@@ -225,7 +227,8 @@ function RouteComponent() {
                   <span className="text-sm">Boat ride</span>
                 </label>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span>R450 pp</span>
+                  <Badge variant="secondary"
+          className="bg-green-500 text-white dark:bg-green-600">R450 pp</Badge>
                   <input
                     type="number"
                     min={1}
@@ -246,7 +249,8 @@ function RouteComponent() {
                   <span className="text-sm">Additional passenger(s)</span>
                 </label>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span>R350 each</span>
+                  <Badge variant="secondary"
+          className="bg-green-500 text-white dark:bg-green-600">R350 each</Badge>
                   <input
                     type="number"
                     min={0}
@@ -259,7 +263,8 @@ function RouteComponent() {
                   />
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground">Single rides may add up to 1 passenger; 2‑ski sessions up to 2 passengers. Limit is enforced on the booking page.</p>
+              <Badge variant="secondary"
+          className="bg-blue-500 text-white dark:bg-blue-600">Single rides may add up to 1 passenger; 2‑ski sessions up to 2 passengers. Limit is enforced on the booking page.</Badge>
             </div>
           </CardContent>
         </Card>
