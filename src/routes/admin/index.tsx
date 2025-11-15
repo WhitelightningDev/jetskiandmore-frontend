@@ -1,9 +1,11 @@
 import * as React from 'react'
 import { createFileRoute } from '@tanstack/react-router'
+import { TrendingUp } from 'lucide-react'
+import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts'
 
 import { API_BASE } from '@/lib/api'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -16,6 +18,14 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import {
+  type ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@/components/ui/chart'
+import { Textarea } from '@/components/ui/textarea'
 
 type Booking = {
   id: string
@@ -67,6 +77,25 @@ function AdminDashboardRoute() {
   const [updatingId, setUpdatingId] = React.useState<string | null>(null)
   const [deletingId, setDeletingId] = React.useState<string | null>(null)
   const [statusMessage, setStatusMessage] = React.useState<string>('')
+  const [pendingStatus, setPendingStatus] = React.useState<{ booking: Booking; status: string } | null>(null)
+
+  const bookingsChartData = React.useMemo(
+    () =>
+      analytics
+        ? analytics.rides.map((r) => ({
+            label: r.rideId,
+            bookings: r.bookings,
+          }))
+        : [],
+    [analytics],
+  )
+
+  const bookingsChartConfig: ChartConfig = {
+    bookings: {
+      label: 'Bookings',
+      color: 'hsl(var(--primary))',
+    },
+  }
 
   React.useEffect(() => {
     if (!token) return
@@ -136,10 +165,10 @@ function AdminDashboardRoute() {
   }
 
   async function updateBookingStatus(id: string, status: string) {
-    if (!token) return
+    if (!token) return false
     if (!statusMessage.trim()) {
       window.alert('Please provide a short message explaining this status change.')
-      return
+      return false
     }
     try {
       setUpdatingId(id)
@@ -160,8 +189,10 @@ function AdminDashboardRoute() {
       setBookings((prev) => prev.map((b) => (b.id === updated.id ? { ...b, ...updated } : b)))
       setError(null)
       setStatusMessage('')
+      return true
     } catch (e: any) {
       setError(e?.message ?? 'Failed to update booking')
+      return false
     } finally {
       setUpdatingId(null)
     }
@@ -258,39 +289,88 @@ function AdminDashboardRoute() {
         </Alert>
       )}
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Total bookings</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-semibold">
-              {analytics ? analytics.totalBookings : '—'}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Total revenue</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-semibold">
-              {analytics ? `ZAR ${analytics.totalRevenueZar.toFixed(0)}` : '—'}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Top ride</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-sm">
-              {analytics && analytics.rides.length > 0
-                ? `${analytics.rides[0].rideId} (${analytics.rides[0].bookings} bookings)`
-                : '—'}
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr),minmax(0,2fr)]">
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Total bookings</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-semibold">
+                {analytics ? analytics.totalBookings : '—'}
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Total revenue</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-semibold">
+                {analytics ? `ZAR ${analytics.totalRevenueZar.toFixed(0)}` : '—'}
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Top ride</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-sm">
+                {analytics && analytics.rides.length > 0
+                  ? `${analytics.rides[0].rideId} (${analytics.rides[0].bookings} bookings)`
+                  : '—'}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        {bookingsChartData.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Bookings by ride</CardTitle>
+              <p className="text-xs text-muted-foreground">
+                Based on analytics summary for recent bookings.
+              </p>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer config={bookingsChartConfig}>
+                <AreaChart
+                  accessibilityLayer
+                  data={bookingsChartData}
+                  margin={{ left: 12, right: 12 }}
+                >
+                  <CartesianGrid vertical={false} />
+                  <XAxis
+                    dataKey="label"
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={8}
+                  />
+                  <ChartTooltip
+                    cursor={false}
+                    content={<ChartTooltipContent indicator="line" />}
+                  />
+                  <Area
+                    dataKey="bookings"
+                    type="natural"
+                    fill="var(--color-bookings)"
+                    fillOpacity={0.4}
+                    stroke="var(--color-bookings)"
+                  />
+                </AreaChart>
+              </ChartContainer>
+            </CardContent>
+            <CardFooter>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1 font-medium text-foreground">
+                  Trend overview
+                  <TrendingUp className="h-3 w-3" />
+                </span>
+                <span>Booking counts per ride</span>
+              </div>
+            </CardFooter>
+          </Card>
+        )}
       </div>
 
       {analytics && analytics.rides.length > 0 && (
@@ -327,18 +407,7 @@ function AdminDashboardRoute() {
         <CardHeader className="flex flex-row items-center justify-between gap-4">
           <CardTitle className="text-base">Recent bookings</CardTitle>
           <div className="flex items-center gap-3">
-            <div className="flex flex-col gap-1">
-              <Label htmlFor="status-message" className="text-xs">
-                Status change message
-              </Label>
-              <Input
-                id="status-message"
-                placeholder="Reason shown to the customer"
-                value={statusMessage}
-                onChange={(e) => setStatusMessage(e.target.value)}
-                className="w-56"
-              />
-            </div>
+           
             <Select
               value={statusFilter}
               onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}
@@ -390,9 +459,9 @@ function AdminDashboardRoute() {
                   <TableCell className="capitalize">
                     <Select
                       value={b.status}
-                      onValueChange={(value) =>
-                        updateBookingStatus(b.id, value)
-                      }
+                      onValueChange={(value) => {
+                        setPendingStatus({ booking: b, status: value })
+                      }}
                       disabled={updatingId === b.id}
                     >
                       <SelectTrigger className="w-32">
@@ -436,6 +505,64 @@ function AdminDashboardRoute() {
           </Table>
         </CardContent>
       </Card>
+
+      {pendingStatus && (
+        <Dialog
+          open={!!pendingStatus}
+          onOpenChange={(open) => {
+            if (!open) setPendingStatus(null)
+          }}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Confirm status update</DialogTitle>
+              <DialogDescription>
+                This will update the booking status and send the message below to the customer.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3 text-sm">
+              <div>
+                <p className="font-medium">{pendingStatus.booking.fullName}</p>
+                <p className="text-xs text-muted-foreground">
+                  Current status: {pendingStatus.booking.status || '—'} → New status:{' '}
+                  {pendingStatus.status || '—'}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="status-popup-message" className="text-xs">
+                  Message to customer
+                </Label>
+                <Textarea
+                  id="status-popup-message"
+                  value={statusMessage}
+                  onChange={(e) => setStatusMessage(e.target.value)}
+                  placeholder="Short message explaining this status change"
+                  className="text-xs min-h-[80px]"
+                />
+                <p className="text-[11px] text-muted-foreground">
+                  This message will be included in the email / notification sent with this status update.
+                </p>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setPendingStatus(null)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={async () => {
+                  const ok = await updateBookingStatus(pendingStatus.booking.id, pendingStatus.status)
+                  if (ok) {
+                    setPendingStatus(null)
+                  }
+                }}
+                disabled={updatingId === pendingStatus.booking.id}
+              >
+                {updatingId === pendingStatus.booking.id ? 'Sending…' : 'Send & update'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   )
 }
