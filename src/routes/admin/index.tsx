@@ -406,18 +406,7 @@ function AdminDashboardRoute() {
         <CardHeader className="flex flex-row items-center justify-between gap-4">
           <CardTitle className="text-base">Recent bookings</CardTitle>
           <div className="flex items-center gap-3">
-            <div className="flex flex-col gap-1">
-              <Label htmlFor="status-message" className="text-xs">
-                Status change message
-              </Label>
-              <Input
-                id="status-message"
-                placeholder="Reason shown to the customer"
-                value={statusMessage}
-                onChange={(e) => setStatusMessage(e.target.value)}
-                className="w-56"
-              />
-            </div>
+           
             <Select
               value={statusFilter}
               onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}
