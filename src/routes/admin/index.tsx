@@ -25,6 +25,9 @@ type Booking = {
   fullName: string
   email: string
   phone: string
+  notes?: string | null
+  addons?: Record<string, any> | null
+  passengers?: { name?: string }[] | null
   status: string
   amountInCents: number
   createdAt?: string | null
@@ -63,6 +66,7 @@ function AdminDashboardRoute() {
   const [statusFilter, setStatusFilter] = React.useState<string | 'all'>('all')
   const [updatingId, setUpdatingId] = React.useState<string | null>(null)
   const [deletingId, setDeletingId] = React.useState<string | null>(null)
+  const [statusMessage, setStatusMessage] = React.useState<string>('')
 
   React.useEffect(() => {
     if (!token) return
@@ -133,6 +137,10 @@ function AdminDashboardRoute() {
 
   async function updateBookingStatus(id: string, status: string) {
     if (!token) return
+    if (!statusMessage.trim()) {
+      window.alert('Please provide a short message explaining this status change.')
+      return
+    }
     try {
       setUpdatingId(id)
       const res = await fetch(`${API_BASE}/api/admin/bookings/${id}`, {
@@ -141,7 +149,7 @@ function AdminDashboardRoute() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify({ status, message: statusMessage }),
       })
       if (!res.ok) {
         const data = await res.json().catch(() => null)
@@ -151,6 +159,7 @@ function AdminDashboardRoute() {
       const updated = (await res.json()) as Booking
       setBookings((prev) => prev.map((b) => (b.id === updated.id ? { ...b, ...updated } : b)))
       setError(null)
+      setStatusMessage('')
     } catch (e: any) {
       setError(e?.message ?? 'Failed to update booking')
     } finally {
@@ -318,6 +327,18 @@ function AdminDashboardRoute() {
         <CardHeader className="flex flex-row items-center justify-between gap-4">
           <CardTitle className="text-base">Recent bookings</CardTitle>
           <div className="flex items-center gap-3">
+            <div className="flex flex-col gap-1">
+              <Label htmlFor="status-message" className="text-xs">
+                Status change message
+              </Label>
+              <Input
+                id="status-message"
+                placeholder="Reason shown to the customer"
+                value={statusMessage}
+                onChange={(e) => setStatusMessage(e.target.value)}
+                className="w-56"
+              />
+            </div>
             <Select
               value={statusFilter}
               onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}
