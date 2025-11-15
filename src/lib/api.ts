@@ -1,19 +1,7 @@
 const envBase = (import.meta.env.VITE_API_BASE || '').trim()
 
-let resolvedBase: string
-if (import.meta.env.DEV) {
-  // In development, default to local API but allow override
-  resolvedBase = envBase || 'http://localhost:8000'
-} else {
-  // In production, avoid localhost-style bases; default to live backend
-  if (envBase && !envBase.startsWith('http://localhost') && !envBase.startsWith('http://127.0.0.1')) {
-    resolvedBase = envBase
-  } else {
-    resolvedBase = 'https://jetskiandmore-backend.onrender.com'
-  }
-}
-
-export const API_BASE = resolvedBase
+// Always default to the hosted backend unless explicitly overridden
+export const API_BASE = envBase || 'https://jetskiandmore-backend.onrender.com'
 
 export async function postJSON<T>(path: string, body: unknown, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
