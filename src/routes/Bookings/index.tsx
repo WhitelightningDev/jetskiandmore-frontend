@@ -542,6 +542,17 @@ function classifySeverity(speed?: number | null, gust?: number | null): Severity
                       <p className="text-xs text-muted-foreground">
                         Each jet ski can carry up to 2 people. Extra passengers cost R{EXTRA_PERSON_PRICE} each.
                       </p>
+                      {rideId === 'joy' && (
+                        <Badge
+                          variant="outline"
+                          className="mt-2 inline-flex items-start gap-2 rounded-full border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-normal leading-snug text-amber-900 whitespace-normal"
+                        >
+                          <Info className="mt-0.5 h-3.5 w-3.5" />
+                          <span>
+                            This Joy Ride is an assisted experience operated by our guide – ideal for guests who can&apos;t ride alone and for under‑aged riders who want to feel what it&apos;s like.
+                          </span>
+                        </Badge>
+                      )}
                     </div>
                   </div>
                 )}
