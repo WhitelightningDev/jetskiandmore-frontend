@@ -225,7 +225,7 @@ This repo is wired to a Python FastAPI backend in `../jetskiandmore-backend` wit
 - `POST /api/bookings` — submit booking request via Gmail
 - `POST /api/payments/charge` — create a Yoco charge (server-side)
 
-Frontend base URL is controlled by `VITE_API_BASE` (e.g., `http://localhost:8000`).
+Frontend base URL is controlled by `VITE_API_BASE` (e.g., `https://jetskiandmore-backend.onrender.com`).
 
 Backend quickstart (in jetskiandmore-backend):
 
@@ -238,7 +238,7 @@ Backend quickstart (in jetskiandmore-backend):
    pip install -r requirements.txt
    uvicorn app.main:app --reload --port 8000
    ```
-3. In this frontend, set `VITE_API_BASE=http://localhost:8000` and run `npm run dev`.
+3. In this frontend, set `VITE_API_BASE=https://jetskiandmore-backend.onrender.com` (or your own backend URL) and run `npm run dev`.
 
 
 You can find out everything you need to know on how to use React-Query in the [React-Query documentation](https://tanstack.com/query/latest/docs/framework/react/overview).
