@@ -119,7 +119,7 @@ function RideCard({ ride, addons }: { ride: Ride; addons: { drone: boolean; wets
           ))}
         </ul>
       </CardContent>
-      <CardFooter className="mt-auto flex items-center justify-between">
+      <CardFooter className="mt-auto flex flex-wrap items-center justify-between gap-3">
         <Badge>{ride.price}</Badge>
         {ride.cta ? (
           <Link
@@ -153,7 +153,7 @@ function RouteComponent() {
   return (
     <div className="bg-white">
       <section className="mx-auto max-w-6xl px-4 py-10 md:py-14">
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h1 className="text-3xl md:text-4xl font-bold">Rides &amp; Experiences</h1>
           <Badge variant="secondary" className="flex items-center gap-1">
             <MapPin className="h-4 w-4" />
@@ -188,12 +188,12 @@ function RouteComponent() {
         {/* Add-ons quick pick */}
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle className="text-lg">Choose your add‑ons</CardTitle>
-            <CardDescription>Selections carry into the booking form</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <label className="flex items-center justify-between gap-2 rounded-md border p-3">
+          <CardTitle className="text-lg">Choose your add‑ons</CardTitle>
+          <CardDescription>Selections carry into the booking form</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <label className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-md border p-3">
                 <div className="flex items-center gap-2">
                   <input
                     type="checkbox"
@@ -205,7 +205,7 @@ function RouteComponent() {
                 <Badge variant="secondary"
           className="bg-green-500 text-white dark:bg-green-600">+ ZAR 700 (or included)</Badge>
               </label>
-              <label className="flex items-center justify-between gap-2 rounded-md border p-3">
+              <label className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-md border p-3">
                 <div className="flex items-center gap-2">
                   <input
                     type="checkbox"
@@ -217,7 +217,7 @@ function RouteComponent() {
                 <Badge variant="secondary"
           className="bg-green-500 text-white dark:bg-green-600">+ ZAR 150</Badge>
               </label>
-              <div className="flex items-center justify-between gap-2 rounded-md border p-3">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-md border p-3">
                 <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
@@ -244,7 +244,7 @@ function RouteComponent() {
               </div>
             </div>
             <div className="mt-3 grid grid-cols-1 gap-3">
-              <div className="flex items-center justify-between gap-2 rounded-md border p-3">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-md border p-3">
                 <label className="flex items-center gap-2">
                   <span className="text-sm">Additional passenger(s)</span>
                 </label>
@@ -281,12 +281,12 @@ function RouteComponent() {
               </CardTitle>
               <CardDescription>Make it unforgettable</CardDescription>
             </CardHeader>
-            <CardContent className="text-sm text-muted-foreground space-y-2">
-              <p>• Drone video &amp; GoPro footage</p>
-              <p>• Waterproof phone pouch</p>
-              <p>• Premium wetsuit hire</p>
-            </CardContent>
-            <CardFooter className="mt-auto flex items-center justify-between">
+          <CardContent className="text-sm text-muted-foreground space-y-2">
+            <p>• Drone video &amp; GoPro footage</p>
+            <p>• Waterproof phone pouch</p>
+            <p>• Premium wetsuit hire</p>
+          </CardContent>
+            <CardFooter className="mt-auto flex flex-wrap items-center justify-between gap-3">
               <Badge>Popular</Badge>
               <Link to="/add-ons" className={buttonVariants({ variant: 'outline', size: 'sm' })}>See options</Link>
             </CardFooter>
@@ -305,7 +305,7 @@ function RouteComponent() {
             <p>• Life jackets included for riders and passengers.</p>
             <p>• Riding within marked zones; weather dependent.</p>
           </CardContent>
-          <CardFooter className="flex items-center justify-between">
+          <CardFooter className="flex flex-wrap items-center justify-between gap-3">
             <Link to="/safety" className={buttonVariants({ variant: 'outline', size: 'sm' })}>Safety &amp; tips</Link>
             <Link to="/Bookings" className={buttonVariants({ size: 'sm' })}>
               <CalendarDays className="mr-2 h-4 w-4" />

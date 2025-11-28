@@ -210,7 +210,7 @@ function App() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4 text-sm text-muted-foreground">
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="rounded-md bg-slate-50 border text-xs p-3 space-y-1">
                       <p className="font-medium text-foreground flex items-center gap-1">
                         <Clock className="h-3.5 w-3.5" /> Before you ride
@@ -343,7 +343,7 @@ function App() {
                   marked zone. Safety briefing and life jackets included.
                 </p>
               </CardContent>
-              <CardFooter className="mt-auto flex items-center justify-between">
+              <CardFooter className="mt-auto flex flex-wrap items-center justify-between gap-3">
                 <Badge>From ZAR 1,750</Badge>
                 <Link to="/Bookings" className={buttonVariants({ size: 'sm' })}>
                   Select
@@ -377,7 +377,7 @@ function App() {
                   Great for confident riders or pairs (passenger optional).
                 </p>
               </CardContent>
-              <CardFooter className="mt-auto flex items-center justify-between">
+              <CardFooter className="mt-auto flex flex-wrap items-center justify-between gap-3">
                 <Badge>From ZAR 2,600</Badge>
                 <Link to="/Bookings" className={buttonVariants({ size: 'sm' })}>
                   Select
@@ -410,7 +410,7 @@ function App() {
                   available from ZAR 700.
                 </p>
               </CardContent>
-              <CardFooter className="mt-auto flex items-center justify-between">
+              <CardFooter className="mt-auto flex flex-wrap items-center justify-between gap-3">
                 <Badge>Popular</Badge>
                 <Link
                   to="/add-ons"
@@ -568,7 +568,7 @@ function App() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="text-sm text-muted-foreground space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <span className="flex items-center gap-2">
                     <MapPin className="h-4 w-4" /> Gordon&apos;s Bay Harbour
                   </span>
@@ -617,7 +617,7 @@ function App() {
                   staff directions for launching and exiting the harbour.
                 </p>
               </CardContent>
-              <CardFooter className="mt-auto flex justify-between gap-2">
+              <CardFooter className="mt-auto flex flex-wrap items-center justify-between gap-3">
                 <Link
                   to="/safety"
                   className={buttonVariants({ size: 'sm', variant: 'outline' })}

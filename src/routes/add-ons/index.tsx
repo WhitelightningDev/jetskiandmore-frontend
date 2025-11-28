@@ -150,7 +150,7 @@ function RouteComponent() {
           {addons.map((addon) => (
             <Card key={addon.id} className="flex flex-col">
               <CardHeader>
-                <div className="flex items-center justify-between gap-2">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-2">
                     <span className="inline-flex size-8 items-center justify-center rounded-md bg-amber-500/10 text-amber-700">
                       {addon.icon}
@@ -197,7 +197,7 @@ function RouteComponent() {
                 </ul>
               </CardContent>
 
-              <CardFooter className="mt-auto flex items-center justify-between gap-2">
+              <CardFooter className="mt-auto flex flex-wrap items-center justify-between gap-3">
                 <span className="text-xs text-muted-foreground">
                   Add this when you book your ride.
                 </span>

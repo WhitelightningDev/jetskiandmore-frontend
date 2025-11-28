@@ -203,7 +203,7 @@ function RouteComponent() {
             </CardHeader>
             <CardContent className="space-y-5 text-sm text-muted-foreground">
               <div>
-                <div className="flex items-start justify-between gap-3">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="space-y-1">
                     <p className="font-medium text-foreground">
                       159 Beach Road, Gordon&apos;s Bay Harbour

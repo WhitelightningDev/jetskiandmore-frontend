@@ -60,7 +60,7 @@ export default function Breadcrumbs({ className }: { className?: string }) {
   return (
     <Reveal offset={2} duration={500}>
       <nav aria-label="Breadcrumb" className={cn('w-full bg-background/80 backdrop-blur', className)}>
-        <ol className="mx-auto max-w-6xl px-4 py-2 flex items-center gap-1 text-sm text-muted-foreground">
+        <ol className="mx-auto max-w-6xl px-4 py-2 flex flex-wrap items-center gap-1 text-sm text-muted-foreground">
           {crumbs.map((c, idx) => {
             const isLast = idx === crumbs.length - 1
             return (

@@ -270,7 +270,7 @@ function AdminDashboardRoute() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 space-y-6">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold">Admin dashboard</h1>
           <p className="text-sm text-muted-foreground">
@@ -404,7 +404,7 @@ function AdminDashboardRoute() {
       )}
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between gap-4">
+        <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <CardTitle className="text-base">Recent bookings</CardTitle>
           <div className="flex items-center gap-3">
            
