@@ -401,7 +401,7 @@ function classifySeverity(speed?: number | null, gust?: number | null): Severity
               <div className="space-y-6">
                 {/* Step indicator */}
                 <div className="flex flex-col gap-3">
-                  <div className="flex items-center justify-between text-xs md:text-sm">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between text-xs md:text-sm">
                     {[
                       { id: 1, label: 'Ride & time' },
                       { id: 2, label: 'Rider details' },
@@ -710,7 +710,7 @@ function classifySeverity(speed?: number | null, gust?: number | null): Severity
                 <p className="text-sm font-medium">{selectedRide.title}</p>
                 <p className="text-xs text-muted-foreground">{selectedRide.subtitle}</p>
               </div>
-              <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                 <div>
                   <p className="text-muted-foreground">When</p>
                   <p className="font-medium">{date ? date.toLocaleDateString('en-ZA', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'} {time && <span>• {time}</span>}</p>
@@ -722,43 +722,43 @@ function classifySeverity(speed?: number | null, gust?: number | null): Severity
               </div>
               <Separator />
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="text-sm">Subtotal</span>
                   <span className="font-medium">{formatZAR(baseTotal)}</span>
                 </div>
                 {addons.drone || addons.wetsuit || addons.gopro || addons.boat || (addons.extraPeople || 0) > 0 ? (
                   <div className="space-y-1">
                     {addons.drone ? (
-                      <div className="flex items-center justify-between text-sm">
+                      <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
                         <span>Drone video</span>
                         <span className="text-muted-foreground">{droneCost === 0 ? 'Included' : formatZAR(droneCost)}</span>
                       </div>
                     ) : null}
                     {addons.gopro ? (
-                      <div className="flex items-center justify-between text-sm">
+                      <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
                         <span>GoPro footage</span>
                         <span className="text-muted-foreground">On request</span>
                       </div>
                     ) : null}
                     {addons.wetsuit ? (
-                      <div className="flex items-center justify-between text-sm">
+                      <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
                         <span>Wetsuit hire</span>
                         <span className="text-muted-foreground">{formatZAR(wetsuitCost)}</span>
                       </div>
                     ) : null}
                     {addons.boat ? (
-                      <div className="flex items-center justify-between text-sm">
+                      <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
                         <span>Boat ride × {Math.max(1, addons.boatCount || 1)}</span>
                         <span className="text-muted-foreground">{formatZAR(boatCost)}</span>
                       </div>
                     ) : null}
                     {(addons.extraPeople || 0) > 0 ? (
-                      <div className="flex items-center justify-between text-sm">
+                      <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
                         <span>Additional passenger(s) × {addons.extraPeople}</span>
                         <span className="text-muted-foreground">{formatZAR(extraPeopleCost)}</span>
                       </div>
                     ) : null}
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="text-sm">Add‑ons total</span>
                       <span className="font-medium">{formatZAR(addonsTotal)}</span>
                     </div>
@@ -767,14 +767,14 @@ function classifySeverity(speed?: number | null, gust?: number | null): Severity
                   <p className="text-xs text-muted-foreground">No add‑ons selected.</p>
                 )}
                 <Separator />
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="text-sm font-semibold">Estimated total</span>
                   <span className="font-semibold">{formatZAR(estimatedTotal)}</span>
                 </div>
               </div>
               <p className="text-xs text-muted-foreground">Prices subject to change. Final total confirmed on booking.</p>
             </CardContent>
-            <CardFooter className="flex items-center justify-between">
+            <CardFooter className="flex flex-wrap items-center justify-between gap-3">
               <Link to="/rides" className={buttonVariants({ variant: 'outline', size: 'sm' })}>See all rides</Link>
               <Link to="/weather" className={buttonVariants({ size: 'sm' })}>
                 <CalendarDays className="mr-2 h-4 w-4" />

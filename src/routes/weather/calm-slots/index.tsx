@@ -123,7 +123,7 @@ function CalmSlotsPage() {
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-primary/10 via-cyan-50 to-background" />
         <div className="absolute -top-28 left-1/2 -translate-x-1/2 -z-10 blur-3xl opacity-30 size-[600px] rounded-full bg-[radial-gradient(circle_at_center,theme(colors.cyan.300),transparent_60%)]" />
         <div className="mx-auto max-w-6xl px-4 py-10 md:py-14">
-          <div className="mb-6 flex items-center justify-between">
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h1 className="text-3xl md:text-4xl font-extrabold leading-tight bg-gradient-to-r from-primary to-cyan-600 bg-clip-text text-transparent">
               Book a calm slot
             </h1>
@@ -171,7 +171,7 @@ function CalmSlotsPage() {
                       <PopoverTrigger asChild>
                         <Button variant="outline" className="self-start">{selected ? `Details for ${selected.toLocaleDateString('en-ZA', { year: 'numeric', month: 'short', day: 'numeric' })}` : 'Select a date'}</Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-80">
+                      <PopoverContent className="w-full max-w-sm">
                         {!selectedInfo ? (
                           <div className="text-sm text-muted-foreground">Select a date to see forecast details.</div>
                         ) : (

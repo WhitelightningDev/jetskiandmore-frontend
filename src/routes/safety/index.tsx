@@ -19,7 +19,7 @@ function RouteComponent() {
   return (
     <div className="bg-white">
       <section className="mx-auto max-w-6xl px-4 py-10 md:py-14">
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h1 className="text-3xl md:text-4xl font-bold">Safety &amp; Rider Info</h1>
           <Badge variant="secondary" className="flex items-center gap-1">
             <MapPin className="h-4 w-4" />
@@ -44,7 +44,7 @@ function RouteComponent() {
               <Bullet>Important tips for riding in open water.</Bullet>
               <Bullet>Life jackets for every rider and passenger — at no extra cost.</Bullet>
             </CardContent>
-            <CardFooter className="flex items-center justify-between">
+            <CardFooter className="flex flex-wrap items-center justify-between gap-3">
               <span className="text-xs text-muted-foreground">Professional team focused on fun &amp; safety.</span>
               <Link to="/Bookings">
                 <Button size="sm" className="flex items-center gap-2">
@@ -69,7 +69,7 @@ function RouteComponent() {
               <Bullet>Strong South‑East (SE) winds above ~30&nbsp;km/h can make Gordon’s Bay rough and unsafe — we may pause or reschedule riding during these periods.</Bullet>
               <Bullet>Your safety comes first — we’ll guide you on the best time windows to ride.</Bullet>
             </CardContent>
-            <CardFooter className="flex items-center justify-between">
+            <CardFooter className="flex flex-wrap items-center justify-between gap-3">
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -103,7 +103,7 @@ function RouteComponent() {
               <Bullet>New to jet skis? Choose a guided pace with our team keeping you in the safe zones.</Bullet>
               <Bullet>Under‑aged or prefer not to drive? Our short Joy Ride lets you experience the thrill with an instructor.</Bullet>
             </CardContent>
-            <CardFooter className="flex items-center justify-between">
+            <CardFooter className="flex flex-wrap items-center justify-between gap-3">
               <span className="text-xs text-muted-foreground">Talk to us if you have any questions.</span>
               <Link to="/contact">
                 <Button variant="ghost" size="sm">Chat to the team</Button>
@@ -118,7 +118,7 @@ function RouteComponent() {
               <CardDescription>We operate only from Gordon&apos;s Bay Harbour</CardDescription>
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <span className="flex items-center gap-2"><MapPin className="h-4 w-4" /> 159 Beach Road, Gordon&apos;s Bay Harbour</span>
                 <Popover>
                   <PopoverTrigger asChild>
@@ -130,8 +130,8 @@ function RouteComponent() {
                 </Popover>
               </div>
             </CardContent>
-            <CardFooter>
-              <Link to="/Bookings" className="ml-auto">
+            <CardFooter className="flex flex-wrap items-center justify-between gap-3">
+              <Link to="/Bookings">
                 <Button size="sm">Book now</Button>
               </Link>
             </CardFooter>

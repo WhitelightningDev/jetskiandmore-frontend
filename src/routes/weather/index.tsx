@@ -1,4 +1,3 @@
-
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { Wind, Sun, CloudRain, Waves, Info, MapPin, CalendarDays, Umbrella } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -67,7 +66,7 @@ function CurrentConditionsCard() {
 
   return (
     <Card className={`border mb-4 ${severityClasses(sev)}`}>
-      <CardHeader className="flex flex-row items-start justify-between">
+      <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <CardTitle className="flex items-center gap-2">
             <Sun className="h-5 w-5" />
@@ -141,7 +140,7 @@ function RouteComponent() {
   return (
     <div className="bg-white">
       <section className="mx-auto max-w-6xl px-4 py-10 md:py-14">
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h1 className="text-3xl md:text-4xl font-bold">Weather tips for a great ride</h1>
           <Badge variant="secondary" className="flex items-center gap-1">
             <MapPin className="h-4 w-4" />
@@ -165,7 +164,7 @@ function RouteComponent() {
               <Bullet><strong>Late afternoons</strong> can also be good on lower‑wind days.</Bullet>
               <Bullet>We recommend choosing a slot when forecast wind speeds are in a comfortable range for you.</Bullet>
             </CardContent>
-            <CardFooter className="flex items-center justify-between">
+            <CardFooter className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <span className="text-xs text-muted-foreground">Ask us for the day’s sweet spot.</span>
               <Link to="/weather/calm-slots">
                 <Button size="sm" className="flex items-center gap-2">
@@ -190,7 +189,7 @@ function RouteComponent() {
               <Bullet>On stronger wind days we keep you within the most sheltered parts of the bay.</Bullet>
               <Bullet>We’ll brief you on riding posture and throttle control for bumpy water.</Bullet>
             </CardContent>
-            <CardFooter className="flex items-center justify-between">
+            <CardFooter className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -223,7 +222,7 @@ function RouteComponent() {
               <Bullet>Light rain isn’t a problem, but heavy rain or poor visibility may pause rides.</Bullet>
               <Bullet>We continually assess the harbour and sea state before and during sessions.</Bullet>
             </CardContent>
-            <CardFooter className="flex items-center justify-between">
+            <CardFooter className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <span className="text-xs text-muted-foreground">We’ll only launch when it’s safe and fun.</span>
               <Link to="/contact">
                 <Button variant="ghost" size="sm">Ask about today</Button>
@@ -245,7 +244,7 @@ function RouteComponent() {
               <Bullet>Swimwear or a light wetsuit on cooler/windy days.</Bullet>
               <Bullet>We provide life jackets for all riders and passengers.</Bullet>
             </CardContent>
-            <CardFooter className="flex items-center justify-between">
+            <CardFooter className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <span className="text-xs text-muted-foreground">Arrive 15 minutes early to gear up.</span>
               <Link to="/Bookings">
                 <Button size="sm">Pick a time</Button>
@@ -269,7 +268,7 @@ function RouteComponent() {
             <Bullet>Your safety comes first — we may delay or move sessions if wind and swell get unsafe.</Bullet>
             <Bullet>If you need to adjust your booking, let us know at least 24 hours ahead and we’ll find another slot.</Bullet>
           </CardContent>
-          <CardFooter className="flex items-center justify-between">
+          <CardFooter className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <span className="text-xs text-muted-foreground">We’ll guide you to the best window on the day.</span>
             <Link to="/Bookings">
               <Button size="sm" className="flex items-center gap-2">
