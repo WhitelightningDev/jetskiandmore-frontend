@@ -40,7 +40,7 @@ export function AddOnsSection({
   return (
     <section aria-labelledby="addons-title" className="space-y-3">
       <div className="rounded-lg border-amber-300/60 bg-gradient-to-br from-amber-50 to-amber-100/40 ring-1 ring-amber-200/50 p-4">
-        <div className="mb-3 flex items-center justify-between">
+        <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center justify-center size-7 rounded-md bg-amber-500/15 text-amber-700">
               <Gift className="size-4" />
@@ -52,7 +52,7 @@ export function AddOnsSection({
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {/* Drone */}
-        <label className="flex items-center justify-between gap-2 rounded-md border p-3 bg-white/70 hover:border-amber-300 transition-colors">
+        <label className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-md border p-3 bg-white/70 hover:border-amber-300 transition-colors">
           <div className="flex items-center gap-2">
             <Checkbox checked={addons.drone} onCheckedChange={(v: any) => setAddons(a => ({ ...a, drone: Boolean(v) }))} />
             <span className="text-sm inline-flex items-center gap-1">
@@ -67,7 +67,7 @@ export function AddOnsSection({
         </label>
 
         {/* GoPro */}
-        <label className="flex items-center justify-between gap-2 rounded-md border p-3 bg-white/70 hover:border-amber-300 transition-colors">
+        <label className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-md border p-3 bg-white/70 hover:border-amber-300 transition-colors">
           <div className="flex items-center gap-2">
             <Checkbox checked={addons.gopro} onCheckedChange={(v: any) => setAddons(a => ({ ...a, gopro: Boolean(v) }))} />
             <span className="text-sm inline-flex items-center gap-1">
@@ -78,7 +78,7 @@ export function AddOnsSection({
         </label>
 
         {/* Wetsuit */}
-        <label className="flex items-center justify-between gap-2 rounded-md border p-3 bg-white/70 hover:border-amber-300 transition-colors">
+        <label className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-md border p-3 bg-white/70 hover:border-amber-300 transition-colors">
           <div className="flex items-center gap-2">
             <Checkbox checked={addons.wetsuit} onCheckedChange={(v: any) => setAddons(a => ({ ...a, wetsuit: Boolean(v) }))} />
             <span className="text-sm inline-flex items-center gap-1">
@@ -89,7 +89,7 @@ export function AddOnsSection({
         </label>
 
         {/* Boat ride */}
-        <div className="flex items-center justify-between gap-2 rounded-md border p-3 bg-white/70 hover:border-amber-300 transition-colors">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-md border p-3 bg-white/70 hover:border-amber-300 transition-colors">
           <label className="flex items-center gap-2">
             <Checkbox
               checked={addons.boat}
