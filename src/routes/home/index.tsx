@@ -40,9 +40,9 @@ import {
 } from '@/components/ui/popover'
 import harbourImg from '@/lib/images/IMG_3202.jpg'
 import jetskiLogo from '@/lib/images/JetSkiLogo.png'
-import heroVideo from '@/lib/images/2025_02_22_14_09_23.mp4'
 import React from 'react'
 import { cn } from '@/lib/utils'
+import WeatherNudge from '@/components/WeatherNudge'
 
 const GBAY_LAT = -34.165
 const GBAY_LON = 18.866
@@ -52,225 +52,92 @@ export const Route = createFileRoute('/home/')({
 })
 
 function App() {
-  const [ready, setReady] = React.useState(false)
+  const [ready] = React.useState(true)
   return (
     <div className="bg-background">
       {/* HERO */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-primary/10 via-cyan-50 to-background" />
-        <div className="absolute -top-28 left-1/2 -translate-x-1/2 -z-10 blur-3xl opacity-40 size-[600px] rounded-full bg-[radial-gradient(circle_at_center,theme(colors.cyan.300),transparent_60%)] motion-safe:animate-pulse" />
-        <div className="mx-auto max-w-6xl px-4 py-16 md:py-24">
-          <div className="grid gap-10 md:grid-cols-[minmax(0,3fr),minmax(0,2.4fr)] items-center">
-            {/* Left column: copy + CTAs */}
-            <div className="flex flex-col gap-6 text-center md:text-left items-center md:items-start">
-              <Reveal direction="down" offset={4} duration={900}>
-                <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
-                  <Badge
-                    className="uppercase tracking-wide"
-                    variant="secondary"
-                  >
-                    Gordon&apos;s Bay Harbour • Western Cape
-                  </Badge>
-                  <Badge className="bg-primary/15 text-primary border-primary/30">
-                    Summer season open
-                  </Badge>
+      <section className="relative overflow-hidden bg-slate-950 text-white">
+        <div className="absolute inset-0">
+          <img
+            src="/Asunnydayofjetskiing.png"
+            alt="Riders launching from the dock"
+            loading="eager"
+            decoding="async"
+            className={cn(
+              'h-full w-full object-cover transition-opacity duration-700',
+              ready ? 'opacity-100' : 'opacity-0',
+            )}
+          />
+        </div>
+
+        <div className="relative mx-auto max-w-6xl px-4 py-16 md:py-24">
+          <div className="max-w-3xl space-y-6">
+            <Reveal direction="down" offset={4} duration={900}>
+              <div className="flex flex-wrap items-center gap-2 text-sm">
+                <div className="flex items-center gap-1 rounded-full bg-amber-500/15 px-3 py-1 text-amber-200 ring-1 ring-amber-400/40">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                  ))}
+                  <span className="ml-1 font-semibold">4.9</span>
+                  <span className="ml-1 text-amber-100/80">Google Reviews</span>
                 </div>
-              </Reveal>
-
-              <Reveal delay={120} offset={4} duration={900}>
-                <h1 className="text-4xl md:text-6xl font-extrabold leading-tight bg-gradient-to-r from-primary to-cyan-600 bg-clip-text text-transparent">
-                  Jet Ski Rentals &amp; Guided Rides
-                </h1>
-              </Reveal>
-
-              <Reveal delay={240} offset={4} duration={900}>
-                <p className="text-base md:text-lg text-muted-foreground max-w-xl">
-                  Book a thrilling ride on crystal waters. Flexible time slots,
-                  safety‑first briefings, and optional drone video add‑ons.
-                </p>
-              </Reveal>
-
-              <Reveal delay={320} offset={4} duration={900}>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Link
-                    to="/Bookings"
-                    className={buttonVariants({ size: 'lg' })}
-                  >
-                    <CalendarDays className="mr-2 h-5 w-5" />
-                    Book now
-                  </Link>
-                  <Link
-                    to="/rides"
-                    className={buttonVariants({
-                      variant: 'outline',
-                      size: 'lg',
-                    })}
-                  >
-                    <Waves className="mr-2 h-5 w-5" />
-                    Explore rides
-                  </Link>
-                </div>
-              </Reveal>
-
-              <div className="mt-4 grid w-full gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-                <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-cyan-50">
-                  <CardHeader className="space-y-1">
-                    <CardTitle className="flex items-center gap-2 text-sm md:text-base">
-                      <span className="inline-flex items-center justify-center size-7 rounded-md bg-primary/15 text-primary">
-                        <Clock className="size-4" />
-                      </span>
-                      Flexible sessions
-                    </CardTitle>
-                    <CardDescription>
-                      30 and 60 minutes, and up to 2 hours for group bookings.
-                    </CardDescription>
-                  </CardHeader>
-                </Card>
-                <Card className="border-emerald-300/40 bg-gradient-to-br from-emerald-50 to-emerald-100/40">
-                  <CardHeader className="space-y-1">
-                    <CardTitle className="flex items-center gap-2 text-sm md:text-base">
-                      <span className="inline-flex items-center justify-center size-7 rounded-md bg-emerald-600/15 text-emerald-700">
-                        <ShieldCheck className="size-4" />
-                      </span>
-                      Safety included
-                    </CardTitle>
-                    <CardDescription>
-                      Briefing + life jackets for every rider.
-                    </CardDescription>
-                  </CardHeader>
-                </Card>
-                <Card className="border-cyan-300/40 bg-gradient-to-br from-cyan-50 to-cyan-100/40">
-                  <CardHeader className="space-y-1">
-                    <CardTitle className="flex items-center gap-2 text-sm md:text-base">
-                      <span className="inline-flex items-center justify-center size-7 rounded-md bg-cyan-600/15 text-cyan-700">
-                        <MapPin className="size-4" />
-                      </span>
-                      Our launch spot
-                    </CardTitle>
-                    <CardDescription>
-                      Gordon&apos;s Bay Harbour only.
-                    </CardDescription>
-                  </CardHeader>
-                </Card>
+                <Badge variant="secondary" className="bg-white/10 text-white border-white/30">
+                  Gordon&apos;s Bay Harbour • Western Cape
+                </Badge>
               </div>
+            </Reveal>
 
-              {/* Stats row */}
-              <Reveal offset={2} duration={700}>
-                <div className="mt-4 grid grid-cols-1 gap-4 text-xs md:text-sm text-muted-foreground sm:grid-cols-3">
-                  <div className="flex items-center gap-3 md:items-start">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-50">
-                      <Star className="h-4 w-4 text-amber-500" />
-                    </span>
-                    <div className="flex flex-col">
-                      <span className="font-semibold text-foreground">
-                        4.9★
-                      </span>
-                      <span>Average rating</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 md:items-start">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-                      <Users className="h-4 w-4 text-primary" />
-                    </span>
-                    <div className="flex flex-col">
-                      <span className="font-semibold text-foreground">
-                        1,000+
-                      </span>
-                      <span>Riders hosted</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 md:items-start">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-cyan-50">
-                      <Wind className="h-4 w-4 text-cyan-600" />
-                    </span>
-                    <div className="flex flex-col">
-                      <span className="font-semibold text-foreground">
-                        Safety‑first
-                      </span>
-                      <span>Briefing every ride</span>
-                    </div>
-                  </div>
-                </div>
-              </Reveal>
-            </div>
+            <Reveal delay={120} offset={4} duration={900}>
+              <h1 className="text-4xl leading-[1.05] font-black drop-shadow md:text-6xl">
+                Jet Ski Rentals &amp; Guided Rides on Crystal Waters
+              </h1>
+            </Reveal>
 
-            {/* Right column: rich hero card with media placeholder */}
-            <Reveal delay={160} offset={4} duration={900}>
-              <Card className="relative overflow-hidden bg-white/80 backdrop-blur border-primary/20 shadow-lg">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <span className="inline-flex size-8 items-center justify-center rounded-full bg-primary/10 text-primary">
-                      <Ship className="size-4" />
-                    </span>
-                    Experience Gordon&apos;s Bay from the water
-                  </CardTitle>
-                  <CardDescription>
-                    A quick overview of what to expect on arrival — from safety
-                    briefing to throttling out of the harbour.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4 text-sm text-muted-foreground">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="rounded-md bg-slate-50 border text-xs p-3 space-y-1">
-                      <p className="font-medium text-foreground flex items-center gap-1">
-                        <Clock className="h-3.5 w-3.5" /> Before you ride
-                      </p>
-                      <p>
-                        Arrive 15 minutes early for check‑in and a full safety
-                        briefing.
-                      </p>
-                    </div>
-                    <div className="rounded-md bg-slate-50 border text-xs p-3 space-y-1">
-                      <p className="font-medium text-foreground flex items-center gap-1">
-                        <LifeBuoy className="h-3.5 w-3.5" /> Gear provided
-                      </p>
-                      <p>
-                        Life jackets and basic wetsuits available. Bring a towel
-                        and sunscreen.
-                      </p>
-                    </div>
-                    <div className="rounded-md bg-slate-50 border text-xs p-3 space-y-1">
-                      <p className="font-medium text-foreground flex items-center gap-1">
-                        <Waves className="h-3.5 w-3.5" /> Ride zone
-                      </p>
-                      <p>
-                        Rides stay within a clearly‑marked bay zone for safety.
-                      </p>
-                    </div>
-                    <div className="rounded-md bg-slate-50 border text-xs p-3 space-y-1">
-                      <p className="font-medium text-foreground flex items-center gap-1">
-                        <Gift className="h-3.5 w-3.5" /> Add‑ons
-                      </p>
-                      <p>
-                        Optional drone footage and GoPro add‑ons for
-                        unforgettable memories.
-                      </p>
-                    </div>
-                  </div>
+            <Reveal delay={220} offset={4} duration={900}>
+              <p className="text-base md:text-xl text-slate-100/90 max-w-2xl">
+                Premium skis, safety-first briefings, and flexible slots from sunrise to sunset. Book online, arrive 15 minutes early, and we’ll handle the rest.
+              </p>
+            </Reveal>
 
-                  {/* Hero media */}
-                  <div className="mt-3 rounded-lg overflow-hidden border border-slate-400 bg-slate-900/80 h-90">
-                    <video
-                      src={heroVideo}
-                      autoPlay
-                      muted
-                      loop
-                      playsInline
-                      preload="auto"
-                      onCanPlay={() => setReady(true)}
-                      className={cn(
-                        'w-full h-full object-cover transition-opacity duration-500',
-                        ready ? 'opacity-100' : 'opacity-0',
-                      )}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
+            <Reveal delay={320} offset={4} duration={900}>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Link to="/Bookings" className={buttonVariants({ size: 'lg' })}>
+                  <CalendarDays className="mr-2 h-5 w-5" />
+                  Book now
+                </Link>
+                <Link to="/rides" className={buttonVariants({ variant: 'outline', size: 'lg' })}>
+                  <Waves className="mr-2 h-5 w-5 text-black" />
+                  <p className='text-black'>See rides &amp; pricing</p>
+                </Link>
+              </div>
+            </Reveal>
+
+            <Reveal delay={380} offset={4} duration={900}>
+              <div className="flex flex-wrap gap-3 text-sm text-slate-100/80">
+                <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 ring-1 text-blue-600">
+                  <Clock className="h-4 w-4 text-blue-600" /> 30–120 min sessions
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 ring-1  text-blue-600">
+                  <ShieldCheck className="h-4 w-4 text-blue-600" /> Safety briefing &amp; life jackets
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 ring-1 ">
+                  <MapPin className="h-4 w-4" /> Gordon&apos;s Bay Harbour only
+                </span>
+              </div>
+            </Reveal>
+
+            <Reveal delay={440} offset={4} duration={900}>
+              <div className="flex flex-wrap items-center gap-4 pt-2 text-sm uppercase tracking-[0.2em] text-white/70">
+                <span className="font-semibold text-gray-600">SEA‑DOO</span>
+                <span className="h-px w-10 bg-black/30 " />
+                <span className="font-semibold text-gray-600">YAMAHA</span>
+                <span className="h-px w-10 bg-black/30" />
+                <span className="font-semibold text-gray-600">DRONE VIDEO READY</span>
+              </div>
             </Reveal>
           </div>
         </div>
 
-        {/* Wave divider */}
         <svg
           className="absolute bottom-0 left-0 w-full text-background"
           viewBox="0 0 1440 80"
@@ -283,8 +150,103 @@ function App() {
           />
         </svg>
       </section>
+      <WeatherNudge />
 
-      <Separator className="my-2" />
+      
+
+      {/* BOOKING ESSENTIALS */}
+      <section className="mx-auto max-w-6xl px-4 py-10">
+        <Reveal direction="down" offset={4} duration={850}>
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-bold">Booking essentials (at a glance)</h2>
+              <p className="mt-1 text-sm text-muted-foreground max-w-2xl">
+                Everything you need to know before you lock in a slot — one place, no digging.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Link to="/Bookings" className={buttonVariants({ size: 'sm' })}>
+                <CalendarDays className="mr-2 h-4 w-4" />
+                Book now
+              </Link>
+              <Link to="/contact" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
+                Questions? Chat to us
+              </Link>
+            </div>
+          </div>
+        </Reveal>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+          <Reveal duration={800}>
+            <Card className="h-full border-primary/30 bg-white/80 backdrop-blur">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CalendarDays className="h-5 w-5" />
+                  How booking works
+                </CardTitle>
+                <CardDescription>3 quick steps to ride</CardDescription>
+              </CardHeader>
+              <CardContent className="text-sm text-muted-foreground space-y-2">
+                <p>1) Pick a ride and time in the booking form.</p>
+                <p>2) Add extras like drone video or wetsuits if you want.</p>
+                <p>3) Pay securely online — you’ll get confirmation instantly.</p>
+              </CardContent>
+              <CardFooter>
+                <Link to="/Bookings" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
+                  Open booking form
+                </Link>
+              </CardFooter>
+            </Card>
+          </Reveal>
+
+          <Reveal delay={80} duration={800}>
+            <Card className="h-full border-emerald-200 bg-emerald-50/60">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ShieldCheck className="h-5 w-5" />
+                  What’s included
+                </CardTitle>
+                <CardDescription>Every ride, every time</CardDescription>
+              </CardHeader>
+              <CardContent className="text-sm text-muted-foreground space-y-2">
+                <p>• Safety briefing on arrival.</p>
+                <p>• Life jackets for riders and passengers.</p>
+                <p>• Clearly marked riding zone for comfort and safety.</p>
+                <p>• Optional add‑ons (drone video, GoPro, wetsuits).</p>
+              </CardContent>
+              <CardFooter>
+                <Link to="/safety" className={buttonVariants({ size: 'sm', variant: 'outline' })}>
+                  View safety info
+                </Link>
+              </CardFooter>
+            </Card>
+          </Reveal>
+
+          <Reveal delay={160} duration={800}>
+            <Card className="h-full border-amber-200 bg-amber-50/60">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="h-5 w-5" />
+                  Before you arrive
+                </CardTitle>
+                <CardDescription>So check‑in is smooth</CardDescription>
+              </CardHeader>
+              <CardContent className="text-sm text-muted-foreground space-y-2">
+                <p>• Arrive 15 minutes early at Gordon’s Bay Harbour.</p>
+                <p>• Bring a towel, sunscreen, and swimwear (or hire a wetsuit).</p>
+                <p>• Riders must be 16+ to drive; passengers 8+.</p>
+                <p>• We reschedule if weather turns unsafe — no fuss.</p>
+              </CardContent>
+              <CardFooter className="flex flex-wrap items-center gap-2">
+                <Badge variant="secondary" className="rounded-full">Gordon&apos;s Bay only</Badge>
+                <Link to="/contact" className={buttonVariants({ size: 'sm', variant: 'outline' })}>
+                  Need directions?
+                </Link>
+              </CardFooter>
+            </Card>
+          </Reveal>
+        </div>
+      </section>
 
       {/* OFFER CARDS */}
       <section className="mx-auto max-w-6xl px-4 py-12">
