@@ -57,30 +57,30 @@ function RouteComponent() {
   }
 
   return (
-    <div className="bg-slate-50">
-      <section className="mx-auto max-w-6xl px-4 py-10 md:py-16">
-        {/* Header */}
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-600">
-              Get in touch
-            </p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight md:text-4xl">
-              Contact us
-            </h1>
-            <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-              Ask about availability, weather conditions, special occasions, or group bookings.
-              We&apos;re happy to help you plan the perfect time on the water.
-            </p>
+    <div className="bg-gradient-to-b from-sky-50 via-white to-white">
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-sky-100 via-white to-emerald-50" />
+        <div className="relative mx-auto max-w-6xl px-4 py-10 md:py-16">
+          {/* Header */}
+          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <Badge className="bg-white/80 text-sky-800 border-sky-200">Get in touch</Badge>
+              <h1 className="mt-2 text-3xl font-semibold tracking-tight md:text-4xl text-slate-900">
+                Contact us
+              </h1>
+              <p className="mt-2 max-w-xl text-sm text-slate-600">
+                Ask about availability, weather conditions, special occasions, or group bookings.
+                We&apos;re happy to help you plan the perfect time on the water.
+              </p>
+            </div>
+            <Badge
+              variant="secondary"
+              className="flex items-center gap-2 self-start rounded-full bg-white/80 text-slate-800 border-sky-200"
+            >
+              <MapPin className="h-4 w-4" />
+              Gordon&apos;s Bay Harbour • Western Cape
+            </Badge>
           </div>
-          <Badge
-            variant="secondary"
-            className="flex items-center gap-2 self-start rounded-full bg-sky-50 text-sky-900"
-          >
-            <MapPin className="h-4 w-4" />
-            Gordon&apos;s Bay Harbour • Western Cape
-          </Badge>
-        </div>
 
         {/* Quick info pills */}
         <div className="mb-8 flex flex-wrap items-center gap-2 text-xs">
@@ -303,6 +303,7 @@ function RouteComponent() {
               </Link>
             </CardFooter>
           </Card>
+        </div>
         </div>
       </section>
 

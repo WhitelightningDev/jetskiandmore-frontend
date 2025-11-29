@@ -17,15 +17,23 @@ function Bullet({ children }: { children: React.ReactNode }) {
 
 function RouteComponent() {
   return (
-    <div className="bg-white">
-      <section className="mx-auto max-w-6xl px-4 py-10 md:py-14">
-        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="text-3xl md:text-4xl font-bold">Safety &amp; Rider Info</h1>
-          <Badge variant="secondary" className="flex items-center gap-1">
-            <MapPin className="h-4 w-4" />
-            Gordon&apos;s Bay Harbour
-          </Badge>
-        </div>
+    <div className="bg-gradient-to-b from-emerald-50 via-white to-white">
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-emerald-50 via-white to-cyan-50" />
+        <div className="relative mx-auto max-w-6xl px-4 py-10 md:py-14">
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-2">
+              <Badge className="bg-white/80 text-emerald-800 border-emerald-200">Safety first</Badge>
+              <h1 className="text-3xl md:text-4xl font-bold text-slate-900">Safety &amp; Rider Info</h1>
+              <p className="text-sm md:text-base text-slate-600 max-w-2xl">
+                Briefing, gear, and clear riding zones so every session stays safe and fun.
+              </p>
+            </div>
+            <Badge variant="secondary" className="flex items-center gap-1 bg-white/80 text-slate-800 border-emerald-200">
+              <MapPin className="h-4 w-4" />
+              Gordon&apos;s Bay Harbour
+            </Badge>
+          </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* What we provide */}
@@ -171,6 +179,7 @@ function RouteComponent() {
               </Link>
             </CardFooter>
           </Card>
+        </div>
         </div>
       </section>
     </div>
