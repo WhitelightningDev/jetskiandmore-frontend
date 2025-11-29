@@ -66,6 +66,54 @@ const RIDES: Ride[] = [
     icon: <Users className="h-4 w-4" />,
   },
   {
+    id: '30-3',
+    title: '30‑min Rental (3 Jet‑Skis)',
+    subtitle: 'Triple launch, quick thrill',
+    price: 4500,
+    displayPrice: 'From ZAR 4,500',
+    icon: <Users className="h-4 w-4" />,
+  },
+  {
+    id: '60-3',
+    title: '60‑min Rental (3 Jet‑Skis)',
+    subtitle: 'A full hour for the squad',
+    price: 6900,
+    displayPrice: 'From ZAR 6,900',
+    icon: <Users className="h-4 w-4" />,
+  },
+  {
+    id: '30-4',
+    title: '30‑min Rental (4 Jet‑Skis)',
+    subtitle: 'Squad launch',
+    price: 5800,
+    displayPrice: 'From ZAR 5,800',
+    icon: <Users className="h-4 w-4" />,
+  },
+  {
+    id: '60-4',
+    title: '60‑min Rental (4 Jet‑Skis)',
+    subtitle: 'Full hour squad session',
+    price: 9000,
+    displayPrice: 'From ZAR 9,000',
+    icon: <Users className="h-4 w-4" />,
+  },
+  {
+    id: '30-5',
+    title: '30‑min Rental (5 Jet‑Skis)',
+    subtitle: 'Max fleet, fast fun',
+    price: 7100,
+    displayPrice: 'From ZAR 7,100',
+    icon: <Users className="h-4 w-4" />,
+  },
+  {
+    id: '60-5',
+    title: '60‑min Rental (5 Jet‑Skis)',
+    subtitle: 'Ultimate group session',
+    price: 11000,
+    displayPrice: 'From ZAR 11,000',
+    icon: <Users className="h-4 w-4" />,
+  },
+  {
     id: 'joy',
     title: 'Joy Ride (Instructed) • 10 min',
     subtitle: 'Instructor drives / assisted',
@@ -105,6 +153,13 @@ function toBool(v: unknown) {
 function toInt(v: unknown, fallback: number) {
   const n = typeof v === 'string' ? parseInt(v, 10) : typeof v === 'number' ? Math.floor(v) : NaN
   return Number.isFinite(n) && n > 0 ? n : fallback
+}
+
+function getSkiCount(rideId: string): number {
+  const match = rideId.match(/^(?:30|60)-(\d+)/)
+  if (match) return Math.min(5, Math.max(1, parseInt(match[1], 10)))
+  if (rideId === 'joy' || rideId === 'group') return 0
+  return 1
 }
 
 function RouteComponent() {
@@ -153,9 +208,9 @@ function RouteComponent() {
 
   // Limit additional passenger counts based on ride selection
   const maxExtraPeople = React.useMemo(() => {
-    if (rideId === '30-1' || rideId === '60-1') return 1
-    if (rideId === '30-2' || rideId === '60-2') return 2
-    return 0
+    const skiCount = getSkiCount(rideId)
+    if (skiCount <= 0) return 0
+    return skiCount
   }, [rideId])
 
   React.useEffect(() => {
@@ -380,11 +435,15 @@ function classifySeverity(speed?: number | null, gust?: number | null): Severity
             <Badge className="rounded-full">Drone + {formatZAR(DRONE_PRICE)}</Badge>
           )}
           <Badge className="rounded-full">Wetsuit {formatZAR(WETSUIT_PRICE)}</Badge>
-          {selectedRide?.title.includes('2 Jet‑Skis') ? (
-            <Badge variant="secondary" className="rounded-full">2 Jet‑Skis</Badge>
-          ) : (
-            <Badge variant="secondary" className="rounded-full">Passenger optional</Badge>
-          )}
+          {(() => {
+            const match = selectedRide?.title.match(/\((\d+) Jet/)
+            const skiCount = match ? match[1] : null
+            return skiCount ? (
+              <Badge variant="secondary" className="rounded-full">{skiCount} Jet‑Ski{skiCount === '1' ? '' : 's'}</Badge>
+            ) : (
+              <Badge variant="secondary" className="rounded-full">Passenger optional</Badge>
+            )
+          })()}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -430,12 +489,12 @@ function classifySeverity(speed?: number | null, gust?: number | null): Severity
                       <div className="space-y-2">
                         <Label htmlFor="ride">Choose a ride</Label>
                         <Select value={rideId} onValueChange={setRideId}>
-                          <SelectTrigger id="ride">
+                          <SelectTrigger id="ride" className="min-w-full text-left whitespace-normal">
                             <SelectValue placeholder="Select a ride" />
                           </SelectTrigger>
                           <SelectContent>
                             {RIDES.map((r) => (
-                              <SelectItem key={r.id} value={r.id}>
+                              <SelectItem key={r.id} value={r.id} className="whitespace-normal leading-tight">
                                 {r.title} — {r.displayPrice}
                               </SelectItem>
                             ))}
@@ -505,42 +564,26 @@ function classifySeverity(speed?: number | null, gust?: number | null): Severity
                     <div className="space-y-2">
                       <Label>Passenger(s)</Label>
                       {maxExtraPeople <= 0 ? (
-                        <p className="text-xs text-muted-foreground">
-                          No additional passengers for this selection.
-                        </p>
-                      ) : maxExtraPeople === 1 ? (
-                        <div className="flex items-center gap-2">
-                          <Button
-                            type="button"
-                            variant={(addons.extraPeople || 0) === 0 ? 'default' : 'outline'}
-                            onClick={() => setAddons((a) => ({ ...a, extraPeople: 0 }))}
-                          >
-                            Just me (1)
-                          </Button>
-                          <Button
-                            type="button"
-                            variant={(addons.extraPeople || 0) === 1 ? 'default' : 'outline'}
-                            onClick={() => setAddons((a) => ({ ...a, extraPeople: 1 }))}
-                          >
-                            +1 Passenger (2)
-                          </Button>
-                        </div>
+                        <p className="text-xs text-muted-foreground">No additional passengers for this selection.</p>
                       ) : (
-                        <div className="flex items-center gap-2">
-                          {[0, 1, 2].map((n) => (
+                        <div className="flex flex-wrap items-center gap-2">
+                          {Array.from({ length: maxExtraPeople + 1 }).map((_, n) => (
                             <Button
                               key={n}
                               type="button"
+                              size="sm"
                               variant={(addons.extraPeople || 0) === n ? 'default' : 'outline'}
                               onClick={() => setAddons((a) => ({ ...a, extraPeople: n }))}
+                              className="whitespace-nowrap"
                             >
-                              {n} passenger{n === 1 ? '' : 's'}
+                              {n === 0 ? 'Just me' : `+${n} passenger${n === 1 ? '' : 's'}`}
                             </Button>
                           ))}
                         </div>
                       )}
                       <p className="text-xs text-muted-foreground">
                         Each jet ski can carry up to 2 people. Extra passengers cost R{EXTRA_PERSON_PRICE} each.
+                        <span className="ml-1">Up to {maxExtraPeople} additional passenger{maxExtraPeople === 1 ? '' : 's'} for this booking.</span>
                       </p>
                       {rideId === 'joy' && (
                         <Badge
