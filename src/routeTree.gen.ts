@@ -14,6 +14,7 @@ import { Route as WeatherIndexRouteImport } from './routes/weather/index'
 import { Route as SafetyIndexRouteImport } from './routes/safety/index'
 import { Route as RidesIndexRouteImport } from './routes/rides/index'
 import { Route as LocationsIndexRouteImport } from './routes/locations/index'
+import { Route as InterimSkipperQuizIndexRouteImport } from './routes/interim-skipper-quiz/index'
 import { Route as HomeIndexRouteImport } from './routes/home/index'
 import { Route as ContactIndexRouteImport } from './routes/contact/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
@@ -48,6 +49,11 @@ const RidesIndexRoute = RidesIndexRouteImport.update({
 const LocationsIndexRoute = LocationsIndexRouteImport.update({
   id: '/locations/',
   path: '/locations/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InterimSkipperQuizIndexRoute = InterimSkipperQuizIndexRouteImport.update({
+  id: '/interim-skipper-quiz/',
+  path: '/interim-skipper-quiz/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HomeIndexRoute = HomeIndexRouteImport.update({
@@ -112,6 +118,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminIndexRoute
   '/contact': typeof ContactIndexRoute
   '/home': typeof HomeIndexRoute
+  '/interim-skipper-quiz': typeof InterimSkipperQuizIndexRoute
   '/locations': typeof LocationsIndexRoute
   '/rides': typeof RidesIndexRoute
   '/safety': typeof SafetyIndexRoute
@@ -129,6 +136,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/contact': typeof ContactIndexRoute
   '/home': typeof HomeIndexRoute
+  '/interim-skipper-quiz': typeof InterimSkipperQuizIndexRoute
   '/locations': typeof LocationsIndexRoute
   '/rides': typeof RidesIndexRoute
   '/safety': typeof SafetyIndexRoute
@@ -147,6 +155,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/contact/': typeof ContactIndexRoute
   '/home/': typeof HomeIndexRoute
+  '/interim-skipper-quiz/': typeof InterimSkipperQuizIndexRoute
   '/locations/': typeof LocationsIndexRoute
   '/rides/': typeof RidesIndexRoute
   '/safety/': typeof SafetyIndexRoute
@@ -166,6 +175,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/contact'
     | '/home'
+    | '/interim-skipper-quiz'
     | '/locations'
     | '/rides'
     | '/safety'
@@ -183,6 +193,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/contact'
     | '/home'
+    | '/interim-skipper-quiz'
     | '/locations'
     | '/rides'
     | '/safety'
@@ -200,6 +211,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/contact/'
     | '/home/'
+    | '/interim-skipper-quiz/'
     | '/locations/'
     | '/rides/'
     | '/safety/'
@@ -218,6 +230,7 @@ export interface RootRouteChildren {
   AdminIndexRoute: typeof AdminIndexRoute
   ContactIndexRoute: typeof ContactIndexRoute
   HomeIndexRoute: typeof HomeIndexRoute
+  InterimSkipperQuizIndexRoute: typeof InterimSkipperQuizIndexRoute
   LocationsIndexRoute: typeof LocationsIndexRoute
   RidesIndexRoute: typeof RidesIndexRoute
   SafetyIndexRoute: typeof SafetyIndexRoute
@@ -260,6 +273,13 @@ declare module '@tanstack/react-router' {
       path: '/locations'
       fullPath: '/locations'
       preLoaderRoute: typeof LocationsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/interim-skipper-quiz/': {
+      id: '/interim-skipper-quiz/'
+      path: '/interim-skipper-quiz'
+      fullPath: '/interim-skipper-quiz'
+      preLoaderRoute: typeof InterimSkipperQuizIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/home/': {
@@ -346,6 +366,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminIndexRoute: AdminIndexRoute,
   ContactIndexRoute: ContactIndexRoute,
   HomeIndexRoute: HomeIndexRoute,
+  InterimSkipperQuizIndexRoute: InterimSkipperQuizIndexRoute,
   LocationsIndexRoute: LocationsIndexRoute,
   RidesIndexRoute: RidesIndexRoute,
   SafetyIndexRoute: SafetyIndexRoute,
