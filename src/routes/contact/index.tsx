@@ -138,7 +138,7 @@ function RouteComponent() {
                       inputMode="tel"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      placeholder="+27 74 658 8885"
+                      placeholder="+27"
                       required
                     />
                   </div>
@@ -149,7 +149,7 @@ function RouteComponent() {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="jetskiadventures1@gmail.com"
+                      placeholder="example@gmail.com"
                       required
                     />
                   </div>
