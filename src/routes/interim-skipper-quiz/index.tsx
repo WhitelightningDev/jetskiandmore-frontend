@@ -275,6 +275,17 @@ function RouteComponent() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-12">
       <h1 className="text-3xl font-semibold text-slate-900">Interim Skippers Licence Quiz &amp; Indemnity</h1>
+      <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+        <div className="aspect-video w-full">
+          <iframe
+            className="h-full w-full"
+            src="https://www.youtube.com/embed/5bZ37Hf82B0?start=13"
+            title="Interim Skippers Tutorial"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+          />
+        </div>
+      </div>
       <form
         onSubmit={handleSubmit}
         className="mt-8 space-y-8 rounded-lg border border-slate-200 bg-white p-6 shadow-sm"

@@ -16,15 +16,23 @@ type Conditions = {
   temperature?: number
   windSpeed?: number
   windGusts?: number
+  windDirection?: number
   precipitation?: number
 }
 
-function severityFromWind(windSpeed?: number, windGusts?: number): 'bad' | 'ok' | 'good' {
+function isSouthEasterly(dir?: number): boolean {
+  const d = Number(dir)
+  if (!Number.isFinite(d)) return false
+  const norm = ((d % 360) + 360) % 360
+  return norm >= 112.5 && norm <= 157.5
+}
+
+function severityFromWind(windSpeed?: number, windGusts?: number, windDirection?: number): 'bad' | 'ok' | 'good' {
   const s = windSpeed ?? 0
   const g = windGusts ?? 0
-  // Tune thresholds for small craft comfort
-  if (s >= 25 || g >= 35) return 'bad'
-  if (s >= 12 || g >= 20) return 'ok'
+  if (isSouthEasterly(windDirection)) return 'bad'
+  if (s >= 40 || g >= 60) return 'bad'
+  if (s >= 25 || g >= 45) return 'ok'
   return 'good'
 }
 
@@ -39,7 +47,8 @@ function CurrentConditionsCard() {
 
   useEffect(() => {
     const ac = new AbortController()
-    const url = 'https://api.open-meteo.com/v1/forecast?latitude=-34.165&longitude=18.866&current=temperature_2m,wind_speed_10m,wind_gusts_10m,precipitation&timezone=Africa%2FJohannesburg'
+    const url =
+      'https://api.open-meteo.com/v1/forecast?latitude=-34.165&longitude=18.866&current=temperature_2m,wind_speed_10m,wind_gusts_10m,wind_direction_10m,precipitation&timezone=Africa%2FJohannesburg'
     fetch(url, { signal: ac.signal })
       .then(r => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`)
@@ -52,6 +61,7 @@ function CurrentConditionsCard() {
           temperature: typeof c.temperature_2m === 'number' ? c.temperature_2m : undefined,
           windSpeed: typeof c.wind_speed_10m === 'number' ? c.wind_speed_10m : undefined,
           windGusts: typeof c.wind_gusts_10m === 'number' ? c.wind_gusts_10m : undefined,
+          windDirection: typeof c.wind_direction_10m === 'number' ? c.wind_direction_10m : undefined,
           precipitation: typeof c.precipitation === 'number' ? c.precipitation : undefined,
         })
       })
@@ -62,7 +72,7 @@ function CurrentConditionsCard() {
     return () => ac.abort()
   }, [])
 
-  const sev = severityFromWind(cond.windSpeed, cond.windGusts)
+  const sev = severityFromWind(cond.windSpeed, cond.windGusts, cond.windDirection)
 
   return (
     <Card className={`border mb-4 ${severityClasses(sev)}`}>
