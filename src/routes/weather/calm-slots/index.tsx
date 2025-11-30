@@ -39,12 +39,17 @@ function severityClasses(sev: Severity) {
   return 'bg-emerald-100 text-emerald-900 border-emerald-200'
 }
 
-function classifySeverity(wind?: number | null, gust?: number | null): Severity {
+function classifySeverity(wind?: number | null, gust?: number | null, direction?: number | null): Severity {
+  // Align with site-wide thresholds (Weather & Booking pages)
+  const d = Number(direction ?? NaN)
+  if (Number.isFinite(d)) {
+    const norm = ((d % 360) + 360) % 360
+    if (norm >= 112.5 && norm <= 157.5) return 'bad'
+  }
   const s = Number(wind ?? 0)
   const g = Number(gust ?? 0)
-  // Align with site-wide thresholds (Weather & Booking pages)
-  if (s >= 25 || g >= 35) return 'bad'
-  if (s >= 12 || g >= 20) return 'ok'
+  if (s >= 40 || g >= 60) return 'bad'
+  if (s >= 25 || g >= 45) return 'ok'
   return 'good'
 }
 
@@ -81,15 +86,16 @@ function CalmSlotsPage() {
         const out: DayInfo[] = times.map((t: string, i: number) => {
           const wind = Number(j?.daily?.wind_speed_10m_max?.[i] ?? NaN)
           const gust = Number(j?.daily?.wind_gusts_10m_max?.[i] ?? NaN)
+          const direction = Number(j?.daily?.wind_direction_10m_dominant?.[i] ?? NaN)
           const code = Number(j?.daily?.weather_code?.[i] ?? NaN)
-          const sev = classifySeverity(wind, gust)
+          const sev = classifySeverity(wind, gust, direction)
           return {
             date: t,
             tempMax: Number(j?.daily?.temperature_2m_max?.[i] ?? NaN),
             tempMin: Number(j?.daily?.temperature_2m_min?.[i] ?? NaN),
             windMax: wind,
             gustMax: gust,
-            direction: Number(j?.daily?.wind_direction_10m_dominant?.[i] ?? NaN),
+            direction,
             code,
             label: codeToText(code),
             severity: sev,
