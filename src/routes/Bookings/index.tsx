@@ -302,15 +302,19 @@ function RouteComponent() {
   const [weather, setWeather] = React.useState<Weather>(null)
   const [forecast, setForecast] = React.useState<Forecast>(null)
 
-function classifySeverity(speed?: number | null, gust?: number | null): Severity {
-  const s = Number(speed ?? 0)
-  const g = Number(gust ?? 0)
+function classifySeverity(speed?: number | null, gust?: number | null, direction?: number | null): Severity {
   // Align thresholds with Weather page: tuned for rider comfort
   // bad: strong winds/gusts
-  if (s >= 25 || g >= 35) return 'bad'
+  const d = Number(direction ?? NaN)
+  if (Number.isFinite(d)) {
+    const norm = ((d % 360) + 360) % 360
+    if (norm >= 112.5 && norm <= 157.5) return 'bad'
+  }
+  const s = Number(speed ?? 0)
+  const g = Number(gust ?? 0)
+  if (s >= 40 || g >= 60) return 'bad'
   // ok: moderate winds/gusts
-  if (s >= 12 || g >= 20) return 'ok'
-  // good: calm to light breeze
+  if (s >= 25 || g >= 45) return 'ok'
   return 'good'
 }
 
@@ -338,7 +342,7 @@ function classifySeverity(speed?: number | null, gust?: number | null): Severity
           direction: curDir,
           code: curCode,
           label: curLabel,
-          severity: classifySeverity(curWind, curGust),
+          severity: classifySeverity(curWind, curGust, curDir),
         })
 
         // Selected date daily forecast
@@ -360,7 +364,7 @@ function classifySeverity(speed?: number | null, gust?: number | null): Severity
             direction: dDir,
             code: dCode,
             label: dLabel,
-            severity: classifySeverity(dWind, dGust),
+            severity: classifySeverity(dWind, dGust, dDir),
           })
         } else {
           setForecast(null)
