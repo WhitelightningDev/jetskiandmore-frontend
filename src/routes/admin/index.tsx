@@ -5,7 +5,7 @@ import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts'
 
 import { API_BASE } from '@/lib/api'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -56,6 +56,22 @@ type AnalyticsSummary = {
   rides: RideStat[]
 }
 
+type QuizSubmission = {
+  id: string
+  email: string
+  name: string
+  surname: string
+  idNumber: string
+  passengerName?: string | null
+  passengerSurname?: string | null
+  passengerEmail?: string | null
+  passengerIdNumber?: string | null
+  hasWatchedTutorial: boolean
+  hasAcceptedIndemnity: boolean
+  quizAnswers: Record<string, any>
+  createdAt?: string | null
+}
+
 export const Route = createFileRoute('/admin/')({
   component: AdminDashboardRoute,
 })
@@ -72,6 +88,7 @@ function AdminDashboardRoute() {
   const [error, setError] = React.useState<string | null>(null)
   const [bookings, setBookings] = React.useState<Booking[]>([])
   const [analytics, setAnalytics] = React.useState<AnalyticsSummary | null>(null)
+  const [quizSubs, setQuizSubs] = React.useState<QuizSubmission[]>([])
   const [loading, setLoading] = React.useState(false)
   const [statusFilter, setStatusFilter] = React.useState<string | 'all'>('all')
   const [updatingId, setUpdatingId] = React.useState<string | null>(null)
@@ -103,20 +120,26 @@ function AdminDashboardRoute() {
       try {
         setLoading(true)
         const statusParam = statusFilter !== 'all' ? `&status_filter=${encodeURIComponent(statusFilter)}` : ''
-        const [bRes, aRes] = await Promise.all([
+        const [bRes, aRes, qRes] = await Promise.all([
           fetch(`${API_BASE}/api/admin/bookings?limit=100${statusParam}`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
           fetch(`${API_BASE}/api/admin/analytics/summary`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
+          fetch(`${API_BASE}/api/admin/interim-skipper-quiz?limit=200`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
         ])
         if (!bRes.ok) throw new Error('Failed to load bookings')
         if (!aRes.ok) throw new Error('Failed to load analytics')
+        if (!qRes.ok) throw new Error('Failed to load quiz submissions')
         const bData = (await bRes.json()) as Booking[]
         const aData = (await aRes.json()) as AnalyticsSummary
+        const qData = (await qRes.json()) as QuizSubmission[]
         setBookings(bData)
         setAnalytics(aData)
+        setQuizSubs(qData)
         setError(null)
       } catch (e: any) {
         setError(e?.message ?? 'Failed to load admin data')
@@ -162,6 +185,7 @@ function AdminDashboardRoute() {
     }
     setBookings([])
     setAnalytics(null)
+    setQuizSubs([])
   }
 
   async function updateBookingStatus(id: string, status: string) {
@@ -402,6 +426,69 @@ function AdminDashboardRoute() {
           </CardContent>
         </Card>
       )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Interim Skipper Quiz submissions</CardTitle>
+          <CardDescription>Recent quiz + indemnity responses</CardDescription>
+        </CardHeader>
+        <CardContent className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>ID number</TableHead>
+                <TableHead>Passenger</TableHead>
+                <TableHead>Checks</TableHead>
+                <TableHead>Submitted</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {quizSubs.map((q) => (
+                <TableRow key={q.id}>
+                  <TableCell className="font-medium">
+                    {q.name} {q.surname}
+                  </TableCell>
+                  <TableCell>{q.email}</TableCell>
+                  <TableCell>{q.idNumber}</TableCell>
+                  <TableCell className="text-sm">
+                    {q.passengerName || q.passengerSurname || q.passengerEmail ? (
+                      <div className="space-y-1">
+                        <div>
+                          {q.passengerName} {q.passengerSurname}
+                        </div>
+                        {q.passengerEmail ? (
+                          <div className="text-muted-foreground">{q.passengerEmail}</div>
+                        ) : null}
+                        {q.passengerIdNumber ? (
+                          <div className="text-muted-foreground">ID: {q.passengerIdNumber}</div>
+                        ) : null}
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-xs">
+                    <div className={q.hasWatchedTutorial ? 'text-emerald-700' : 'text-rose-700'}>
+                      Tutorial: {q.hasWatchedTutorial ? 'Yes' : 'No'}
+                    </div>
+                    <div className={q.hasAcceptedIndemnity ? 'text-emerald-700' : 'text-rose-700'}>
+                      Indemnity: {q.hasAcceptedIndemnity ? 'Yes' : 'No'}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {q.createdAt ? new Date(q.createdAt).toLocaleString() : '—'}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          {quizSubs.length === 0 ? (
+            <p className="text-sm text-muted-foreground mt-3">No submissions yet.</p>
+          ) : null}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
