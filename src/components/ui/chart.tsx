@@ -1,6 +1,6 @@
 import * as React from 'react'
-import type { TooltipProps } from 'recharts'
-import { Tooltip as RechartsTooltip } from 'recharts'
+import type { LegendProps, TooltipProps } from 'recharts'
+import { Legend as RechartsLegend, Tooltip as RechartsTooltip } from 'recharts'
 
 import { cn } from '@/lib/utils'
 
@@ -44,21 +44,66 @@ type ChartTooltipContentProps = {
   payload?: any[]
   label?: string
   indicator?: 'line' | 'dot' | 'none'
+  labelFormatter?: (label: string | number) => React.ReactNode
+  valueFormatter?: (value: number | string, name?: string) => React.ReactNode
 }
 
-export function ChartTooltipContent({ active, payload, label }: ChartTooltipContentProps) {
+export function ChartTooltipContent({
+  active,
+  payload,
+  label,
+  indicator = 'none',
+  labelFormatter,
+  valueFormatter,
+}: ChartTooltipContentProps) {
   if (!active || !payload || payload.length === 0) return null
+
+  const formattedLabel = labelFormatter ? labelFormatter(label ?? '') : label
 
   return (
     <div className="rounded-md border bg-background px-2 py-1 text-xs shadow-sm">
-      {label ? <div className="mb-1 font-medium">{label}</div> : null}
-      {payload.map((item) => (
-        <div key={item.dataKey} className="flex items-center justify-between gap-2">
-          <span className="text-muted-foreground">{item.name ?? item.dataKey}</span>
-          <span className="font-mono">{item.value}</span>
-        </div>
-      ))}
+      {formattedLabel ? <div className="mb-1 font-medium">{formattedLabel}</div> : null}
+      {payload.map((item) => {
+        const indicatorColor = item.color || item.payload?.fill || item.stroke || 'currentColor'
+        const value = valueFormatter ? valueFormatter(item.value, item.name ?? item.dataKey) : item.value
+        const name = item.name ?? item.dataKey
+        return (
+          <div key={item.dataKey} className="flex items-center justify-between gap-2">
+            <span className="flex items-center gap-2 text-muted-foreground">
+              {indicator === 'dot' ? (
+                <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: indicatorColor }} />
+              ) : indicator === 'line' ? (
+                <span className="inline-block h-px w-3" style={{ backgroundColor: indicatorColor }} />
+              ) : null}
+              {name}
+            </span>
+            <span className="font-mono">{value}</span>
+          </div>
+        )
+      })}
     </div>
   )
 }
 
+export function ChartLegend(props: LegendProps) {
+  return <RechartsLegend {...props} />
+}
+
+export function ChartLegendContent(props: LegendProps) {
+  const legendPayload = (props as LegendProps & { payload?: any[] }).payload ?? []
+  if (!legendPayload || legendPayload.length === 0) return null
+
+  return (
+    <div className="flex flex-wrap gap-3 text-xs">
+      {legendPayload.map((entry: { value: string; color?: string }) => {
+        if (!entry?.value) return null
+        return (
+          <div key={entry.value} className="flex items-center gap-2">
+            <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: entry.color }} />
+            <span className="text-muted-foreground">{entry.value}</span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
