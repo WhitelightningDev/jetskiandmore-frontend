@@ -90,17 +90,20 @@ export function ChartLegend(props: LegendProps) {
 }
 
 export function ChartLegendContent(props: LegendProps) {
-  const { payload } = props
-  if (!payload || payload.length === 0) return null
+  const legendPayload = (props as LegendProps & { payload?: any[] }).payload ?? []
+  if (!legendPayload || legendPayload.length === 0) return null
 
   return (
     <div className="flex flex-wrap gap-3 text-xs">
-      {payload.map((entry) => (
-        <div key={entry.value} className="flex items-center gap-2">
-          <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: entry.color }} />
-          <span className="text-muted-foreground">{entry.value}</span>
-        </div>
-      ))}
+      {legendPayload.map((entry: { value: string; color?: string }) => {
+        if (!entry?.value) return null
+        return (
+          <div key={entry.value} className="flex items-center gap-2">
+            <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: entry.color }} />
+            <span className="text-muted-foreground">{entry.value}</span>
+          </div>
+        )
+      })}
     </div>
   )
 }
