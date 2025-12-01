@@ -1,11 +1,10 @@
 import * as React from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import { TrendingUp } from 'lucide-react'
-import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts'
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from 'recharts'
 
 import { API_BASE } from '@/lib/api'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -19,12 +18,7 @@ import {
 } from '@/components/ui/table'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import {
-  type ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from '@/components/ui/chart'
+import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { Textarea } from '@/components/ui/textarea'
 
 type Booking = {
@@ -96,21 +90,68 @@ function AdminDashboardRoute() {
   const [statusMessage, setStatusMessage] = React.useState<string>('')
   const [pendingStatus, setPendingStatus] = React.useState<{ booking: Booking; status: string } | null>(null)
 
-  const bookingsChartData = React.useMemo(
-    () =>
-      analytics
-        ? analytics.rides.map((r) => ({
-            label: r.rideId,
-            bookings: r.bookings,
-          }))
-        : [],
-    [analytics],
-  )
+  const { dailyData, monthLabel } = React.useMemo(() => {
+    if (!bookings || bookings.length === 0) return { dailyData: [], monthLabel: '' }
+
+    // Find the most recent booking date to pick the month to display
+    let latest: Date | null = null
+    for (const b of bookings) {
+      const raw = b.date || b.createdAt
+      if (!raw) continue
+      const d = new Date(raw)
+      if (Number.isNaN(d.getTime())) continue
+      if (!latest || d > latest) latest = d
+    }
+    if (!latest) return { dailyData: [], monthLabel: '' }
+
+    const targetYear = latest.getFullYear()
+    const targetMonth = latest.getMonth()
+    const daysInMonth = new Date(targetYear, targetMonth + 1, 0).getDate()
+    const labelForMonth = latest.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+
+    const aggregates: Record<number, { bookings: number; revenue: number }> = {}
+    bookings.forEach((b) => {
+      const raw = b.date || b.createdAt
+      if (!raw) return
+      const d = new Date(raw)
+      if (Number.isNaN(d.getTime())) return
+      if (d.getFullYear() !== targetYear || d.getMonth() !== targetMonth) return
+      const day = d.getDate()
+      if (!aggregates[day]) {
+        aggregates[day] = { bookings: 0, revenue: 0 }
+      }
+      aggregates[day].bookings += 1
+      aggregates[day].revenue += Math.round((b.amountInCents ?? 0) / 100)
+    })
+
+    const dailyData = Array.from({ length: daysInMonth }, (_, idx) => {
+      const day = idx + 1
+      const aggregate = aggregates[day] ?? { bookings: 0, revenue: 0 }
+      return {
+        day,
+        label: `${labelForMonth.split(' ')[0].slice(0, 3)} ${day}`,
+        bookings: aggregate.bookings,
+        revenue: aggregate.revenue,
+      }
+    })
+
+    return { dailyData, monthLabel: labelForMonth }
+  }, [bookings])
+
+  const formatNumber = (value: number) => {
+    if (value >= 1000000) return `${(value / 1000000).toFixed(1)}m`
+    if (value >= 1000) return `${(value / 1000).toFixed(1)}k`
+    return `${value}`
+  }
 
   const bookingsChartConfig: ChartConfig = {
     bookings: {
       label: 'Bookings',
-      color: 'hsl(var(--primary))',
+      color: '#2563eb', // vivid blue to separate from revenue
+    },
+    revenue: {
+      label: 'Revenue (ZAR)',
+      color: '#ea580c', // amber for revenue contrast
     },
   }
 
@@ -293,112 +334,186 @@ function AdminDashboardRoute() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Admin dashboard</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage bookings and view revenue.
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-primary/5">
+      <div className="mx-auto max-w-6xl px-4 py-10 space-y-8">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1">
+            <p className="text-xs uppercase tracking-[0.22em] text-primary">Control center</p>
+            <h1 className="text-3xl font-bold">Admin dashboard</h1>
+            <p className="text-sm text-muted-foreground">Manage bookings, revenue, and safety submissions.</p>
+          </div>
+          <Button variant="outline" onClick={handleLogout} className="border-primary/30">
+            Log out
+          </Button>
         </div>
-        <Button variant="outline" onClick={handleLogout}>
-          Log out
-        </Button>
-      </div>
 
-      {error && (
-        <Alert variant="destructive">
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
+        {error && (
+          <Alert variant="destructive">
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr),minmax(0,2fr)]">
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Total bookings</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-semibold">
-                {analytics ? analytics.totalBookings : '—'}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Total revenue</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-semibold">
-                {analytics ? `ZAR ${analytics.totalRevenueZar.toFixed(0)}` : '—'}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Top ride</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-sm">
-                {analytics && analytics.rides.length > 0
-                  ? `${analytics.rides[0].rideId} (${analytics.rides[0].bookings} bookings)`
-                  : '—'}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-        {bookingsChartData.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Bookings by ride</CardTitle>
-              <p className="text-xs text-muted-foreground">
-                Based on analytics summary for recent bookings.
-              </p>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer config={bookingsChartConfig}>
-                <AreaChart
-                  accessibilityLayer
-                  data={bookingsChartData}
-                  margin={{ left: 12, right: 12 }}
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr),minmax(0,2fr)]">
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Card className="bg-white/80 backdrop-blur border-primary/10 shadow-[0_18px_40px_-28px_rgba(15,23,42,0.5)]">
+              <CardHeader>
+                <CardTitle className="text-base">Total bookings</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-semibold">
+                  {analytics ? analytics.totalBookings : '—'}
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-white/80 backdrop-blur border-primary/10 shadow-[0_18px_40px_-28px_rgba(15,23,42,0.5)]">
+              <CardHeader>
+                <CardTitle className="text-base">Total revenue</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-semibold">
+                  {analytics ? `ZAR ${analytics.totalRevenueZar.toFixed(0)}` : '—'}
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-white/80 backdrop-blur border-primary/10 shadow-[0_18px_40px_-28px_rgba(15,23,42,0.5)]">
+              <CardHeader>
+                <CardTitle className="text-base">Top ride</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-sm">
+                  {analytics && analytics.rides.length > 0
+                    ? `${analytics.rides[0].rideId} (${analytics.rides[0].bookings} bookings)`
+                    : '—'}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        {dailyData.length > 0 && (
+          <div className="grid gap-4 md:grid-cols-2">
+              <Card className="py-0 bg-white/90 backdrop-blur border-primary/10 shadow-[0_20px_60px_-40px_rgba(14,116,144,0.4)]">
+              <CardHeader className="flex flex-col items-stretch border-b !p-0 sm:flex-row">
+                <div className="flex flex-1 flex-col justify-center gap-1 px-6 pt-4 pb-3 sm:!py-0">
+                  <CardTitle>Bookings this month</CardTitle>
+                  <CardDescription>{monthLabel || 'Latest month'} daily counts.</CardDescription>
+                </div>
+                <div className="flex">
+                  <div className="relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left sm:border-l sm:border-t-0 sm:px-8 sm:py-6">
+                    <span className="text-muted-foreground text-xs">Total</span>
+                    <span className="text-lg leading-none font-bold sm:text-3xl">
+                      {analytics?.totalBookings.toLocaleString() ?? '—'}
+                    </span>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="px-2 sm:p-6">
+                <ChartContainer
+                  config={{ bookings: bookingsChartConfig.bookings }}
+                  className="rounded-xl border bg-gradient-to-b from-white to-slate-50"
                 >
-                  <CartesianGrid vertical={false} />
-                  <XAxis
-                    dataKey="label"
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                  />
-                  <ChartTooltip
-                    cursor={false}
-                    content={<ChartTooltipContent indicator="line" />}
-                  />
-                  <Area
-                    dataKey="bookings"
-                    type="natural"
-                    fill="var(--color-bookings)"
-                    fillOpacity={0.4}
-                    stroke="var(--color-bookings)"
-                  />
-                </AreaChart>
-              </ChartContainer>
-            </CardContent>
-            <CardFooter>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1 font-medium text-foreground">
-                  Trend overview
-                  <TrendingUp className="h-3 w-3" />
-                </span>
-                <span>Booking counts per ride</span>
-              </div>
-            </CardFooter>
-          </Card>
+                  <div className="h-72 w-full px-1">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart accessibilityLayer data={dailyData} margin={{ left: 12, right: 12, top: 12 }}>
+                        <defs>
+                          <linearGradient id="fillBookingsTotal" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="var(--color-bookings)" stopOpacity={0.8} />
+                            <stop offset="95%" stopColor="var(--color-bookings)" stopOpacity={0.1} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid vertical={false} strokeOpacity={0.25} strokeDasharray="3 3" />
+                        <XAxis dataKey="day" tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(v) => `${v}`} />
+                        <YAxis
+                          tickLine={false}
+                          axisLine={false}
+                          tickFormatter={(v) => formatNumber(Number(v))}
+                          width={42}
+                          tickMargin={6}
+                        />
+                        <ChartTooltip
+                          cursor={false}
+                          content={
+                            <ChartTooltipContent
+                              indicator="dot"
+                              labelFormatter={(value) => `${monthLabel || 'Day'} ${value}`}
+                              valueFormatter={(value) => `${Number(value ?? 0)} bookings`}
+                            />
+                          }
+                        />
+                        <Area
+                          name="Bookings"
+                          dataKey="bookings"
+                          type="monotone"
+                          fill="url(#fillBookingsTotal)"
+                          stroke="var(--color-bookings)"
+                          strokeWidth={2.25}
+                          activeDot={{ r: 4 }}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/90 backdrop-blur border-primary/10 shadow-[0_20px_60px_-40px_rgba(14,116,144,0.4)]">
+              <CardHeader>
+                <CardTitle>Revenue this month</CardTitle>
+                <CardDescription>{monthLabel || 'Latest month'} daily revenue (ZAR).</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer
+                  config={{ revenue: bookingsChartConfig.revenue }}
+                  className="rounded-xl border bg-gradient-to-b from-white to-slate-50"
+                >
+                  <div className="h-72 w-full px-1">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart accessibilityLayer data={dailyData} margin={{ left: 12, right: 12, top: 12 }}>
+                        <defs>
+                          <linearGradient id="fillRevenueTotal" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="var(--color-revenue)" stopOpacity={0.8} />
+                            <stop offset="95%" stopColor="var(--color-revenue)" stopOpacity={0.1} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid vertical={false} strokeOpacity={0.25} strokeDasharray="3 3" />
+                        <XAxis dataKey="day" tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(v) => `${v}`} />
+                        <YAxis
+                          tickLine={false}
+                          axisLine={false}
+                          tickFormatter={(v) => `Z${formatNumber(Number(v))}`}
+                          width={50}
+                          tickMargin={6}
+                        />
+                        <ChartTooltip
+                          cursor={false}
+                          content={
+                            <ChartTooltipContent
+                              indicator="dot"
+                              labelFormatter={(value) => `${monthLabel || 'Day'} ${value}`}
+                              valueFormatter={(value) => `ZAR ${Number(value ?? 0).toLocaleString('en-ZA')}`}
+                            />
+                          }
+                        />
+                        <Area
+                          name="Revenue"
+                          dataKey="revenue"
+                          type="monotone"
+                          fill="url(#fillRevenueTotal)"
+                          stroke="var(--color-revenue)"
+                          strokeWidth={2.25}
+                          activeDot={{ r: 4 }}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+          </div>
         )}
       </div>
 
       {analytics && analytics.rides.length > 0 && (
-        <Card>
+        <Card className="bg-white/90 backdrop-blur border-primary/10 shadow-[0_18px_50px_-35px_rgba(15,23,42,0.45)]">
           <CardHeader>
             <CardTitle className="text-base">Bookings by ride</CardTitle>
           </CardHeader>
@@ -427,7 +542,7 @@ function AdminDashboardRoute() {
         </Card>
       )}
 
-      <Card>
+      <Card className="bg-white/90 backdrop-blur border-primary/10 shadow-[0_18px_50px_-35px_rgba(15,23,42,0.45)]">
         <CardHeader>
           <CardTitle className="text-base">Interim Skipper Quiz submissions</CardTitle>
           <CardDescription>Recent quiz + indemnity responses</CardDescription>
@@ -490,7 +605,7 @@ function AdminDashboardRoute() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="bg-white/90 backdrop-blur border-primary/10 shadow-[0_18px_50px_-35px_rgba(15,23,42,0.45)]">
         <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <CardTitle className="text-base">Recent bookings</CardTitle>
           <div className="flex items-center gap-3">
@@ -651,5 +766,6 @@ function AdminDashboardRoute() {
         </Dialog>
       )}
     </div>
+  </div>
   )
 }
