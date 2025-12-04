@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WeatherIndexRouteImport } from './routes/weather/index'
 import { Route as SafetyIndexRouteImport } from './routes/safety/index'
@@ -17,15 +18,23 @@ import { Route as LocationsIndexRouteImport } from './routes/locations/index'
 import { Route as InterimSkipperQuizIndexRouteImport } from './routes/interim-skipper-quiz/index'
 import { Route as HomeIndexRouteImport } from './routes/home/index'
 import { Route as ContactIndexRouteImport } from './routes/contact/index'
-import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AddOnsIndexRouteImport } from './routes/add-ons/index'
 import { Route as BookingsIndexRouteImport } from './routes/Bookings/index'
 import { Route as PaymentsSuccessRouteImport } from './routes/payments/success'
 import { Route as PaymentsResultRouteImport } from './routes/payments/result'
 import { Route as PaymentsFailedRouteImport } from './routes/payments/failed'
 import { Route as PaymentsCancelledRouteImport } from './routes/payments/cancelled'
+import { Route as AdminQuizRouteImport } from './routes/admin/quiz'
+import { Route as AdminOverviewRouteImport } from './routes/admin/overview'
+import { Route as AdminBookingsRouteImport } from './routes/admin/bookings'
+import { Route as AdminAnalyticsRouteImport } from './routes/admin/analytics'
 import { Route as WeatherCalmSlotsIndexRouteImport } from './routes/weather/calm-slots/index'
 
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -66,11 +75,6 @@ const ContactIndexRoute = ContactIndexRouteImport.update({
   path: '/contact/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminIndexRoute = AdminIndexRouteImport.update({
-  id: '/admin/',
-  path: '/admin/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AddOnsIndexRoute = AddOnsIndexRouteImport.update({
   id: '/add-ons/',
   path: '/add-ons/',
@@ -101,6 +105,26 @@ const PaymentsCancelledRoute = PaymentsCancelledRouteImport.update({
   path: '/payments/cancelled',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminQuizRoute = AdminQuizRouteImport.update({
+  id: '/quiz',
+  path: '/quiz',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminOverviewRoute = AdminOverviewRouteImport.update({
+  id: '/overview',
+  path: '/overview',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminBookingsRoute = AdminBookingsRouteImport.update({
+  id: '/bookings',
+  path: '/bookings',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => AdminRoute,
+} as any)
 const WeatherCalmSlotsIndexRoute = WeatherCalmSlotsIndexRouteImport.update({
   id: '/weather/calm-slots/',
   path: '/weather/calm-slots/',
@@ -109,13 +133,17 @@ const WeatherCalmSlotsIndexRoute = WeatherCalmSlotsIndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/bookings': typeof AdminBookingsRoute
+  '/admin/overview': typeof AdminOverviewRoute
+  '/admin/quiz': typeof AdminQuizRoute
   '/payments/cancelled': typeof PaymentsCancelledRoute
   '/payments/failed': typeof PaymentsFailedRoute
   '/payments/result': typeof PaymentsResultRoute
   '/payments/success': typeof PaymentsSuccessRoute
   '/Bookings': typeof BookingsIndexRoute
   '/add-ons': typeof AddOnsIndexRoute
-  '/admin': typeof AdminIndexRoute
   '/contact': typeof ContactIndexRoute
   '/home': typeof HomeIndexRoute
   '/interim-skipper-quiz': typeof InterimSkipperQuizIndexRoute
@@ -127,13 +155,17 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/bookings': typeof AdminBookingsRoute
+  '/admin/overview': typeof AdminOverviewRoute
+  '/admin/quiz': typeof AdminQuizRoute
   '/payments/cancelled': typeof PaymentsCancelledRoute
   '/payments/failed': typeof PaymentsFailedRoute
   '/payments/result': typeof PaymentsResultRoute
   '/payments/success': typeof PaymentsSuccessRoute
   '/Bookings': typeof BookingsIndexRoute
   '/add-ons': typeof AddOnsIndexRoute
-  '/admin': typeof AdminIndexRoute
   '/contact': typeof ContactIndexRoute
   '/home': typeof HomeIndexRoute
   '/interim-skipper-quiz': typeof InterimSkipperQuizIndexRoute
@@ -146,13 +178,17 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/bookings': typeof AdminBookingsRoute
+  '/admin/overview': typeof AdminOverviewRoute
+  '/admin/quiz': typeof AdminQuizRoute
   '/payments/cancelled': typeof PaymentsCancelledRoute
   '/payments/failed': typeof PaymentsFailedRoute
   '/payments/result': typeof PaymentsResultRoute
   '/payments/success': typeof PaymentsSuccessRoute
   '/Bookings/': typeof BookingsIndexRoute
   '/add-ons/': typeof AddOnsIndexRoute
-  '/admin/': typeof AdminIndexRoute
   '/contact/': typeof ContactIndexRoute
   '/home/': typeof HomeIndexRoute
   '/interim-skipper-quiz/': typeof InterimSkipperQuizIndexRoute
@@ -166,13 +202,17 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
+    | '/admin/analytics'
+    | '/admin/bookings'
+    | '/admin/overview'
+    | '/admin/quiz'
     | '/payments/cancelled'
     | '/payments/failed'
     | '/payments/result'
     | '/payments/success'
     | '/Bookings'
     | '/add-ons'
-    | '/admin'
     | '/contact'
     | '/home'
     | '/interim-skipper-quiz'
@@ -184,13 +224,17 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
+    | '/admin/analytics'
+    | '/admin/bookings'
+    | '/admin/overview'
+    | '/admin/quiz'
     | '/payments/cancelled'
     | '/payments/failed'
     | '/payments/result'
     | '/payments/success'
     | '/Bookings'
     | '/add-ons'
-    | '/admin'
     | '/contact'
     | '/home'
     | '/interim-skipper-quiz'
@@ -202,13 +246,17 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/admin'
+    | '/admin/analytics'
+    | '/admin/bookings'
+    | '/admin/overview'
+    | '/admin/quiz'
     | '/payments/cancelled'
     | '/payments/failed'
     | '/payments/result'
     | '/payments/success'
     | '/Bookings/'
     | '/add-ons/'
-    | '/admin/'
     | '/contact/'
     | '/home/'
     | '/interim-skipper-quiz/'
@@ -221,13 +269,13 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
   PaymentsCancelledRoute: typeof PaymentsCancelledRoute
   PaymentsFailedRoute: typeof PaymentsFailedRoute
   PaymentsResultRoute: typeof PaymentsResultRoute
   PaymentsSuccessRoute: typeof PaymentsSuccessRoute
   BookingsIndexRoute: typeof BookingsIndexRoute
   AddOnsIndexRoute: typeof AddOnsIndexRoute
-  AdminIndexRoute: typeof AdminIndexRoute
   ContactIndexRoute: typeof ContactIndexRoute
   HomeIndexRoute: typeof HomeIndexRoute
   InterimSkipperQuizIndexRoute: typeof InterimSkipperQuizIndexRoute
@@ -240,6 +288,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -296,13 +351,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContactIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/': {
-      id: '/admin/'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/add-ons/': {
       id: '/add-ons/'
       path: '/add-ons'
@@ -345,6 +393,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PaymentsCancelledRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/quiz': {
+      id: '/admin/quiz'
+      path: '/quiz'
+      fullPath: '/admin/quiz'
+      preLoaderRoute: typeof AdminQuizRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/overview': {
+      id: '/admin/overview'
+      path: '/overview'
+      fullPath: '/admin/overview'
+      preLoaderRoute: typeof AdminOverviewRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/bookings': {
+      id: '/admin/bookings'
+      path: '/bookings'
+      fullPath: '/admin/bookings'
+      preLoaderRoute: typeof AdminBookingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/analytics': {
+      id: '/admin/analytics'
+      path: '/analytics'
+      fullPath: '/admin/analytics'
+      preLoaderRoute: typeof AdminAnalyticsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/weather/calm-slots/': {
       id: '/weather/calm-slots/'
       path: '/weather/calm-slots'
@@ -355,15 +431,31 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AdminRouteChildren {
+  AdminAnalyticsRoute: typeof AdminAnalyticsRoute
+  AdminBookingsRoute: typeof AdminBookingsRoute
+  AdminOverviewRoute: typeof AdminOverviewRoute
+  AdminQuizRoute: typeof AdminQuizRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminAnalyticsRoute: AdminAnalyticsRoute,
+  AdminBookingsRoute: AdminBookingsRoute,
+  AdminOverviewRoute: AdminOverviewRoute,
+  AdminQuizRoute: AdminQuizRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
   PaymentsCancelledRoute: PaymentsCancelledRoute,
   PaymentsFailedRoute: PaymentsFailedRoute,
   PaymentsResultRoute: PaymentsResultRoute,
   PaymentsSuccessRoute: PaymentsSuccessRoute,
   BookingsIndexRoute: BookingsIndexRoute,
   AddOnsIndexRoute: AddOnsIndexRoute,
-  AdminIndexRoute: AdminIndexRoute,
   ContactIndexRoute: ContactIndexRoute,
   HomeIndexRoute: HomeIndexRoute,
   InterimSkipperQuizIndexRoute: InterimSkipperQuizIndexRoute,
