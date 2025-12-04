@@ -162,6 +162,12 @@ function getSkiCount(rideId: string): number {
   return 1
 }
 
+function sanitizeRideId(id: unknown): string {
+  if (typeof id !== 'string') return '30-1'
+  const exists = RIDES.some((r) => r.id === id)
+  return exists ? id : '30-1'
+}
+
 function RouteComponent() {
   const search = Route.useSearch() as Partial<{
     rideId: string
@@ -173,23 +179,21 @@ function RouteComponent() {
     extraPeople: unknown
   }>
 
-  const [rideId, setRideId] = React.useState<string>(typeof search.rideId === 'string' ? search.rideId : '30-1')
+  const [rideId, setRideId] = React.useState<string>(sanitizeRideId(search.rideId))
   const [date, setDate] = React.useState<Date | undefined>(undefined)
   const [time, setTime] = React.useState<string>('')
   const [fullName, setFullName] = React.useState<string>('')
   const [email, setEmail] = React.useState<string>('')
   const [phone, setPhone] = React.useState<string>('')
   const [notes, setNotes] = React.useState<string>('')
-  const [addons, setAddons] = React.useState<{ drone: boolean; gopro: boolean; wetsuit: boolean; boat: boolean; boatCount: number; extraPeople: number }>(
-    {
-      drone: toBool(search.drone),
-      gopro: toBool(search.gopro),
-      wetsuit: toBool(search.wetsuit),
-      boat: toBool(search.boat),
-      boatCount: toInt(search.boatCount, 1),
-      extraPeople: Math.max(0, Math.min(2, toInt(search.extraPeople, 0))),
-    },
-  )
+  const [addons, setAddons] = React.useState<{ drone: boolean; gopro: boolean; wetsuit: boolean; boat: boolean; boatCount: number; extraPeople: number }>({
+    drone: toBool(search.drone),
+    gopro: toBool(search.gopro),
+    wetsuit: toBool(search.wetsuit),
+    boat: toBool(search.boat),
+    boatCount: toInt(search.boatCount, 1),
+    extraPeople: Math.max(0, Math.min(2, toInt(search.extraPeople, 0))),
+  })
 
   // Payment state
   const [quoteCents, setQuoteCents] = React.useState<number | null>(null)
@@ -212,6 +216,31 @@ function RouteComponent() {
     if (skiCount <= 0) return 0
     return skiCount
   }, [rideId])
+
+  // Sync ride/add-ons if user navigates here with new search params (e.g., from Rides page)
+  React.useEffect(() => {
+    const nextRide = sanitizeRideId(search.rideId)
+    setRideId((prev) => (prev === nextRide ? prev : nextRide))
+    setAddons((prev) => {
+      const next = {
+        drone: toBool(search.drone),
+        gopro: toBool(search.gopro),
+        wetsuit: toBool(search.wetsuit),
+        boat: toBool(search.boat),
+        boatCount: toInt(search.boatCount, 1),
+        extraPeople: Math.max(0, Math.min(2, toInt(search.extraPeople, 0))),
+      }
+      // Avoid unnecessary re-renders
+      const same =
+        prev.drone === next.drone &&
+        prev.gopro === next.gopro &&
+        prev.wetsuit === next.wetsuit &&
+        prev.boat === next.boat &&
+        prev.boatCount === next.boatCount &&
+        prev.extraPeople === next.extraPeople
+      return same ? prev : next
+    })
+  }, [search.boat, search.boatCount, search.drone, search.extraPeople, search.gopro, search.rideId, search.wetsuit])
 
   React.useEffect(() => {
     setAddons((a) => ({ ...a, extraPeople: Math.min(a.extraPeople, maxExtraPeople) }))
