@@ -32,6 +32,16 @@ type Ride = {
   icon: React.ReactNode
 }
 
+type RiderContact = {
+  name: string
+  email: string
+}
+
+type PassengerContact = {
+  name: string
+  email: string
+}
+
 const RIDES: Ride[] = [
   {
     id: '30-1',
@@ -208,7 +218,8 @@ function RouteComponent() {
 
   // Step-by-step flow
   const [step, setStep] = React.useState<1 | 2 | 3 | 4>(1)
-  const [passengers, setPassengers] = React.useState<{ name: string }[]>([])
+  const [passengers, setPassengers] = React.useState<PassengerContact[]>([])
+  const [riders, setRiders] = React.useState<RiderContact[]>([])
 
   // Limit additional passenger counts based on ride selection
   const maxExtraPeople = React.useMemo(() => {
@@ -252,11 +263,22 @@ function RouteComponent() {
     setPassengers((prev) => {
       const next = prev.slice(0, count)
       while (next.length < count) {
-        next.push({ name: '' })
+        next.push({ name: '', email: '' })
       }
       return next
     })
   }, [addons.extraPeople])
+
+  // Keep rider detail fields in sync with number of jet skis (minus primary)
+  React.useEffect(() => {
+    setRiders((prev) => {
+      const next = prev.slice(0, additionalRidersCount)
+      while (next.length < additionalRidersCount) {
+        next.push({ name: '', email: '' })
+      }
+      return next
+    })
+  }, [additionalRidersCount])
 
   // Fetch available times when ride or date changes
   React.useEffect(() => {
@@ -418,9 +440,13 @@ function classifySeverity(speed?: number | null, gust?: number | null, direction
   // Step validation helpers
   const basicsComplete = Boolean(rideId && date && time)
   const contactComplete = Boolean(fullName.trim() && phone.trim() && email.trim())
-  const passengersComplete = (addons.extraPeople || 0) === 0 || passengers.every((p) => p.name.trim())
+  const passengersComplete =
+    (addons.extraPeople || 0) === 0 ||
+    passengers.every((p) => p.name.trim() && p.email.trim())
+  const additionalRidersCount = React.useMemo(() => Math.max(0, getSkiCount(rideId) - 1), [rideId])
+  const ridersComplete = additionalRidersCount === 0 || riders.every((r) => r.name.trim() && r.email.trim())
   const step1Valid = basicsComplete
-  const step2Valid = contactComplete && passengersComplete
+  const step2Valid = contactComplete && passengersComplete && ridersComplete
   const allRequiredComplete = step1Valid && step2Valid
 
   const goNext = () => {
@@ -429,7 +455,7 @@ function classifySeverity(speed?: number | null, gust?: number | null, direction
       return
     }
     if (step === 2 && !step2Valid) {
-      alert('Please fill in your contact details and passenger names.')
+      alert('Please fill in contact details plus rider and passenger names/emails.')
       return
     }
     setStep((prev) => (prev < 4 ? ((prev + 1) as 1 | 2 | 3 | 4) : prev))
@@ -616,8 +642,8 @@ function classifySeverity(speed?: number | null, gust?: number | null, direction
                       )}
                       <p className="text-xs text-muted-foreground">
                         Each jet ski can carry up to 2 people. Extra passengers cost R{EXTRA_PERSON_PRICE} each.
-                        <span className="ml-1">Up to {maxExtraPeople} additional passenger{maxExtraPeople === 1 ? '' : 's'} for this booking.</span>
-                      </p>
+                          <span className="ml-1">Up to {maxExtraPeople} additional passenger{maxExtraPeople === 1 ? '' : 's'} for this booking.</span>
+                        </p>
                       {rideId === 'joy' && (
                         <Badge
                           variant="outline"
@@ -677,6 +703,54 @@ function classifySeverity(speed?: number | null, gust?: number | null, direction
                       </div>
                     </div>
 
+                    {additionalRidersCount > 0 && (
+                      <div className="space-y-3">
+                        <Label>Additional rider details</Label>
+                        <p className="text-xs text-muted-foreground">
+                          We email each rider their indemnity link. One row per extra rider.
+                        </p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {riders.map((r, idx) => (
+                            <div key={idx} className="space-y-2 rounded-lg border border-border/60 p-3">
+                              <div className="space-y-1">
+                                <Label htmlFor={`rider-${idx}`}>Rider {idx + 2} full name</Label>
+                                <Input
+                                  id={`rider-${idx}`}
+                                  value={r.name}
+                                  onChange={(e) =>
+                                    setRiders((prev) => {
+                                      const next = [...prev]
+                                      next[idx] = { ...next[idx], name: e.target.value }
+                                      return next
+                                    })
+                                  }
+                                  placeholder="Full name"
+                                  required
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <Label htmlFor={`rider-email-${idx}`}>Rider {idx + 2} email</Label>
+                                <Input
+                                  id={`rider-email-${idx}`}
+                                  type="email"
+                                  value={r.email}
+                                  onChange={(e) =>
+                                    setRiders((prev) => {
+                                      const next = [...prev]
+                                      next[idx] = { ...next[idx], email: e.target.value }
+                                      return next
+                                    })
+                                  }
+                                  placeholder="Email"
+                                  required
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     {addons.extraPeople > 0 && (
                       <div className="space-y-3">
                         <Label>Additional passenger details</Label>
@@ -685,20 +759,40 @@ function classifySeverity(speed?: number | null, gust?: number | null, direction
                         </p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           {passengers.map((p, idx) => (
-                            <div key={idx} className="space-y-1">
-                              <Label htmlFor={`passenger-${idx}`}>Passenger {idx + 1} full name</Label>
-                              <Input
-                                id={`passenger-${idx}`}
-                                value={p.name}
-                                onChange={(e) =>
-                                  setPassengers((prev) => {
-                                    const next = [...prev]
-                                    next[idx] = { ...next[idx], name: e.target.value }
-                                    return next
-                                  })
-                                }
-                                placeholder="Full name"
-                              />
+                            <div key={idx} className="space-y-2 rounded-lg border border-border/60 p-3">
+                              <div className="space-y-1">
+                                <Label htmlFor={`passenger-${idx}`}>Passenger {idx + 1} full name</Label>
+                                <Input
+                                  id={`passenger-${idx}`}
+                                  value={p.name}
+                                  onChange={(e) =>
+                                    setPassengers((prev) => {
+                                      const next = [...prev]
+                                      next[idx] = { ...next[idx], name: e.target.value }
+                                      return next
+                                    })
+                                  }
+                                  placeholder="Full name"
+                                  required
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <Label htmlFor={`passenger-email-${idx}`}>Passenger {idx + 1} email</Label>
+                                <Input
+                                  id={`passenger-email-${idx}`}
+                                  type="email"
+                                  value={p.email}
+                                  onChange={(e) =>
+                                    setPassengers((prev) => {
+                                      const next = [...prev]
+                                      next[idx] = { ...next[idx], email: e.target.value }
+                                      return next
+                                    })
+                                  }
+                                  placeholder="Email"
+                                  required
+                                />
+                              </div>
                             </div>
                           ))}
                         </div>
@@ -951,7 +1045,7 @@ function classifySeverity(speed?: number | null, gust?: number | null, direction
             <Button onClick={async () => {
               setPaying(true)
                   const formattedDate = date ? date.toISOString().split('T')[0] : null
-                  const booking = { rideId, date: formattedDate, time, fullName, email, phone, notes, addons, passengers }
+                  const booking = { rideId, date: formattedDate, time, fullName, email, phone, notes, addons, passengers, riders }
               try {
                 // Preferred: Checkout API (Bearer token)
                 const co = await createCheckout(booking)
