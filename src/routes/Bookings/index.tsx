@@ -221,6 +221,8 @@ function RouteComponent() {
   const [passengers, setPassengers] = React.useState<PassengerContact[]>([])
   const [riders, setRiders] = React.useState<RiderContact[]>([])
 
+  const additionalRidersCount = React.useMemo(() => Math.max(0, getSkiCount(rideId) - 1), [rideId])
+
   // Limit additional passenger counts based on ride selection
   const maxExtraPeople = React.useMemo(() => {
     const skiCount = getSkiCount(rideId)
@@ -443,7 +445,6 @@ function classifySeverity(speed?: number | null, gust?: number | null, direction
   const passengersComplete =
     (addons.extraPeople || 0) === 0 ||
     passengers.every((p) => p.name.trim() && p.email.trim())
-  const additionalRidersCount = React.useMemo(() => Math.max(0, getSkiCount(rideId) - 1), [rideId])
   const ridersComplete = additionalRidersCount === 0 || riders.every((r) => r.name.trim() && r.email.trim())
   const step1Valid = basicsComplete
   const step2Valid = contactComplete && passengersComplete && ridersComplete
