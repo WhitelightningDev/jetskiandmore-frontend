@@ -17,6 +17,7 @@ const LABEL_MAP: Record<string, string> = {
   'calm-slots': 'Calm Slots',
   rides: 'Rides',
   'add-ons': 'Add-ons',
+  'boat-ride': 'Boat ride',
   locations: 'Locations',
   safety: 'Safety',
   contact: 'Contact',

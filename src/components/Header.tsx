@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { useState } from 'react'
-import { Home, Menu, X, Waves, ShieldCheck, Phone, CalendarDays, Sparkles, ArrowRight } from 'lucide-react'
+import { Home, Menu, X, Waves, ShieldCheck, Phone, CalendarDays, Sparkles, ArrowRight, Ship } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
 import jetskilogo from '@/lib/images/JetSkiLogo.png'
 
@@ -42,7 +42,8 @@ export default function Header() {
             <nav className="hidden md:flex items-center gap-2 ml-4 px-2 py-1 rounded-full bg-background/70 border border-border/60 shadow-inner shadow-primary/5">
               {[
                 { to: '/home', label: 'Home' },
-                { to: '/rides', label: 'Rides' },
+                { to: '/rides', label: 'Jet ski Rides' },
+                { to: '/boat-ride', label: 'Boat ride' },
                 { to: '/safety', label: 'Safety' },
                 { to: '/weather', label: 'Weather' },
                 { to: '/contact', label: 'Contact' },
@@ -150,6 +151,7 @@ export default function Header() {
           {[
             { to: '/home', label: 'Home', icon: <Home size={20} /> },
             { to: '/rides', label: 'Rides', icon: <Waves size={20} /> },
+            { to: '/boat-ride', label: 'Boat ride', icon: <Ship size={20} /> },
             { to: '/safety', label: 'Safety', icon: <ShieldCheck size={20} /> },
             { to: '/weather', label: 'Weather', icon: <Waves size={20} /> },
             { to: '/contact', label: 'Contact', icon: <Phone size={20} /> },

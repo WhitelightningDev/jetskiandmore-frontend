@@ -199,10 +199,13 @@ function RouteComponent() {
 
               <CardFooter className="mt-auto flex flex-wrap items-center justify-between gap-3">
                 <span className="text-xs text-muted-foreground">
-                  Add this when you book your ride.
+                  {addon.id === 'boat' ? 'Prefer a dedicated spectator boat? Send us your details.' : 'Add this when you book your ride.'}
                 </span>
-                <Link to="/Bookings" className={buttonVariants({ size: 'sm', variant: 'outline' })}>
-                  Book with add‑ons
+                <Link
+                  to={addon.id === 'boat' ? '/boat-ride' : '/Bookings'}
+                  className={buttonVariants({ size: 'sm', variant: addon.id === 'boat' ? 'default' : 'outline' })}
+                >
+                  {addon.id === 'boat' ? 'Book boat ride' : 'Book with add‑ons'}
                 </Link>
               </CardFooter>
             </Card>
