@@ -80,13 +80,13 @@ function RouteComponent() {
             <div className="space-y-5">
               <Badge className="bg-white/70 text-sky-800 border-sky-200 flex items-center gap-2 w-fit">
                 <Ship className="h-4 w-4" />
-                Spectator experience
+                Boat ride experience
               </Badge>
               <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-slate-900">
-                Book a spectator boat ride
+                Book a False Bay boat ride
               </h1>
               <p className="text-slate-700 max-w-2xl">
-                Bring friends or family along to watch the action from the water. Our spectator boat keeps you close to the jet skis for great views and photos while we handle the skipper and safety.
+                Enjoy a skippered boat ride around Gordon&apos;s Bay and False Bay—perfect as its own outing, or added alongside jet ski bookings. We handle the skipper, safety and route so you can relax and take in the views.
               </p>
 
               <div className="flex flex-wrap gap-3 text-sm text-slate-700">
@@ -243,7 +243,7 @@ function RouteComponent() {
                 <div className="relative aspect-[4/3] overflow-hidden rounded-t-xl">
                   <img
                     src={boatImg}
-                    alt="Spectator boat ride"
+                    alt="False Bay boat ride"
                     className="h-full w-full object-cover"
                     loading="lazy"
                   />
@@ -260,11 +260,11 @@ function RouteComponent() {
                 <div className="p-5 space-y-3">
                   <div className="flex items-center gap-2 text-slate-700">
                     <Users className="h-4 w-4 text-sky-700" />
-                    <span className="text-sm">Family-friendly spectator boat with shade and life jackets.</span>
+                    <span className="text-sm">Family-friendly boat ride with shade and life jackets.</span>
                   </div>
                   <div className="flex items-center gap-2 text-slate-700">
                     <MapPin className="h-4 w-4 text-sky-700" />
-                    <span className="text-sm">Launches from Gordon&apos;s Bay Harbour alongside the jet skis.</span>
+                    <span className="text-sm">Launches from Gordon&apos;s Bay Harbour; add it to jet ski days or book it alone.</span>
                   </div>
                   <div className="flex items-center gap-2 text-slate-700">
                     <CalendarDays className="h-4 w-4 text-sky-700" />
@@ -279,8 +279,8 @@ function RouteComponent() {
             {[
               {
                 icon: <Users className="h-5 w-5 text-sky-700" />,
-                title: 'Perfect for spectators',
-                desc: 'Ideal for family, friends or content teams who want to stay close without getting wet.',
+                title: 'Standalone outing',
+                desc: 'Great for family, friends, or content teams wanting a scenic cruise—no jet skis required.',
               },
               {
                 icon: <Waves className="h-5 w-5 text-sky-700" />,
@@ -290,7 +290,7 @@ function RouteComponent() {
               {
                 icon: <CalendarDays className="h-5 w-5 text-sky-700" />,
                 title: 'Flexible timing',
-                desc: 'We will align with your jet ski booking or create a stand-alone slot.',
+                desc: 'Book as a stand-alone boat ride or add it to your jet ski booking.',
               },
               {
                 icon: <Phone className="h-5 w-5 text-sky-700" />,
@@ -320,7 +320,7 @@ function RouteComponent() {
                 <CheckCircle2 className="h-5 w-5 text-emerald-600" />
                 How it works
               </CardTitle>
-              <CardDescription>Quick steps to arrange your spectator boat.</CardDescription>
+              <CardDescription>Quick steps to arrange your boat ride.</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4 md:grid-cols-3 text-sm text-slate-700">
               {[
