@@ -3,9 +3,9 @@ import * as React from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import {  buttonVariants } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { MapPin, Clock, Users, Ship, Gift, CalendarDays } from 'lucide-react'
+import { MapPin, Clock, Users, Ship, CalendarDays, ShieldCheck } from 'lucide-react'
 
 export const Route = createFileRoute('/rides/')({
   component: RouteComponent,
@@ -180,7 +180,7 @@ const rides: Ride[] = [
   },
 ]
 
-function RideCard({ ride, addons }: { ride: Ride; addons: { drone: boolean; wetsuit: boolean; boat: boolean; boatCount: number; extraPeople: number } }) {
+function RideCard({ ride }: { ride: Ride }) {
   return (
     <Card className="flex flex-col bg-white/95 shadow-md hover:shadow-lg transition-shadow border border-primary/10">
       <CardHeader>
@@ -202,14 +202,7 @@ function RideCard({ ride, addons }: { ride: Ride; addons: { drone: boolean; wets
         {ride.cta ? (
           <Link
             to={ride.cta.to}
-            search={{
-              rideId: ride.id,
-              drone: addons.drone,
-              wetsuit: addons.wetsuit,
-              boat: addons.boat,
-              boatCount: addons.boat ? addons.boatCount : undefined,
-              extraPeople: addons.extraPeople || undefined,
-            }}
+            search={{ rideId: ride.id }}
             className={buttonVariants({ size: 'sm', variant: ride.cta.variant })}
           >
             {ride.cta.label}
@@ -221,171 +214,194 @@ function RideCard({ ride, addons }: { ride: Ride; addons: { drone: boolean; wets
 }
 
 function RouteComponent() {
-  const [addons, setAddons] = React.useState({
-    drone: false,
-    wetsuit: false,
-    boat: false,
-    boatCount: 1,
-    extraPeople: 0,
-  })
+  const rides30 = rides.filter((r) => r.id.startsWith('30'))
+  const rides60 = rides.filter((r) => r.id.startsWith('60'))
+  const otherRides = rides.filter((r) => !r.id.startsWith('30') && !r.id.startsWith('60'))
+  const heroImage = '/Asunnydayofjetskiing.png'
   return (
-    <div className="bg-gradient-to-b from-sky-50 via-white to-white text-slate-900">
+    <div className="bg-gradient-to-b from-slate-900 via-slate-900/90 to-slate-950 text-white">
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-sky-100 via-white to-emerald-50 opacity-90" />
-        <div className="mx-auto max-w-6xl px-4 py-10 md:py-14 relative">
-          <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="space-y-2">
-              <Badge className="bg-white/90 text-sky-900 border-sky-200">Premium skis • Guided or solo</Badge>
-              <h1 className="text-3xl md:text-4xl font-bold text-slate-900">Rides &amp; Experiences</h1>
-              <p className="text-sm md:text-base text-slate-700 max-w-2xl">
-                Choose a slot, add extras, and launch from Gordon&apos;s Bay Harbour. Safety briefing and life jackets are always included.
-              </p>
-            </div>
-            <Badge variant="secondary" className="flex items-center gap-1 bg-white/90 text-slate-900 border-sky-200">
-              <MapPin className="h-4 w-4" />
-              Gordon&apos;s Bay only
-            </Badge>
-          </div>
+        <div className="absolute inset-0">
+          <img
+            src={heroImage}
+            alt="Jet ski riders launching from Gordon's Bay"
+            className="h-full w-full object-cover"
+            loading="eager"
+            decoding="async"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-900/75 to-slate-900/30" />
+        </div>
 
-          {/* Quick booking CTA for immediate navigation */}
-          <div className="mb-10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 rounded-2xl border border-sky-100 bg-white/90 p-4 text-slate-900 shadow-sm">
-            <div className="flex items-center gap-3">
-              <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-sky-100 ring-1 ring-sky-200">
-                <CalendarDays className="h-5 w-5" />
-              </span>
-              <p className="text-sm md:text-base text-slate-700">
-                Ready to ride? Book your slot or ask us about the calmest window today.
+        <div className="relative mx-auto max-w-6xl px-4 py-12 md:py-16 lg:py-20">
+          <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+            <div className="space-y-5">
+              <Badge className="bg-white/85 text-slate-900 border-white/40 flex items-center gap-2 w-fit">
+                <Ship className="h-4 w-4" />
+                Jet ski rides &amp; rentals
+              </Badge>
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-semibold leading-tight drop-shadow">
+                Choose your jet ski session and hit the water
+              </h1>
+              <p className="text-base md:text-lg text-slate-100/85 max-w-2xl">
+                Premium skis, guided safety, and flexible slots from sunrise to sunset. Pick a 30‑minute thrill or a full hour to explore Gordon&apos;s Bay.
+              </p>
+
+              <div className="flex flex-wrap gap-2 text-xs sm:text-sm text-slate-100/80">
+                <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 ring-1 ring-white/20">
+                  <Clock className="h-4 w-4" /> 30–60 min sessions
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 ring-1 ring-white/20">
+                  <ShieldCheck className="h-4 w-4" /> Safety briefing &amp; life jackets
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 ring-1 ring-white/20">
+                  <MapPin className="h-4 w-4" /> Gordon&apos;s Bay Harbour
+                </span>
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                <Link to="/Bookings" className={buttonVariants({ size: 'lg', className: 'bg-white text-slate-900 hover:bg-slate-100' })}>
+                  <CalendarDays className="mr-2 h-5 w-5" />
+                  Book now
+                </Link>
+                <Link to="/add-ons" className={buttonVariants({ variant: 'outline', size: 'lg', className: 'border-white/40 text-white hover:bg-white/10' })}>
+                  View add‑ons
+                </Link>
+              </div>
+              <p className="text-sm text-slate-100/80">
+                Add extras like drone footage, wetsuits, or spectator boat rides in the booking form.
               </p>
             </div>
-            <div className="flex gap-3">
-              <Link
-                to="/Bookings"
-                search={{
-                  drone: addons.drone,
-                  wetsuit: addons.wetsuit,
-                  boat: addons.boat,
-                  boatCount: addons.boat ? addons.boatCount : undefined,
-                }}
-                className={buttonVariants({ className: 'bg-sky-600 text-white hover:bg-sky-700' })}
-              >
-                <CalendarDays className="mr-2 h-4 w-4" /> Book now
-              </Link>
-              <Link to="/contact" className={buttonVariants({ variant: 'outline', className: 'border-sky-200 text-slate-900 hover:bg-sky-50' })}>
-                Questions? Contact us
-              </Link>
-            </div>
+
+            <Card className="relative border-white/15 bg-white/10 text-white shadow-xl backdrop-blur">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <Ship className="h-5 w-5" />
+                  Why ride with us
+                </CardTitle>
+                <CardDescription className="text-slate-100/80">Quick launch, safe briefing, unforgettable views.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm text-slate-100">
+                <div className="flex items-start gap-2">
+                  <span className="mt-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/15 text-white">
+                    <Clock className="h-4 w-4" />
+                  </span>
+                  <div>
+                    <p className="font-semibold text-white">Flexible slots</p>
+                    <p className="text-slate-100/80">Pick 30 or 60 minutes; we match you to the best weather window.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="mt-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/15 text-white">
+                    <ShieldCheck className="h-4 w-4" />
+                  </span>
+                  <div>
+                    <p className="font-semibold text-white">Safety-first</p>
+                    <p className="text-slate-100/80">Briefing, life jackets, and calm zones every time.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="mt-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/15 text-white">
+                    <MapPin className="h-4 w-4" />
+                  </span>
+                  <div>
+                    <p className="font-semibold text-white">Gordon&apos;s Bay launch</p>
+                    <p className="text-slate-100/80">Easy parking, quick check-in, and you&apos;re on the water.</p>
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter className="flex flex-wrap gap-2">
+                <Badge variant="secondary" className="bg-white/90 text-slate-900 border-white/40">
+                  Up to 5 skis per group
+                </Badge>
+                <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
+                  Sunrise &amp; sunset on request
+                </Badge>
+              </CardFooter>
+            </Card>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-10 md:py-14">
+      <section className="bg-gradient-to-b from-sky-50 via-white to-white text-slate-900">
 
-        {/* Add-ons quick pick */}
-        <Card className="mb-8 shadow-lg border-primary/15 bg-white/95">
-          <CardHeader>
-            <CardTitle className="text-lg">Choose your add‑ons</CardTitle>
-            <CardDescription>Selections carry into the booking form</CardDescription>
-          </CardHeader>
-          <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <label className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-md border p-3">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={addons.drone}
-                    onChange={(e) => setAddons((a) => ({ ...a, drone: e.target.checked }))}
-                  />
-                  <span className="text-sm">Drone video</span>
-                </div>
-                <Badge variant="secondary"
-          className="bg-green-500 text-white dark:bg-green-600">+ ZAR 700 (or included)</Badge>
-              </label>
-              <label className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-md border p-3">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={addons.wetsuit}
-                    onChange={(e) => setAddons((a) => ({ ...a, wetsuit: e.target.checked }))}
-                  />
-                  <span className="text-sm">Wetsuit hire</span>
-                </div>
-                <Badge variant="secondary"
-          className="bg-green-500 text-white dark:bg-green-600">+ ZAR 150</Badge>
-              </label>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-md border p-3">
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={addons.boat}
-                    onChange={(e) => setAddons((a) => ({ ...a, boat: e.target.checked }))}
-                  />
-                  <span className="text-sm">Boat ride</span>
-                </label>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Badge variant="secondary"
-          className="bg-green-500 text-white dark:bg-green-600">R450 pp</Badge>
-                  <input
-                    type="number"
-                    min={1}
-                    max={10}
-                    value={addons.boatCount}
-                    disabled={!addons.boat}
-                    onChange={(e) =>
-                      setAddons((a) => ({ ...a, boatCount: Math.max(1, Math.min(10, Number(e.target.value) || 1)) }))
-                    }
-                    className="w-16 px-2 py-1 border rounded disabled:opacity-60"
-                  />
+        <div className="mx-auto max-w-6xl px-4 py-10 md:py-14">
+
+        <div className="mb-8 rounded-2xl border border-sky-100 bg-white/95 p-5 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold text-slate-900">Want extras like drone video, wetsuits or boat rides?</p>
+            <p className="text-sm text-muted-foreground">Browse the add‑ons page; you’ll pick them in the booking form.</p>
+          </div>
+          <Link to="/add-ons" className={buttonVariants({ size: 'sm', className: 'bg-sky-600 text-white hover:bg-sky-700' })}>
+            View add‑ons
+          </Link>
+        </div>
+
+        <div className="space-y-8">
+          <div className="relative overflow-hidden rounded-2xl border border-sky-100 bg-white/95 p-5 shadow-sm">
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-sky-50/80 via-white to-emerald-50/70" />
+            <div className="relative mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-3">
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-sky-100 text-sky-800 ring-1 ring-sky-200">
+                  <Clock className="h-5 w-5" />
+                </span>
+                <div>
+                  <h2 className="text-xl font-semibold">30‑minute sessions</h2>
+                  <p className="text-sm text-muted-foreground">Fast, high-energy rides if you&apos;re short on time.</p>
                 </div>
               </div>
+              <Badge variant="secondary" className="bg-white/90 text-sky-800 border-sky-200">Quick thrill</Badge>
             </div>
-            <div className="mt-3 grid grid-cols-1 gap-3">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-md border p-3">
-                <label className="flex items-center gap-2">
-                  <span className="text-sm">Additional passenger(s)</span>
-                </label>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Badge variant="secondary"
-          className="bg-green-500 text-white dark:bg-green-600">R350 each</Badge>
-                  <input
-                    type="number"
-                    min={0}
-                    max={2}
-                    value={addons.extraPeople}
-                    onChange={(e) =>
-                      setAddons((a) => ({ ...a, extraPeople: Math.max(0, Math.min(2, Number(e.target.value) || 0)) }))
-                    }
-                    className="w-16 px-2 py-1 border rounded"
-                  />
+            <div className="relative grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {rides30.map((r) => (
+                <RideCard key={r.title} ride={r} />
+              ))}
+            </div>
+          </div>
+
+          <div className="relative overflow-hidden rounded-2xl border border-amber-100 bg-white/95 p-5 shadow-sm">
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-amber-50/80 via-white to-orange-50/70" />
+            <div className="relative mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-3">
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 text-amber-800 ring-1 ring-amber-200">
+                  <Clock className="h-5 w-5" />
+                </span>
+                <div>
+                  <h2 className="text-xl font-semibold">1‑hour sessions</h2>
+                  <p className="text-sm text-muted-foreground">Extra time to explore, swap riders, and settle in.</p>
                 </div>
               </div>
-              <Badge variant="secondary"
-          className="bg-blue-500 text-white dark:bg-blue-600">Single rides may add up to 1 passenger; 2‑ski sessions up to 2 passengers. Limit is enforced on the booking page.</Badge>
+              <Badge variant="secondary" className="bg-white/90 text-amber-800 border-amber-200">More time</Badge>
             </div>
-          </CardContent>
-        </Card>
+            <div className="relative grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {rides60.map((r) => (
+                <RideCard key={r.title} ride={r} />
+              ))}
+            </div>
+          </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {rides.map((r) => <RideCard key={r.title} ride={r} addons={addons} />)}
+          {otherRides.length ? (
+            <div className="relative overflow-hidden rounded-2xl border border-indigo-100 bg-white/95 p-5 shadow-sm">
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-indigo-50/70 via-white to-sky-50/70" />
+              <div className="relative mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-indigo-800 ring-1 ring-indigo-200">
+                    <Ship className="h-5 w-5" />
+                  </span>
+                  <div>
+                    <h2 className="text-xl font-semibold">Other experiences</h2>
+                    <p className="text-sm text-muted-foreground">Joy rides and group sessions tailored to your crew.</p>
+                  </div>
+                </div>
+                <Badge variant="secondary" className="bg-white/90 text-indigo-800 border-indigo-200">Special</Badge>
+              </div>
+              <div className="relative grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {otherRides.map((r) => (
+                  <RideCard key={r.title} ride={r} />
+                ))}
+              </div>
+            </div>
+          ) : null}
 
-          {/* Add-ons */}
-          <Card className="border-primary/30 flex flex-col shadow-md bg-white/90">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Gift className="h-5 w-5" />
-                Add‑ons &amp; Extras
-              </CardTitle>
-              <CardDescription>Make it unforgettable</CardDescription>
-            </CardHeader>
-          <CardContent className="text-sm text-muted-foreground space-y-2">
-            <p>• Drone video &amp; GoPro footage</p>
-            <p>• Waterproof phone pouch</p>
-            <p>• Premium wetsuit hire</p>
-          </CardContent>
-            <CardFooter className="mt-auto flex flex-wrap items-center justify-between gap-3">
-              <Badge>Popular</Badge>
-              <Link to="/add-ons" className={buttonVariants({ variant: 'outline', size: 'sm' })}>See options</Link>
-            </CardFooter>
-          </Card>
         </div>
 
         <Separator className="my-8" />
@@ -408,18 +424,12 @@ function RouteComponent() {
             </Link>
           </CardFooter>
         </Card>
+      </div>
       </section>
 
       {/* Floating book-now for mobile to improve conversion */}
       <Link
         to="/Bookings"
-        search={{
-          drone: addons.drone,
-          wetsuit: addons.wetsuit,
-          boat: addons.boat,
-          boatCount: addons.boat ? addons.boatCount : undefined,
-          extraPeople: addons.extraPeople || undefined,
-        }}
         className="md:hidden fixed bottom-5 right-5 z-40 rounded-full shadow-lg "
       >
         <span className={buttonVariants({ size: 'lg' })}>
