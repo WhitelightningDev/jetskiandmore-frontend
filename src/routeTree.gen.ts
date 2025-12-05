@@ -18,6 +18,7 @@ import { Route as LocationsIndexRouteImport } from './routes/locations/index'
 import { Route as InterimSkipperQuizIndexRouteImport } from './routes/interim-skipper-quiz/index'
 import { Route as HomeIndexRouteImport } from './routes/home/index'
 import { Route as ContactIndexRouteImport } from './routes/contact/index'
+import { Route as BoatRideIndexRouteImport } from './routes/boat-ride/index'
 import { Route as AddOnsIndexRouteImport } from './routes/add-ons/index'
 import { Route as BookingsIndexRouteImport } from './routes/Bookings/index'
 import { Route as PaymentsSuccessRouteImport } from './routes/payments/success'
@@ -73,6 +74,11 @@ const HomeIndexRoute = HomeIndexRouteImport.update({
 const ContactIndexRoute = ContactIndexRouteImport.update({
   id: '/contact/',
   path: '/contact/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BoatRideIndexRoute = BoatRideIndexRouteImport.update({
+  id: '/boat-ride/',
+  path: '/boat-ride/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AddOnsIndexRoute = AddOnsIndexRouteImport.update({
@@ -144,6 +150,7 @@ export interface FileRoutesByFullPath {
   '/payments/success': typeof PaymentsSuccessRoute
   '/Bookings': typeof BookingsIndexRoute
   '/add-ons': typeof AddOnsIndexRoute
+  '/boat-ride': typeof BoatRideIndexRoute
   '/contact': typeof ContactIndexRoute
   '/home': typeof HomeIndexRoute
   '/interim-skipper-quiz': typeof InterimSkipperQuizIndexRoute
@@ -166,6 +173,7 @@ export interface FileRoutesByTo {
   '/payments/success': typeof PaymentsSuccessRoute
   '/Bookings': typeof BookingsIndexRoute
   '/add-ons': typeof AddOnsIndexRoute
+  '/boat-ride': typeof BoatRideIndexRoute
   '/contact': typeof ContactIndexRoute
   '/home': typeof HomeIndexRoute
   '/interim-skipper-quiz': typeof InterimSkipperQuizIndexRoute
@@ -189,6 +197,7 @@ export interface FileRoutesById {
   '/payments/success': typeof PaymentsSuccessRoute
   '/Bookings/': typeof BookingsIndexRoute
   '/add-ons/': typeof AddOnsIndexRoute
+  '/boat-ride/': typeof BoatRideIndexRoute
   '/contact/': typeof ContactIndexRoute
   '/home/': typeof HomeIndexRoute
   '/interim-skipper-quiz/': typeof InterimSkipperQuizIndexRoute
@@ -213,6 +222,7 @@ export interface FileRouteTypes {
     | '/payments/success'
     | '/Bookings'
     | '/add-ons'
+    | '/boat-ride'
     | '/contact'
     | '/home'
     | '/interim-skipper-quiz'
@@ -235,6 +245,7 @@ export interface FileRouteTypes {
     | '/payments/success'
     | '/Bookings'
     | '/add-ons'
+    | '/boat-ride'
     | '/contact'
     | '/home'
     | '/interim-skipper-quiz'
@@ -257,6 +268,7 @@ export interface FileRouteTypes {
     | '/payments/success'
     | '/Bookings/'
     | '/add-ons/'
+    | '/boat-ride/'
     | '/contact/'
     | '/home/'
     | '/interim-skipper-quiz/'
@@ -276,6 +288,7 @@ export interface RootRouteChildren {
   PaymentsSuccessRoute: typeof PaymentsSuccessRoute
   BookingsIndexRoute: typeof BookingsIndexRoute
   AddOnsIndexRoute: typeof AddOnsIndexRoute
+  BoatRideIndexRoute: typeof BoatRideIndexRoute
   ContactIndexRoute: typeof ContactIndexRoute
   HomeIndexRoute: typeof HomeIndexRoute
   InterimSkipperQuizIndexRoute: typeof InterimSkipperQuizIndexRoute
@@ -349,6 +362,13 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/boat-ride/': {
+      id: '/boat-ride/'
+      path: '/boat-ride'
+      fullPath: '/boat-ride'
+      preLoaderRoute: typeof BoatRideIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/add-ons/': {
@@ -456,6 +476,7 @@ const rootRouteChildren: RootRouteChildren = {
   PaymentsSuccessRoute: PaymentsSuccessRoute,
   BookingsIndexRoute: BookingsIndexRoute,
   AddOnsIndexRoute: AddOnsIndexRoute,
+  BoatRideIndexRoute: BoatRideIndexRoute,
   ContactIndexRoute: ContactIndexRoute,
   HomeIndexRoute: HomeIndexRoute,
   InterimSkipperQuizIndexRoute: InterimSkipperQuizIndexRoute,

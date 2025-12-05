@@ -99,3 +99,37 @@ export async function verifyCheckout(checkoutId: string, booking: any) {
     { checkoutId, booking }
   )
 }
+
+// Boat ride requests
+export type BoatRideRequest = {
+  firstName: string
+  lastName: string
+  phone: string
+  email: string
+  people: number
+  date: string // ISO date (YYYY-MM-DD)
+}
+
+export async function sendBoatRideRequest(payload: BoatRideRequest) {
+  const { firstName, lastName, phone, email, people, date } = payload
+  const fullName = `${firstName} ${lastName}`.trim()
+
+  return postJSON<{ ok: boolean; id?: string }>('/api/contact', {
+    fullName,
+    email,
+    phone,
+    message: [
+      'Spectator boat ride request',
+      `Name: ${fullName || 'N/A'}`,
+      `Email: ${email}`,
+      `Cell: ${phone}`,
+      `Date: ${date}`,
+      `People: ${people} (max 12)`,
+    ].join('\n'),
+    subject: 'Spectator boat ride request',
+    targetEmail: 'info@falsebayoceandaventures.co.za',
+    type: 'boat-ride',
+    date,
+    people,
+  })
+}
