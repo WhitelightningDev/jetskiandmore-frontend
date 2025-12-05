@@ -127,7 +127,7 @@ export async function sendBoatRideRequest(payload: BoatRideRequest) {
       `People: ${people} (max 12)`,
     ].join('\n'),
     subject: 'Spectator boat ride request',
-    targetEmail: 'info@falsebayoceandaventures.co.za',
+    targetEmail: 'info@falsbayoceanadventures.co.za',
     type: 'boat-ride',
     date,
     people,
