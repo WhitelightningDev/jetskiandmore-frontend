@@ -116,7 +116,7 @@ function RouteComponent() {
                     <DialogHeader>
                       <DialogTitle>Request a boat ride</DialogTitle>
                       <DialogDescription>
-                        Share your details and preferred date. We&apos;ll confirm availability and email {`info@falsebayoceandaventures.co.za`}.
+                        Share your details and preferred date. We&apos;ll confirm availability and email {`heinrichkaiser007@gmail.com`}.
                       </DialogDescription>
                     </DialogHeader>
                     <form onSubmit={handleSubmit} className="space-y-4">
@@ -358,7 +358,7 @@ function RouteComponent() {
               Request sent
             </DialogTitle>
             <DialogDescription>
-              Thanks for your interest! We&apos;ve sent your details to info@falsebayoceandaventures.co.za and will confirm availability soon.
+              Thanks for your interest! We&apos;ve sent your details to heinrichkaiser007@gmail.com and will confirm availability soon.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
