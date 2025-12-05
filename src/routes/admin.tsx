@@ -9,10 +9,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { AdminContext } from '@/admin/context'
-import type { AnalyticsSummary, Booking, QuizSubmission } from '@/admin/types'
+import type { AnalyticsSummary, Booking, PageViewAnalytics, QuizSubmission } from '@/admin/types'
 
 export { useAdminContext } from '@/admin/context'
-export type { AdminOutletContext, AnalyticsSummary, Booking, QuizSubmission, RideStat } from '@/admin/types'
+export type {
+  AdminOutletContext,
+  AnalyticsSummary,
+  Booking,
+  QuizSubmission,
+  RideStat,
+  PageViewAnalytics,
+  PageViewAnalyticsItem,
+} from '@/admin/types'
 
 export const Route = createFileRoute('/admin')({
   component: AdminLayout,
@@ -37,9 +45,11 @@ function AdminLayout() {
   const [error, setError] = React.useState<string | null>(null)
   const [bookings, setBookings] = React.useState<Booking[]>([])
   const [analytics, setAnalytics] = React.useState<AnalyticsSummary | null>(null)
+  const [pageViews, setPageViews] = React.useState<PageViewAnalytics | null>(null)
   const [quizSubs, setQuizSubs] = React.useState<QuizSubmission[]>([])
   const [loadingBookings, setLoadingBookings] = React.useState(false)
   const [loadingMeta, setLoadingMeta] = React.useState(false)
+  const [loadingPageViews, setLoadingPageViews] = React.useState(false)
   const [statusFilter, setStatusFilter] = React.useState<string | 'all'>('all')
 
   const router = useRouter()
@@ -100,6 +110,25 @@ function AdminLayout() {
     })()
   }, [token])
 
+  React.useEffect(() => {
+    if (!token) return
+    ;(async () => {
+      try {
+        setLoadingPageViews(true)
+        const res = await fetch(`${API_BASE}/api/admin/analytics/pageviews?limit=50`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (!res.ok) throw new Error('Failed to load page view analytics')
+        const data = (await res.json()) as PageViewAnalytics
+        setPageViews(data)
+      } catch (e: any) {
+        setError((prev) => prev ?? e?.message ?? 'Failed to load page views')
+      } finally {
+        setLoadingPageViews(false)
+      }
+    })()
+  }, [token])
+
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
     try {
@@ -134,6 +163,7 @@ function AdminLayout() {
     }
     setBookings([])
     setAnalytics(null)
+    setPageViews(null)
     setQuizSubs([])
     router.navigate({ to: '/admin' })
   }
@@ -313,14 +343,16 @@ function AdminLayout() {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            <AdminContext.Provider
+              <AdminContext.Provider
               value={{
                 token,
                 bookings,
                 analytics,
+                pageViews,
                 quizSubs,
                 loadingBookings,
                 loadingMeta,
+                loadingPageViews,
                 error,
                 setError,
                 statusFilter,

@@ -12,7 +12,12 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
-import type { Booking } from '@/admin/types'
+import type {
+  Booking,
+  CountStat,
+  PageViewAnalyticsItem,
+  TimeOfDayStat,
+} from '@/admin/types'
 import { useAdminContext } from '@/admin/context'
 
 export const Route = createFileRoute('/admin/analytics')({
@@ -31,8 +36,41 @@ const bookingsChartConfig: ChartConfig = {
 }
 
 function AdminAnalyticsPage() {
-  const { analytics, bookings, loadingBookings, loadingMeta } = useAdminContext()
+  const {
+    analytics,
+    bookings,
+    pageViews,
+    loadingBookings,
+    loadingMeta,
+    loadingPageViews,
+  } = useAdminContext()
   const { dailyData, monthLabel } = React.useMemo(() => buildDailyData(bookings), [bookings])
+  const {
+    publicPages,
+    adminPages,
+    publicSummary,
+    adminSummary,
+  } = React.useMemo(() => {
+    const items = pageViews?.items || []
+    const publicPages = items.filter((p) => !String(p.path || '').startsWith('/admin'))
+    const adminPages = items.filter((p) => String(p.path || '').startsWith('/admin'))
+    return {
+      publicPages,
+      adminPages,
+      publicSummary: summarizePages(publicPages),
+      adminSummary: summarizePages(adminPages),
+    }
+  }, [pageViews])
+  const topPages = React.useMemo(() => publicPages.slice(0, 8), [publicPages])
+  const breakdown = pageViews?.breakdowns
+  const topCountries = React.useMemo(() => takeTop(breakdown?.countries), [breakdown])
+  const topCities = React.useMemo(() => takeTop(breakdown?.cities), [breakdown])
+  const topDevices = React.useMemo(() => takeTop(breakdown?.deviceTypes), [breakdown])
+  const topOS = React.useMemo(() => takeTop(breakdown?.os), [breakdown])
+  const topBrowsers = React.useMemo(() => takeTop(breakdown?.browsers), [breakdown])
+  const topLanguages = React.useMemo(() => takeTop(breakdown?.languages), [breakdown])
+  const timeOfDay: TimeOfDayStat[] = breakdown?.timeOfDay || []
+  const returning = breakdown?.returning
 
   return (
     <div className="space-y-6">
@@ -88,6 +126,13 @@ function AdminAnalyticsPage() {
               <div className="text-2xl font-semibold">
                 {loadingMeta ? '—' : analytics ? analytics.totalPageViews.toLocaleString() : '—'}
               </div>
+              <p className="text-xs text-slate-300">
+                {loadingPageViews
+                  ? 'Loading sessions…'
+                  : pageViews
+                  ? `${pageViews.totalUniqueSessions.toLocaleString()} unique sessions`
+                  : '—'}
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -225,6 +270,255 @@ function AdminAnalyticsPage() {
         )}
       </div>
 
+      <Card className="border-white/10 bg-slate-900/80 text-white shadow-lg shadow-cyan-500/10">
+        <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <CardTitle className="text-base">Top pages & time on page</CardTitle>
+            <CardDescription className="text-slate-300">
+              Page views grouped by path with average time spent.
+            </CardDescription>
+          </div>
+          <div className="text-sm text-slate-200 sm:text-right">
+            <div>
+              {loadingPageViews
+                ? 'Loading…'
+                : publicSummary
+                ? `${publicSummary.views.toLocaleString()} total views`
+                : '—'}
+            </div>
+            <div className="text-xs text-slate-400">
+              {publicSummary
+                ? `${publicSummary.uniqueSessions.toLocaleString()} unique sessions • ${pageViews?.totalUniqueVisitors.toLocaleString() ?? '—'} unique visitors`
+                : ''}
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="overflow-x-auto">
+          {loadingPageViews ? (
+            <div className="p-4 text-sm text-slate-300">Loading page analytics…</div>
+          ) : topPages.length === 0 ? (
+            <div className="p-4 text-sm text-slate-300">No page view data yet.</div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Page</TableHead>
+                  <TableHead>Views</TableHead>
+                  <TableHead>Sessions</TableHead>
+                  <TableHead>Avg time on page</TableHead>
+                  <TableHead className="text-right">Last seen</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {topPages.map((p, idx) => (
+                  <TableRow key={`${p.path || 'unknown'}-${idx}`}>
+                    <TableCell className="font-medium">{p.path || '/'}</TableCell>
+                    <TableCell>{p.views.toLocaleString()}</TableCell>
+                    <TableCell>{p.uniqueSessions.toLocaleString()}</TableCell>
+                    <TableCell>{formatDuration(p.avgDurationSeconds)}</TableCell>
+                    <TableCell className="text-right text-slate-300">
+                      {formatDateTime(p.lastSeen)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="border-white/10 bg-slate-900/80 text-white shadow-lg shadow-cyan-500/10">
+        <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <CardTitle className="text-base">Admin pages</CardTitle>
+            <CardDescription className="text-slate-300">
+              Internal routes separated from public traffic.
+            </CardDescription>
+          </div>
+          <div className="text-sm text-slate-200 sm:text-right">
+            <div>
+              {loadingPageViews
+                ? 'Loading…'
+                : adminSummary
+                ? `${adminSummary.views.toLocaleString()} total views`
+                : '—'}
+            </div>
+            <div className="text-xs text-slate-400">
+              {adminSummary ? `${adminSummary.uniqueSessions.toLocaleString()} unique sessions (admin)` : ''}
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="overflow-x-auto">
+          {loadingPageViews ? (
+            <div className="p-4 text-sm text-slate-300">Loading admin page analytics…</div>
+          ) : adminPages.length === 0 ? (
+            <div className="p-4 text-sm text-slate-300">No admin page view data yet.</div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Page</TableHead>
+                  <TableHead>Views</TableHead>
+                  <TableHead>Sessions</TableHead>
+                  <TableHead>Avg time on page</TableHead>
+                  <TableHead className="text-right">Last seen</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {adminPages.map((p, idx) => (
+                  <TableRow key={`${p.path || 'admin'}-${idx}`}>
+                    <TableCell className="font-medium">{p.path || '/admin'}</TableCell>
+                    <TableCell>{p.views.toLocaleString()}</TableCell>
+                    <TableCell>{p.uniqueSessions.toLocaleString()}</TableCell>
+                    <TableCell>{formatDuration(p.avgDurationSeconds)}</TableCell>
+                    <TableCell className="text-right text-slate-300">
+                      {formatDateTime(p.lastSeen)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card className="border-white/10 bg-slate-900/80 text-white shadow-lg shadow-cyan-500/10">
+          <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <CardTitle className="text-base">Demand by location</CardTitle>
+              <CardDescription className="text-slate-300">
+                Countries and cities where traffic originates.
+              </CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent className="grid gap-6 md:grid-cols-2">
+            <div>
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Countries</p>
+              <BreakdownList items={topCountries} emptyLabel={loadingPageViews ? 'Loading…' : 'No data yet'} />
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Cities</p>
+              <BreakdownList items={topCities} emptyLabel={loadingPageViews ? 'Loading…' : 'No data yet'} />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-white/10 bg-slate-900/80 text-white shadow-lg shadow-cyan-500/10">
+          <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <CardTitle className="text-base">Tech split</CardTitle>
+              <CardDescription className="text-slate-300">
+                Device types, operating systems, and browsers.
+              </CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent className="grid gap-6 md:grid-cols-3">
+            <div>
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Device</p>
+              <BreakdownList items={topDevices} emptyLabel={loadingPageViews ? 'Loading…' : '—'} />
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">OS</p>
+              <BreakdownList items={topOS} emptyLabel={loadingPageViews ? 'Loading…' : '—'} />
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Browser</p>
+              <BreakdownList items={topBrowsers} emptyLabel={loadingPageViews ? 'Loading…' : '—'} />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-white/10 bg-slate-900/80 text-white shadow-lg shadow-cyan-500/10">
+          <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <CardTitle className="text-base">Language & loyalty</CardTitle>
+              <CardDescription className="text-slate-300">
+                Preferred languages and new vs returning visitors.
+              </CardDescription>
+            </div>
+            <div className="text-sm text-slate-200 sm:text-right">
+              {returning ? (
+                <>
+                  <div>{returning.totalVisitors.toLocaleString()} total visitors</div>
+                  <div className="text-xs text-slate-400">
+                    {returning.returningVisitors.toLocaleString()} returning • {returning.newVisitors.toLocaleString()} new
+                  </div>
+                </>
+              ) : (
+                <div className="text-xs text-slate-400">
+                  {loadingPageViews ? 'Loading…' : 'No visitor data'}
+                </div>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent className="grid gap-6 md:grid-cols-2">
+            <div>
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Languages</p>
+              <BreakdownList items={topLanguages} emptyLabel={loadingPageViews ? 'Loading…' : '—'} />
+            </div>
+            <div className="flex flex-col justify-center gap-1">
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Returning ratio</p>
+              {returning ? (
+                <>
+                  <div className="text-lg font-semibold text-white">
+                    {returning.returningVisitors + returning.newVisitors > 0
+                      ? Math.round((returning.returningVisitors / Math.max(1, returning.returningVisitors + returning.newVisitors)) * 100)
+                      : 0}
+                    %
+                  </div>
+                  <p className="text-sm text-slate-300">
+                    {returning.returningVisitors.toLocaleString()} returning vs {returning.newVisitors.toLocaleString()} new
+                  </p>
+                </>
+              ) : (
+                <p className="text-sm text-slate-300">{loadingPageViews ? 'Loading…' : '—'}</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-white/10 bg-slate-900/80 text-white shadow-lg shadow-cyan-500/10">
+          <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <CardTitle className="text-base">Active hours</CardTitle>
+              <CardDescription className="text-slate-300">
+                Hour-of-day activity to time promos.
+              </CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {timeOfDay.length === 0 ? (
+              <p className="text-sm text-slate-300">{loadingPageViews ? 'Loading…' : 'No time-of-day data yet.'}</p>
+            ) : (
+              (() => {
+                const maxViews = Math.max(1, ...timeOfDay.map((v) => v.views || 0))
+                return (
+              <div className="grid grid-cols-4 gap-2 text-xs text-slate-200 sm:grid-cols-6 md:grid-cols-8">
+                {timeOfDay.map((t) => (
+                  <div key={t.hour} className="flex flex-col gap-1 rounded-md border border-white/10 bg-white/5 p-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold">{formatHour(t.hour)}</span>
+                      <span className="text-[11px] text-slate-400">{t.views}</span>
+                    </div>
+                    <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
+                      <div
+                        className="h-full rounded-full bg-cyan-400/80"
+                        style={{
+                          width: `${Math.min(100, (t.views / maxViews) * 100)}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+                )
+              })()
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
       {analytics && analytics.rides.length > 0 && (
         <Card className="border-white/10 bg-slate-900/80 text-white shadow-lg shadow-cyan-500/10">
           <CardHeader>
@@ -306,8 +600,64 @@ function buildDailyData(bookings: Booking[]) {
   return { dailyData, monthLabel: labelForMonth }
 }
 
+function takeTop(items?: CountStat[], limit = 5): CountStat[] {
+  if (!items) return []
+  return items.slice(0, limit)
+}
+
+function BreakdownList({ items, emptyLabel }: { items: CountStat[]; emptyLabel?: string }) {
+  if (!items || items.length === 0) {
+    return <p className="text-sm text-slate-300">{emptyLabel || 'No data'}</p>
+  }
+  return (
+    <ul className="space-y-1 text-sm text-slate-200">
+      {items.map((item) => (
+        <li key={item.key} className="flex items-center justify-between rounded-md border border-white/5 bg-white/5 px-3 py-2">
+          <span className="truncate">{item.key || 'Unknown'}</span>
+          <span className="text-right font-semibold text-white">{item.count.toLocaleString()}</span>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+function formatDuration(seconds?: number | null) {
+  if (seconds == null || Number.isNaN(seconds)) return '—'
+  if (seconds < 1) return '<1s'
+  const mins = Math.floor(seconds / 60)
+  const secs = Math.round(seconds % 60)
+  if (mins === 0) return `${secs}s`
+  return `${mins}m ${secs.toString().padStart(2, '0')}s`
+}
+
+function formatDateTime(value?: string | null) {
+  if (!value) return '—'
+  const d = new Date(value)
+  if (Number.isNaN(d.getTime())) return '—'
+  return d.toLocaleString('en-ZA', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
 function formatNumber(value: number) {
   if (value >= 1000000) return `${(value / 1000000).toFixed(1)}m`
   if (value >= 1000) return `${(value / 1000).toFixed(1)}k`
   return `${value}`
+}
+
+function summarizePages(items: PageViewAnalyticsItem[]) {
+  return {
+    views: items.reduce((sum, p) => sum + (p.views || 0), 0),
+    uniqueSessions: items.reduce((sum, p) => sum + (p.uniqueSessions || 0), 0),
+  }
+}
+
+function formatHour(hour: number) {
+  const h = ((hour % 24) + 24) % 24
+  const suffix = h >= 12 ? 'PM' : 'AM'
+  const displayHour = h % 12 === 0 ? 12 : h % 12
+  return `${displayHour}${suffix}`
 }

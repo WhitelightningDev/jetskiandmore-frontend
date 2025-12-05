@@ -22,6 +22,51 @@ export type RideStat = {
   revenueInCents: number
 }
 
+export type PageViewAnalyticsItem = {
+  path: string
+  views: number
+  uniqueSessions: number
+  totalDurationSeconds: number
+  avgDurationSeconds?: number | null
+  firstSeen?: string | null
+  lastSeen?: string | null
+}
+
+export type PageViewAnalytics = {
+  items: PageViewAnalyticsItem[]
+  totalViews: number
+  totalUniqueSessions: number
+  totalUniqueVisitors: number
+  breakdowns: PageViewBreakdowns
+}
+
+export type CountStat = {
+  key: string
+  count: number
+}
+
+export type TimeOfDayStat = {
+  hour: number
+  views: number
+}
+
+export type ReturningStat = {
+  newVisitors: number
+  returningVisitors: number
+  totalVisitors: number
+}
+
+export type PageViewBreakdowns = {
+  countries: CountStat[]
+  cities: CountStat[]
+  deviceTypes: CountStat[]
+  os: CountStat[]
+  browsers: CountStat[]
+  languages: CountStat[]
+  timeOfDay: TimeOfDayStat[]
+  returning: ReturningStat
+}
+
 export type AnalyticsSummary = {
   totalBookings: number
   totalRevenueInCents: number
@@ -51,8 +96,10 @@ export type AdminOutletContext = {
   bookings: Booking[]
   analytics: AnalyticsSummary | null
   quizSubs: QuizSubmission[]
+  pageViews: PageViewAnalytics | null
   loadingBookings: boolean
   loadingMeta: boolean
+  loadingPageViews: boolean
   error: string | null
   setError: Dispatch<SetStateAction<string | null>>
   statusFilter: string | 'all'
