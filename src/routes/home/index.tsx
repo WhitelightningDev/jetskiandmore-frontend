@@ -13,10 +13,18 @@ import {
   Users,
   LifeBuoy,
   AlertTriangle,
+  BadgePercent,
 } from 'lucide-react'
 import Reveal from '@/components/Reveal'
 
 import { Button, buttonVariants } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import {
   Card,
   CardHeader,
@@ -53,8 +61,45 @@ export const Route = createFileRoute('/home/')({
 
 function App() {
   const [ready] = React.useState(true)
+  const [discountOpen, setDiscountOpen] = React.useState(false)
+
+  React.useEffect(() => {
+    setDiscountOpen(true)
+  }, [])
   return (
     <div className="bg-background">
+      <Dialog open={discountOpen} onOpenChange={setDiscountOpen}>
+        <DialogContent className="top-8 sm:top-12 translate-y-0 sm:max-w-lg border-emerald-100/80 bg-white/95 text-slate-900 shadow-2xl shadow-emerald-200/60">
+          <DialogHeader className="space-y-1 text-center">
+            <DialogTitle className="flex items-center justify-center gap-2 text-xl text-emerald-800">
+              <BadgePercent className="h-5 w-5" />
+              15% off jet ski rentals
+            </DialogTitle>
+            <DialogDescription className="text-slate-600">
+              Save on every jet ski session today. Book your slot and the discount is applied automatically.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col items-center gap-3">
+            <Badge variant="outline" className="rounded-full border-emerald-200 bg-emerald-50 text-emerald-800">
+              Auto-applied — limited time
+            </Badge>
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+              <Link
+                to="/rides"
+                className={buttonVariants({
+                  size: 'sm',
+                  className: 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm w-full sm:w-auto',
+                })}
+              >
+                View jet ski rentals
+              </Link>
+              <Button variant="ghost" size="sm" className="w-full sm:w-auto" onClick={() => setDiscountOpen(false)}>
+                Maybe later
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
       {/* HERO */}
       <section className="relative overflow-hidden bg-slate-950 text-white">
         <div className="absolute inset-0">
@@ -293,14 +338,20 @@ function App() {
               <Reveal offset={4} duration={900}>
                 <Card className="flex flex-col rounded-2xl border border-slate-200/80 bg-white/90 shadow-[0_20px_50px_-30px_rgba(15,23,42,0.35)] backdrop-blur-sm hover:-translate-y-1 hover:shadow-[0_24px_70px_-40px_rgba(14,116,144,0.45)] transition-all">
                   <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
                       <CardTitle className="flex items-center gap-2">
                         <Ship className="h-5 w-5 text-primary" />
                         30‑min Rental (1 Jet‑Ski)
                       </CardTitle>
-                      <Badge variant="secondary" className="rounded-full">
-                        Quick thrill
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="rounded-full">
+                          Quick thrill
+                        </Badge>
+                        <Badge variant="secondary" className="flex items-center gap-1.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-sm">
+                          <BadgePercent className="h-3.5 w-3.5" />
+                          15% off
+                        </Badge>
+                      </div>
                     </div>
                     <CardDescription>Perfect for a quick burst of fun.</CardDescription>
                   </CardHeader>
@@ -318,7 +369,13 @@ function App() {
                     </p>
                   </CardContent>
                   <CardFooter className="mt-auto flex flex-wrap items-center justify-between gap-3">
-                    <Badge className="bg-primary/10 text-primary">From ZAR 1,750</Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="flex items-center gap-1.5 rounded-full border-emerald-200 bg-emerald-50 text-emerald-800">
+                        <BadgePercent className="h-3.5 w-3.5" />
+                        15% off applied
+                      </Badge>
+                      <Badge className="bg-emerald-600 text-white shadow-sm">From ZAR 1,488</Badge>
+                    </div>
                     <Link to="/Bookings" className={buttonVariants({ size: 'sm' })}>
                       Select
                     </Link>
@@ -329,14 +386,20 @@ function App() {
               <Reveal delay={120} offset={4} duration={900}>
                 <Card className="flex flex-col rounded-2xl border border-slate-200/80 bg-white/90 shadow-[0_20px_50px_-30px_rgba(15,23,42,0.35)] backdrop-blur-sm hover:-translate-y-1 hover:shadow-[0_24px_70px_-40px_rgba(14,116,144,0.45)] transition-all">
                   <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
                       <CardTitle className="flex items-center gap-2">
                         <Clock className="h-5 w-5 text-primary" />
                         60‑min Rental (1 Jet‑Ski)
                       </CardTitle>
-                      <Badge variant="outline" className="rounded-full border-primary/30 text-primary">
-                        Most booked
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="rounded-full border-primary/30 text-primary">
+                          Most booked
+                        </Badge>
+                        <Badge variant="secondary" className="flex items-center gap-1.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-sm">
+                          <BadgePercent className="h-3.5 w-3.5" />
+                          15% off
+                        </Badge>
+                      </div>
                     </div>
                     <CardDescription>Extra time to explore the bay.</CardDescription>
                   </CardHeader>
@@ -354,7 +417,13 @@ function App() {
                     </p>
                   </CardContent>
                   <CardFooter className="mt-auto flex flex-wrap items-center justify-between gap-3">
-                    <Badge className="bg-primary/10 text-primary">From ZAR 2,600</Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="flex items-center gap-1.5 rounded-full border-emerald-200 bg-emerald-50 text-emerald-800">
+                        <BadgePercent className="h-3.5 w-3.5" />
+                        15% off applied
+                      </Badge>
+                      <Badge className="bg-emerald-600 text-white shadow-sm">From ZAR 2,210</Badge>
+                    </div>
                     <Link to="/Bookings" className={buttonVariants({ size: 'sm' })}>
                       Select
                     </Link>
@@ -384,7 +453,7 @@ function App() {
                       />
                     </div>
                     <p>
-                      Drone video, GoPro footage, waterproof phone pouch, and premium wetsuit hire available at checkout. Joy Ride (10 min) available from ZAR 700.
+                      Drone video, GoPro footage, waterproof phone pouch, and premium wetsuit hire available at checkout. Joy Ride (10 min) available from ZAR 595.
                     </p>
                   </CardContent>
                   <CardFooter className="mt-auto flex flex-wrap items-center justify-between gap-3">
