@@ -1,7 +1,22 @@
 import { Link } from '@tanstack/react-router'
 import { useState } from 'react'
-import { Home, Menu, X, Waves, ShieldCheck, Phone, CalendarDays, Sparkles, ArrowRight, Ship } from 'lucide-react'
+import {
+  Home,
+  Menu,
+  X,
+  Waves,
+  ShieldCheck,
+  Phone,
+  CalendarDays,
+  Sparkles,
+  ArrowRight,
+  Ship,
+  Fish,
+  CloudSun,
+  MoreHorizontal,
+} from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import jetskilogo from '@/lib/images/JetSkiLogo.png'
 
 export default function Header() {
@@ -44,10 +59,7 @@ export default function Header() {
                 { to: '/home', label: 'Home' },
                 { to: '/rides', label: 'Jet ski Rides' },
                 { to: '/boat-ride', label: 'Boat ride' },
-                { to: '/safety', label: 'Safety' },
-                { to: '/weather', label: 'Weather' },
-                { to: '/contact', label: 'Contact' },
-                { to: '/admin', label: 'Admin' },
+                { to: '/fishing-charters', label: 'Fishing charters' },
               ].map((item) => (
                 <Link
                   key={item.to}
@@ -61,6 +73,31 @@ export default function Header() {
                   {item.label}
                 </Link>
               ))}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="relative px-4 py-2 rounded-full text-sm font-semibold text-foreground/75 transition-all duration-200 border border-transparent hover:text-foreground hover:bg-primary/10 hover:border-primary/30 hover:-translate-y-[1px] shadow-[0_1px_0_0_rgba(255,255,255,0.06)] flex items-center gap-2">
+                    <MoreHorizontal className="h-4 w-4" />
+                    More
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="min-w-[180px] border-primary/20 shadow-[0_16px_40px_-30px_rgba(15,23,42,0.55)]">
+                  <DropdownMenuItem asChild>
+                    <Link to="/weather" className="flex items-center gap-2">
+                      <CloudSun className="h-4 w-4" /> Weather
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/safety" className="flex items-center gap-2">
+                      <ShieldCheck className="h-4 w-4" /> Safety
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/admin" className="flex items-center gap-2">
+                      <ShieldCheck className="h-4 w-4" /> Admin
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </nav>
 
             {/* Right actions */}
@@ -152,9 +189,9 @@ export default function Header() {
             { to: '/home', label: 'Home', icon: <Home size={20} /> },
             { to: '/rides', label: 'Rides', icon: <Waves size={20} /> },
             { to: '/boat-ride', label: 'Boat ride', icon: <Ship size={20} /> },
+            { to: '/fishing-charters', label: 'Fishing charters', icon: <Fish size={20} /> },
             { to: '/safety', label: 'Safety', icon: <ShieldCheck size={20} /> },
             { to: '/weather', label: 'Weather', icon: <Waves size={20} /> },
-            { to: '/contact', label: 'Contact', icon: <Phone size={20} /> },
             { to: '/admin', label: 'Admin', icon: <ShieldCheck size={20} /> },
           ].map((item) => (
             <Link
