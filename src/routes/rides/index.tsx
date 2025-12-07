@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { MapPin, Clock, Users, Ship, CalendarDays, ShieldCheck } from 'lucide-react'
+import { MapPin, Clock, Users, Ship, CalendarDays, ShieldCheck, BadgePercent } from 'lucide-react'
 
 export const Route = createFileRoute('/rides/')({
   component: RouteComponent,
@@ -32,7 +32,7 @@ const rides: Ride[] = [
       "Ride inside our marked zone",
       "Ideal taster session",
     ],
-    price: 'From ZAR 1,750',
+    price: 'From ZAR 1,488',
     cta: { to: '/Bookings', label: 'Book 30‑min' },
   },
   {
@@ -45,7 +45,7 @@ const rides: Ride[] = [
       "Passenger optional",
       "Sheltered areas on windy days",
     ],
-    price: 'From ZAR 2,600',
+    price: 'From ZAR 2,210',
     cta: { to: '/Bookings', label: 'Book 60‑min' },
   },
   {
@@ -58,7 +58,7 @@ const rides: Ride[] = [
       "Great for friends or couples",
       "Stay within marked riding zone",
     ],
-    price: 'From ZAR 3,100',
+    price: 'From ZAR 2,635',
     cta: { to: '/Bookings', label: 'Book 2 skis (30m)' },
   },
   {
@@ -71,7 +71,7 @@ const rides: Ride[] = [
       "Plenty of time for swapping riders",
       "Briefing & gear included",
     ],
-    price: 'From ZAR 4,800',
+    price: 'From ZAR 4,080',
     cta: { to: '/Bookings', label: 'Book 2 skis (60m)' },
   },
   {
@@ -84,7 +84,7 @@ const rides: Ride[] = [
       "Perfect for small crews",
       "Safety briefing & jackets included",
     ],
-    price: 'From ZAR 4,500',
+    price: 'From ZAR 3,825',
     cta: { to: '/Bookings', label: 'Book 3 skis (30m)' },
   },
   {
@@ -97,7 +97,7 @@ const rides: Ride[] = [
       "Plenty of room to rotate riders",
       "Briefing & gear included",
     ],
-    price: 'From ZAR 6,900',
+    price: 'From ZAR 5,865',
     cta: { to: '/Bookings', label: 'Book 3 skis (60m)' },
   },
   {
@@ -110,7 +110,7 @@ const rides: Ride[] = [
       "Ideal for friends & families",
       "Stay inside the marked zone",
     ],
-    price: 'From ZAR 5,800',
+    price: 'From ZAR 4,930',
     cta: { to: '/Bookings', label: 'Book 4 skis (30m)' },
   },
   {
@@ -123,7 +123,7 @@ const rides: Ride[] = [
       "Briefing & jackets for everyone",
       "Great for team events",
     ],
-    price: 'From ZAR 9,000',
+    price: 'From ZAR 7,650',
     cta: { to: '/Bookings', label: 'Book 4 skis (60m)' },
   },
   {
@@ -136,7 +136,7 @@ const rides: Ride[] = [
       "Coordinated launch and guidance",
       "Great for big groups",
     ],
-    price: 'From ZAR 7,100',
+    price: 'From ZAR 6,035',
     cta: { to: '/Bookings', label: 'Book 5 skis (30m)' },
   },
   {
@@ -149,7 +149,7 @@ const rides: Ride[] = [
       "Rotations and guidance included",
       "Best for events & celebrations",
     ],
-    price: 'From ZAR 11,000',
+    price: 'From ZAR 9,350',
     cta: { to: '/Bookings', label: 'Book 5 skis (60m)' },
   },
   {
@@ -162,7 +162,7 @@ const rides: Ride[] = [
       "Experience the thrill with an expert",
       "Photos/video add‑on available",
     ],
-    price: 'ZAR 700',
+    price: 'ZAR 595',
     cta: { to: '/Bookings', label: 'Book Joy Ride' },
   },
   {
@@ -175,7 +175,7 @@ const rides: Ride[] = [
       "Briefing, gear and supervision included",
       "Great for parties & team‑builds",
     ],
-    price: 'From ZAR 7,500',
+    price: 'From ZAR 6,375',
     cta: { to: '/Bookings', label: 'Enquire / Book' },
   },
 ]
@@ -183,11 +183,17 @@ const rides: Ride[] = [
 function RideCard({ ride }: { ride: Ride }) {
   return (
     <Card className="flex flex-col bg-white/95 shadow-md hover:shadow-lg transition-shadow border border-primary/10">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          {ride.icon}
-          {ride.title}
-        </CardTitle>
+      <CardHeader className="space-y-2">
+        <div className="flex items-start justify-between gap-3">
+          <CardTitle className="flex items-center gap-2">
+            {ride.icon}
+            {ride.title}
+          </CardTitle>
+          <Badge variant="secondary" className="bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-sm">
+            <BadgePercent className="mr-1.5 h-3.5 w-3.5" />
+            15% off
+          </Badge>
+        </div>
         <CardDescription>{ride.subtitle}</CardDescription>
       </CardHeader>
       <CardContent className="text-sm text-muted-foreground">
@@ -198,7 +204,9 @@ function RideCard({ ride }: { ride: Ride }) {
         </ul>
       </CardContent>
       <CardFooter className="mt-auto flex flex-wrap items-center justify-between gap-3">
-        <Badge>{ride.price}</Badge>
+        <Badge className="bg-emerald-600 text-white shadow-sm hover:bg-emerald-600">
+          {ride.price}
+        </Badge>
         {ride.cta ? (
           <Link
             to={ride.cta.to}
