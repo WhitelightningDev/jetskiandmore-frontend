@@ -1,4 +1,3 @@
-import * as React from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
