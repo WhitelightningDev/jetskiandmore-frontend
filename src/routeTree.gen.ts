@@ -17,6 +17,7 @@ import { Route as RidesIndexRouteImport } from './routes/rides/index'
 import { Route as LocationsIndexRouteImport } from './routes/locations/index'
 import { Route as InterimSkipperQuizIndexRouteImport } from './routes/interim-skipper-quiz/index'
 import { Route as HomeIndexRouteImport } from './routes/home/index'
+import { Route as FishingChartersIndexRouteImport } from './routes/fishing-charters/index'
 import { Route as ContactIndexRouteImport } from './routes/contact/index'
 import { Route as BoatRideIndexRouteImport } from './routes/boat-ride/index'
 import { Route as AddOnsIndexRouteImport } from './routes/add-ons/index'
@@ -69,6 +70,11 @@ const InterimSkipperQuizIndexRoute = InterimSkipperQuizIndexRouteImport.update({
 const HomeIndexRoute = HomeIndexRouteImport.update({
   id: '/home/',
   path: '/home/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FishingChartersIndexRoute = FishingChartersIndexRouteImport.update({
+  id: '/fishing-charters/',
+  path: '/fishing-charters/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactIndexRoute = ContactIndexRouteImport.update({
@@ -152,6 +158,7 @@ export interface FileRoutesByFullPath {
   '/add-ons': typeof AddOnsIndexRoute
   '/boat-ride': typeof BoatRideIndexRoute
   '/contact': typeof ContactIndexRoute
+  '/fishing-charters': typeof FishingChartersIndexRoute
   '/home': typeof HomeIndexRoute
   '/interim-skipper-quiz': typeof InterimSkipperQuizIndexRoute
   '/locations': typeof LocationsIndexRoute
@@ -175,6 +182,7 @@ export interface FileRoutesByTo {
   '/add-ons': typeof AddOnsIndexRoute
   '/boat-ride': typeof BoatRideIndexRoute
   '/contact': typeof ContactIndexRoute
+  '/fishing-charters': typeof FishingChartersIndexRoute
   '/home': typeof HomeIndexRoute
   '/interim-skipper-quiz': typeof InterimSkipperQuizIndexRoute
   '/locations': typeof LocationsIndexRoute
@@ -199,6 +207,7 @@ export interface FileRoutesById {
   '/add-ons/': typeof AddOnsIndexRoute
   '/boat-ride/': typeof BoatRideIndexRoute
   '/contact/': typeof ContactIndexRoute
+  '/fishing-charters/': typeof FishingChartersIndexRoute
   '/home/': typeof HomeIndexRoute
   '/interim-skipper-quiz/': typeof InterimSkipperQuizIndexRoute
   '/locations/': typeof LocationsIndexRoute
@@ -224,6 +233,7 @@ export interface FileRouteTypes {
     | '/add-ons'
     | '/boat-ride'
     | '/contact'
+    | '/fishing-charters'
     | '/home'
     | '/interim-skipper-quiz'
     | '/locations'
@@ -247,6 +257,7 @@ export interface FileRouteTypes {
     | '/add-ons'
     | '/boat-ride'
     | '/contact'
+    | '/fishing-charters'
     | '/home'
     | '/interim-skipper-quiz'
     | '/locations'
@@ -270,6 +281,7 @@ export interface FileRouteTypes {
     | '/add-ons/'
     | '/boat-ride/'
     | '/contact/'
+    | '/fishing-charters/'
     | '/home/'
     | '/interim-skipper-quiz/'
     | '/locations/'
@@ -290,6 +302,7 @@ export interface RootRouteChildren {
   AddOnsIndexRoute: typeof AddOnsIndexRoute
   BoatRideIndexRoute: typeof BoatRideIndexRoute
   ContactIndexRoute: typeof ContactIndexRoute
+  FishingChartersIndexRoute: typeof FishingChartersIndexRoute
   HomeIndexRoute: typeof HomeIndexRoute
   InterimSkipperQuizIndexRoute: typeof InterimSkipperQuizIndexRoute
   LocationsIndexRoute: typeof LocationsIndexRoute
@@ -355,6 +368,13 @@ declare module '@tanstack/react-router' {
       path: '/home'
       fullPath: '/home'
       preLoaderRoute: typeof HomeIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fishing-charters/': {
+      id: '/fishing-charters/'
+      path: '/fishing-charters'
+      fullPath: '/fishing-charters'
+      preLoaderRoute: typeof FishingChartersIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact/': {
@@ -478,6 +498,7 @@ const rootRouteChildren: RootRouteChildren = {
   AddOnsIndexRoute: AddOnsIndexRoute,
   BoatRideIndexRoute: BoatRideIndexRoute,
   ContactIndexRoute: ContactIndexRoute,
+  FishingChartersIndexRoute: FishingChartersIndexRoute,
   HomeIndexRoute: HomeIndexRoute,
   InterimSkipperQuizIndexRoute: InterimSkipperQuizIndexRoute,
   LocationsIndexRoute: LocationsIndexRoute,
