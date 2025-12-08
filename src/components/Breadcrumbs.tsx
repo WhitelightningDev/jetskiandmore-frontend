@@ -21,6 +21,8 @@ const LABEL_MAP: Record<string, string> = {
   locations: 'Locations',
   safety: 'Safety',
   contact: 'Contact',
+  privacy: 'Privacy',
+  terms: 'Terms',
 }
 
 function buildCrumbs(pathname: string): Crumb[] {
