@@ -35,6 +35,25 @@ function RouteComponent() {
             </Badge>
           </div>
 
+          <div className="mb-6 flex flex-col gap-4 rounded-2xl border border-emerald-100 bg-white/80 p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 border border-emerald-100">
+                <ShieldCheck className="h-5 w-5 text-emerald-700" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">SAMSA certified</p>
+                <p className="text-sm text-slate-700 max-w-2xl">
+                  Registered with the South African Maritime Safety Authority with certified skippers supervising every launch and recovery.
+                </p>
+              </div>
+            </div>
+            <img
+              src="/samsa-logo.png"
+              alt="South African Maritime Safety Authority"
+              className="h-12 w-auto object-contain drop-shadow-sm"
+            />
+          </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* What we provide */}
           <Card>
