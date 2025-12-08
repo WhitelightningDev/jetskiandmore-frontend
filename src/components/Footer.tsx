@@ -41,6 +41,15 @@ export default function Footer() {
                 Talk with us
               </Link>
             </div>
+            <div className="mt-4 inline-flex items-center gap-4 rounded-xl border border-primary/20 bg-white/80 px-4 py-3 shadow-sm backdrop-blur">
+              <img src="/samsa-logo.png" alt="SAMSA certified operator" className="h-12 w-auto object-contain" />
+              <div className="leading-tight">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-primary/80 font-semibold">SAMSA certified</p>
+                <p className="text-sm text-foreground/80">
+                  Registered with the South African Maritime Safety Authority. Certified skippers on every launch.
+                </p>
+              </div>
+            </div>
           </div>
 
           <div>
@@ -97,9 +106,15 @@ export default function Footer() {
 
         <div className="mt-10 flex flex-col gap-2 border-t border-border/60 pt-6 text-sm text-foreground/60 sm:flex-row sm:items-center sm:justify-between">
           <span>© {new Date().getFullYear()} Jet Ski & More. All wakes reserved.</span>
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-4">
             <Link to="/safety" className="hover:text-foreground">
               Safety standards
+            </Link>
+            <Link to="/privacy" className="hover:text-foreground">
+              Privacy policy
+            </Link>
+            <Link to="/terms" className="hover:text-foreground">
+              Terms &amp; conditions
             </Link>
             <Link to="/contact" className="hover:text-foreground">
               Support

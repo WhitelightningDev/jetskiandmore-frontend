@@ -12,8 +12,10 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WeatherIndexRouteImport } from './routes/weather/index'
+import { Route as TermsIndexRouteImport } from './routes/terms/index'
 import { Route as SafetyIndexRouteImport } from './routes/safety/index'
 import { Route as RidesIndexRouteImport } from './routes/rides/index'
+import { Route as PrivacyIndexRouteImport } from './routes/privacy/index'
 import { Route as LocationsIndexRouteImport } from './routes/locations/index'
 import { Route as InterimSkipperQuizIndexRouteImport } from './routes/interim-skipper-quiz/index'
 import { Route as HomeIndexRouteImport } from './routes/home/index'
@@ -47,6 +49,11 @@ const WeatherIndexRoute = WeatherIndexRouteImport.update({
   path: '/weather/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TermsIndexRoute = TermsIndexRouteImport.update({
+  id: '/terms/',
+  path: '/terms/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SafetyIndexRoute = SafetyIndexRouteImport.update({
   id: '/safety/',
   path: '/safety/',
@@ -55,6 +62,11 @@ const SafetyIndexRoute = SafetyIndexRouteImport.update({
 const RidesIndexRoute = RidesIndexRouteImport.update({
   id: '/rides/',
   path: '/rides/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyIndexRoute = PrivacyIndexRouteImport.update({
+  id: '/privacy/',
+  path: '/privacy/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LocationsIndexRoute = LocationsIndexRouteImport.update({
@@ -162,8 +174,10 @@ export interface FileRoutesByFullPath {
   '/home': typeof HomeIndexRoute
   '/interim-skipper-quiz': typeof InterimSkipperQuizIndexRoute
   '/locations': typeof LocationsIndexRoute
+  '/privacy': typeof PrivacyIndexRoute
   '/rides': typeof RidesIndexRoute
   '/safety': typeof SafetyIndexRoute
+  '/terms': typeof TermsIndexRoute
   '/weather': typeof WeatherIndexRoute
   '/weather/calm-slots': typeof WeatherCalmSlotsIndexRoute
 }
@@ -186,8 +200,10 @@ export interface FileRoutesByTo {
   '/home': typeof HomeIndexRoute
   '/interim-skipper-quiz': typeof InterimSkipperQuizIndexRoute
   '/locations': typeof LocationsIndexRoute
+  '/privacy': typeof PrivacyIndexRoute
   '/rides': typeof RidesIndexRoute
   '/safety': typeof SafetyIndexRoute
+  '/terms': typeof TermsIndexRoute
   '/weather': typeof WeatherIndexRoute
   '/weather/calm-slots': typeof WeatherCalmSlotsIndexRoute
 }
@@ -211,8 +227,10 @@ export interface FileRoutesById {
   '/home/': typeof HomeIndexRoute
   '/interim-skipper-quiz/': typeof InterimSkipperQuizIndexRoute
   '/locations/': typeof LocationsIndexRoute
+  '/privacy/': typeof PrivacyIndexRoute
   '/rides/': typeof RidesIndexRoute
   '/safety/': typeof SafetyIndexRoute
+  '/terms/': typeof TermsIndexRoute
   '/weather/': typeof WeatherIndexRoute
   '/weather/calm-slots/': typeof WeatherCalmSlotsIndexRoute
 }
@@ -237,8 +255,10 @@ export interface FileRouteTypes {
     | '/home'
     | '/interim-skipper-quiz'
     | '/locations'
+    | '/privacy'
     | '/rides'
     | '/safety'
+    | '/terms'
     | '/weather'
     | '/weather/calm-slots'
   fileRoutesByTo: FileRoutesByTo
@@ -261,8 +281,10 @@ export interface FileRouteTypes {
     | '/home'
     | '/interim-skipper-quiz'
     | '/locations'
+    | '/privacy'
     | '/rides'
     | '/safety'
+    | '/terms'
     | '/weather'
     | '/weather/calm-slots'
   id:
@@ -285,8 +307,10 @@ export interface FileRouteTypes {
     | '/home/'
     | '/interim-skipper-quiz/'
     | '/locations/'
+    | '/privacy/'
     | '/rides/'
     | '/safety/'
+    | '/terms/'
     | '/weather/'
     | '/weather/calm-slots/'
   fileRoutesById: FileRoutesById
@@ -306,8 +330,10 @@ export interface RootRouteChildren {
   HomeIndexRoute: typeof HomeIndexRoute
   InterimSkipperQuizIndexRoute: typeof InterimSkipperQuizIndexRoute
   LocationsIndexRoute: typeof LocationsIndexRoute
+  PrivacyIndexRoute: typeof PrivacyIndexRoute
   RidesIndexRoute: typeof RidesIndexRoute
   SafetyIndexRoute: typeof SafetyIndexRoute
+  TermsIndexRoute: typeof TermsIndexRoute
   WeatherIndexRoute: typeof WeatherIndexRoute
   WeatherCalmSlotsIndexRoute: typeof WeatherCalmSlotsIndexRoute
 }
@@ -335,6 +361,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WeatherIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/terms/': {
+      id: '/terms/'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/safety/': {
       id: '/safety/'
       path: '/safety'
@@ -347,6 +380,13 @@ declare module '@tanstack/react-router' {
       path: '/rides'
       fullPath: '/rides'
       preLoaderRoute: typeof RidesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy/': {
+      id: '/privacy/'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/locations/': {
@@ -502,8 +542,10 @@ const rootRouteChildren: RootRouteChildren = {
   HomeIndexRoute: HomeIndexRoute,
   InterimSkipperQuizIndexRoute: InterimSkipperQuizIndexRoute,
   LocationsIndexRoute: LocationsIndexRoute,
+  PrivacyIndexRoute: PrivacyIndexRoute,
   RidesIndexRoute: RidesIndexRoute,
   SafetyIndexRoute: SafetyIndexRoute,
+  TermsIndexRoute: TermsIndexRoute,
   WeatherIndexRoute: WeatherIndexRoute,
   WeatherCalmSlotsIndexRoute: WeatherCalmSlotsIndexRoute,
 }
