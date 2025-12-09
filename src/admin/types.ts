@@ -85,6 +85,12 @@ export type QuizSubmission = {
   passengerSurname?: string | null
   passengerEmail?: string | null
   passengerIdNumber?: string | null
+   passengers?: {
+    name?: string | null
+    surname?: string | null
+    email?: string | null
+    idNumber?: string | null
+  }[] | null
   hasWatchedTutorial: boolean
   hasAcceptedIndemnity: boolean
   quizAnswers: Record<string, any>
