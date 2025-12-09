@@ -5,8 +5,32 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { postJSON } from '@/lib/api'
+import { SITE_ORIGIN } from '@/lib/site'
 
 export const Route = createFileRoute('/interim-skipper-quiz/')({
+  head: () => {
+    const origin = SITE_ORIGIN
+    const pageUrl = `${origin}/interim-skipper-quiz`
+    const image = `${origin}/Asunnydayofjetskiing.png`
+    const description =
+      'Watch the safety tutorial and complete the Jetski & More interim skipper quiz and indemnity before you ride.'
+
+    return {
+      title: 'Complete your safety tutorial & quiz | Jetski & More',
+      meta: [
+        { name: 'description', content: description },
+        { property: 'og:title', content: 'Safety quiz & indemnity | Jetski & More' },
+        { property: 'og:description', content: description },
+        { property: 'og:image', content: image },
+        { property: 'og:url', content: pageUrl },
+        { name: 'twitter:card', content: 'summary_large_image' },
+        { name: 'twitter:title', content: 'Safety quiz & indemnity | Jetski & More' },
+        { name: 'twitter:description', content: description },
+        { name: 'twitter:image', content: image },
+      ],
+      links: [{ rel: 'canonical', href: pageUrl }],
+    }
+  },
   component: RouteComponent,
 })
 
@@ -97,15 +121,19 @@ function RouteComponent() {
   type MultiQuestionId = (typeof multiQuestions)[number]['id']
   const requiredSkipperFields = ['email', 'name', 'surname', 'idNumber'] as const
 
+  type Passenger = {
+    name: string
+    surname: string
+    email: string
+    idNumber: string
+  }
+
   type FormValues = {
     email: string
     name: string
     surname: string
     idNumber: string
-    passengerName: string
-    passengerSurname: string
-    passengerEmail: string
-    passengerIdNumber: string
+    passengers: Passenger[]
     hasWatchedTutorial: boolean
     hasAcceptedIndemnity: boolean
     q1_distance_from_shore: string
@@ -125,10 +153,7 @@ function RouteComponent() {
     name: '',
     surname: '',
     idNumber: '',
-    passengerName: '',
-    passengerSurname: '',
-    passengerEmail: '',
-    passengerIdNumber: '',
+    passengers: [],
     hasWatchedTutorial: false,
     hasAcceptedIndemnity: false,
     q1_distance_from_shore: '',
@@ -143,8 +168,10 @@ function RouteComponent() {
     q10_emergency_items_onboard: [],
   }
 
+  const MAX_PASSENGERS: number = 6
+
   const [values, setValues] = React.useState<FormValues>(defaultValues)
-  const [errors, setErrors] = React.useState<Partial<Record<keyof FormValues, string>>>({})
+  const [errors, setErrors] = React.useState<Record<string, string | undefined>>({})
   const [submitError, setSubmitError] = React.useState<string | null>(null)
   const [submitSuccess, setSubmitSuccess] = React.useState(false)
   const [submitting, setSubmitting] = React.useState(false)
@@ -162,7 +189,38 @@ function RouteComponent() {
     | 'q8_connect_kill_switch_two_places'
     | 'q9_deposit_loss_reasons'
     | 'q10_emergency_items_onboard'
+    | 'passengers'
   >
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    const prefillEmail = params.get('prefill_email') || params.get('email')
+    const prefillName = params.get('prefill_name') || params.get('name')
+    const prefillSurname = params.get('prefill_surname') || params.get('surname')
+    const passengerName = params.get('passenger_name') || ''
+    const passengerSurname = params.get('passenger_surname') || ''
+    const passengerEmail = params.get('passenger_email') || ''
+    const passengerId = params.get('passenger_id') || ''
+    const hasPassenger = [passengerName, passengerSurname, passengerEmail, passengerId].some(Boolean)
+
+    setValues((prev) => ({
+      ...prev,
+      email: prefillEmail || prev.email,
+      name: prefillName || prev.name,
+      surname: prefillSurname || prev.surname,
+      passengers: hasPassenger
+        ? [
+            {
+              name: passengerName,
+              surname: passengerSurname,
+              email: passengerEmail,
+              idNumber: passengerId,
+            },
+          ]
+        : prev.passengers,
+    }))
+  }, [])
 
   function handleChange(field: TextField) {
     return (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -177,7 +235,7 @@ function RouteComponent() {
     e.preventDefault()
     setSubmitError(null)
     setSubmitSuccess(false)
-    const nextErrors: Partial<Record<keyof FormValues, string>> = {}
+    const nextErrors: Record<string, string> = {}
 
     ;(['email', 'name', 'surname', 'idNumber'] as const).forEach((field) => {
       if (!values[field].trim()) {
@@ -185,12 +243,17 @@ function RouteComponent() {
       }
     })
 
-    const passengerDetailsProvided = (['passengerName', 'passengerSurname', 'passengerEmail'] as const).some((field) =>
-      values[field].trim(),
-    )
-    if (passengerDetailsProvided && !values.passengerIdNumber.trim()) {
-      nextErrors.passengerIdNumber = 'Passenger ID Number required if passenger details are provided'
-    }
+    values.passengers.forEach((p, idx) => {
+      const hasAny = [p.name, p.surname, p.email, p.idNumber].some((val) => val.trim())
+      if (!hasAny) {
+        nextErrors[`passenger-${idx}-name`] = 'Fill or remove this passenger'
+        return
+      }
+      if (!p.name.trim()) nextErrors[`passenger-${idx}-name`] = 'Passenger name is required'
+      if (!p.surname.trim()) nextErrors[`passenger-${idx}-surname`] = 'Passenger surname is required'
+      if (!p.email.trim()) nextErrors[`passenger-${idx}-email`] = 'Passenger email is required'
+      if (!p.idNumber.trim()) nextErrors[`passenger-${idx}-id`] = 'Passenger ID number is required'
+    })
     if (!values.hasWatchedTutorial) {
       nextErrors.hasWatchedTutorial = 'Please confirm you have watched the tutorial video'
     }
@@ -215,15 +278,27 @@ function RouteComponent() {
       return
     }
 
+    const cleanedPassengers = values.passengers
+      .map((p) => ({
+        name: p.name.trim(),
+        surname: p.surname.trim(),
+        email: p.email.trim(),
+        idNumber: p.idNumber.trim(),
+      }))
+      .filter((p) => [p.name, p.surname, p.email, p.idNumber].some(Boolean))
+
+    const primaryPassenger = cleanedPassengers[0]
+
     const payload = {
       email: values.email,
       name: values.name,
       surname: values.surname,
       idNumber: values.idNumber,
-      passengerName: values.passengerName.trim() || null,
-      passengerSurname: values.passengerSurname.trim() || null,
-      passengerEmail: values.passengerEmail.trim() || null,
-      passengerIdNumber: values.passengerIdNumber.trim() || null,
+      passengerName: primaryPassenger?.name || null,
+      passengerSurname: primaryPassenger?.surname || null,
+      passengerEmail: primaryPassenger?.email || null,
+      passengerIdNumber: primaryPassenger?.idNumber || null,
+      passengers: cleanedPassengers,
       hasWatchedTutorial: values.hasWatchedTutorial,
       hasAcceptedIndemnity: values.hasAcceptedIndemnity,
       quizAnswers: {
@@ -254,6 +329,51 @@ function RouteComponent() {
     }
   }
 
+  function addPassenger() {
+    setValues((prev) => {
+      if (prev.passengers.length >= MAX_PASSENGERS) return prev
+      return {
+        ...prev,
+        passengers: [...prev.passengers, { name: '', surname: '', email: '', idNumber: '' }],
+      }
+    })
+  }
+
+  function removePassenger(index: number) {
+    setValues((prev) => ({
+      ...prev,
+      passengers: prev.passengers.filter((_, i) => i !== index),
+    }))
+    setErrors((prev) => {
+      const next = { ...prev }
+      Object.keys(next).forEach((key) => {
+        if (key.startsWith('passenger-')) {
+          delete next[key]
+        }
+      })
+      return next
+    })
+  }
+
+  function handlePassengerChange(index: number, field: keyof Passenger) {
+    return (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value
+      setValues((prev) => {
+        const passengers = [...prev.passengers]
+        passengers[index] = { ...passengers[index], [field]: value }
+        return { ...prev, passengers }
+      })
+      const key = `passenger-${index}-${field === 'idNumber' ? 'id' : field}`
+      if (errors[key]) {
+        setErrors((prev) => {
+          const next = { ...prev }
+          delete next[key]
+          return next
+        })
+      }
+    }
+  }
+
   function handleRadioChange(questionId: RadioQuestionId, option: string) {
     setValues((prev) => ({ ...prev, [questionId]: option }))
     if (errors[questionId]) {
@@ -275,6 +395,13 @@ function RouteComponent() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-12">
       <h1 className="text-3xl font-semibold text-slate-900">Interim Skippers Licence Quiz &amp; Indemnity</h1>
+      <div className="mt-3 rounded-lg border border-cyan-200/60 bg-cyan-50 px-4 py-3 shadow-sm">
+        <p className="text-sm font-semibold text-slate-900">Complete your safety tutorial before riding</p>
+        <p className="text-sm text-slate-700">
+          This link was created for you so you know you are confirming the tutorial video, indemnity, and
+          interim skipper quiz in one place.
+        </p>
+      </div>
       <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
         <div className="aspect-video w-full">
           <iframe
@@ -362,76 +489,124 @@ function RouteComponent() {
         </div>
 
         <div className="space-y-4 rounded-md border border-slate-100 p-4">
-          <div>
-            <h2 className="text-lg font-medium text-slate-900">Passenger details (optional)</h2>
-            <p className="text-sm text-slate-500">If you add a passenger, we need their ID number.</p>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-lg font-medium text-slate-900">Passenger details (optional)</h2>
+              <p className="text-sm text-slate-500">
+                Add guest details if someone is riding with you. We need full details (including ID) for each passenger.
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={addPassenger}
+              disabled={values.passengers.length >= MAX_PASSENGERS}
+            >
+              Add passenger
+            </Button>
           </div>
-          <div className="grid gap-6 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="passengerName">Passenger name</Label>
-              <Input
-                id="passengerName"
-                value={values.passengerName}
-                onChange={handleChange('passengerName')}
-                aria-invalid={Boolean(errors.passengerName)}
-                aria-describedby={errors.passengerName ? 'passengerName-error' : undefined}
-              />
-              {errors.passengerName ? (
-                <p id="passengerName-error" className="text-sm text-red-600">
-                  {errors.passengerName}
-                </p>
-              ) : null}
-            </div>
+          <p className="text-xs text-slate-500">
+            Up to {MAX_PASSENGERS} passenger{MAX_PASSENGERS === 1 ? '' : 's'} can be added here. Remove a row if it&apos;s not needed.
+          </p>
 
-            <div className="space-y-2">
-              <Label htmlFor="passengerSurname">Passenger surname</Label>
-              <Input
-                id="passengerSurname"
-                value={values.passengerSurname}
-                onChange={handleChange('passengerSurname')}
-                aria-invalid={Boolean(errors.passengerSurname)}
-                aria-describedby={errors.passengerSurname ? 'passengerSurname-error' : undefined}
-              />
-              {errors.passengerSurname ? (
-                <p id="passengerSurname-error" className="text-sm text-red-600">
-                  {errors.passengerSurname}
-                </p>
-              ) : null}
-            </div>
+          {values.passengers.length === 0 ? (
+            <p className="text-sm text-slate-500">No additional passengers added.</p>
+          ) : (
+            <div className="space-y-4">
+              {values.passengers.map((p, idx) => {
+                const nameError = errors[`passenger-${idx}-name`]
+                const surnameError = errors[`passenger-${idx}-surname`]
+                const emailError = errors[`passenger-${idx}-email`]
+                const idError = errors[`passenger-${idx}-id`]
+                return (
+                  <div key={idx} className="space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <p className="text-sm font-semibold text-slate-900">Passenger {idx + 1}</p>
+                        <p className="text-xs text-slate-500">Complete all fields for indemnity and check-in.</p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removePassenger(idx)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor={`passenger-${idx}-name`}>Passenger name</Label>
+                        <Input
+                          id={`passenger-${idx}-name`}
+                          value={p.name}
+                          onChange={handlePassengerChange(idx, 'name')}
+                          aria-invalid={Boolean(nameError)}
+                          aria-describedby={nameError ? `passenger-${idx}-name-error` : undefined}
+                        />
+                        {nameError ? (
+                          <p id={`passenger-${idx}-name-error`} className="text-sm text-red-600">
+                            {nameError}
+                          </p>
+                        ) : null}
+                      </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="passengerEmail">Passenger email</Label>
-              <Input
-                id="passengerEmail"
-                type="email"
-                value={values.passengerEmail}
-                onChange={handleChange('passengerEmail')}
-                aria-invalid={Boolean(errors.passengerEmail)}
-                aria-describedby={errors.passengerEmail ? 'passengerEmail-error' : undefined}
-              />
-              {errors.passengerEmail ? (
-                <p id="passengerEmail-error" className="text-sm text-red-600">
-                  {errors.passengerEmail}
-                </p>
-              ) : null}
-            </div>
+                      <div className="space-y-2">
+                        <Label htmlFor={`passenger-${idx}-surname`}>Passenger surname</Label>
+                        <Input
+                          id={`passenger-${idx}-surname`}
+                          value={p.surname}
+                          onChange={handlePassengerChange(idx, 'surname')}
+                          aria-invalid={Boolean(surnameError)}
+                          aria-describedby={surnameError ? `passenger-${idx}-surname-error` : undefined}
+                        />
+                        {surnameError ? (
+                          <p id={`passenger-${idx}-surname-error`} className="text-sm text-red-600">
+                            {surnameError}
+                          </p>
+                        ) : null}
+                      </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="passengerIdNumber">Passenger ID number</Label>
-              <Input
-                id="passengerIdNumber"
-                value={values.passengerIdNumber}
-                onChange={handleChange('passengerIdNumber')}
-                aria-invalid={Boolean(errors.passengerIdNumber)}
-                aria-describedby={errors.passengerIdNumber ? 'passengerIdNumber-error' : undefined}
-              />
-              {errors.passengerIdNumber ? (
-                <p id="passengerIdNumber-error" className="text-sm text-red-600">
-                  {errors.passengerIdNumber}
-                </p>
-              ) : null}
+                      <div className="space-y-2">
+                        <Label htmlFor={`passenger-${idx}-email`}>Passenger email</Label>
+                        <Input
+                          id={`passenger-${idx}-email`}
+                          type="email"
+                          value={p.email}
+                          onChange={handlePassengerChange(idx, 'email')}
+                          aria-invalid={Boolean(emailError)}
+                          aria-describedby={emailError ? `passenger-${idx}-email-error` : undefined}
+                        />
+                        {emailError ? (
+                          <p id={`passenger-${idx}-email-error`} className="text-sm text-red-600">
+                            {emailError}
+                          </p>
+                        ) : null}
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor={`passenger-${idx}-id`}>Passenger ID number</Label>
+                        <Input
+                          id={`passenger-${idx}-id`}
+                          value={p.idNumber}
+                          onChange={handlePassengerChange(idx, 'idNumber')}
+                          aria-invalid={Boolean(idError)}
+                          aria-describedby={idError ? `passenger-${idx}-id-error` : undefined}
+                        />
+                        {idError ? (
+                          <p id={`passenger-${idx}-id-error`} className="text-sm text-red-600">
+                            {idError}
+                          </p>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
-          </div>
+          )}
         </div>
 
         <div className="space-y-3 rounded-md border border-slate-100 p-4">
