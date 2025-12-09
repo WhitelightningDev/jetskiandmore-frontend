@@ -168,7 +168,7 @@ function RouteComponent() {
     q10_emergency_items_onboard: [],
   }
 
-  const MAX_PASSENGERS = 6
+  const MAX_PASSENGERS: number = 6
 
   const [values, setValues] = React.useState<FormValues>(defaultValues)
   const [errors, setErrors] = React.useState<Record<string, string | undefined>>({})
