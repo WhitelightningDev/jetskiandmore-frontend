@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Link, Outlet, createFileRoute, useRouter, useRouterState } from '@tanstack/react-router'
-import { BarChart3, CalendarClock, LayoutDashboard, LogOut, ShieldCheck } from 'lucide-react'
+import { BarChart3, CalendarClock, CalendarRange, LayoutDashboard, LogOut, ShieldCheck } from 'lucide-react'
 
 import { API_BASE } from '@/lib/api'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -35,6 +35,7 @@ const navItems = [
   { id: 'overview', label: 'Overview', to: '/admin/overview', icon: LayoutDashboard, description: 'Pulse & alerts' },
   { id: 'analytics', label: 'Analytics', to: '/admin/analytics', icon: BarChart3, description: 'Bookings & revenue' },
   { id: 'bookings', label: 'Bookings', to: '/admin/bookings', icon: CalendarClock, description: 'Manage customers' },
+  { id: 'calendar', label: 'Calendar', to: '/admin/calendar', icon: CalendarRange, description: 'Date & time grid' },
   { id: 'quiz', label: 'Safety & quiz', to: '/admin/quiz', icon: ShieldCheck, description: 'Compliance review' },
 ]
 
@@ -276,9 +277,9 @@ function AdminLayout() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_10%,rgba(56,189,248,0.25),transparent_35%),radial-gradient(circle_at_90%_20%,rgba(14,116,144,0.22),transparent_30%),radial-gradient(circle_at_30%_80%,rgba(99,102,241,0.16),transparent_28%)]" />
       </div>
 
-      <div className="relative mx-auto max-w-6xl px-4 py-6 lg:py-12">
-        <div className="flex flex-col gap-6 md:flex-row md:items-start">
-          <aside className="sticky top-4 w-full shrink-0 self-start rounded-2xl border border-white/10 bg-slate-900/80 shadow-2xl shadow-cyan-500/10 backdrop-blur md:w-72 lg:w-72 lg:top-6 max-h-[calc(100vh-2rem)] overflow-y-auto">
+      <div className="relative mx-auto max-w-7xl px-3 py-6 lg:py-12">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start">
+          <aside className="w-full shrink-0 self-start rounded-2xl border border-white/10 bg-slate-900/80 shadow-2xl shadow-cyan-500/10 backdrop-blur md:sticky md:top-4 lg:top-6 md:w-60 lg:w-64 md:max-h-[calc(100vh-2rem)] md:overflow-y-auto">
             <div className="flex items-center justify-between gap-3 border-b border-white/5 px-5 py-4">
               <div>
                 <p className="text-[11px] uppercase tracking-[0.2em] text-cyan-300/80">Control</p>
@@ -300,7 +301,7 @@ function AdminLayout() {
                 return (
                   <Link
                     key={item.id}
-                    to={item.to as '/admin/overview' | '/admin/analytics' | '/admin/bookings' | '/admin/quiz'}
+                    to={item.to as '/admin/overview' | '/admin/analytics' | '/admin/bookings' | '/admin/calendar' | '/admin/quiz'}
                     preload="intent"
                     className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left transition ${
                       active
