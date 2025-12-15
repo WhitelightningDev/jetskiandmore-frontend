@@ -30,6 +30,7 @@ import { Route as PaymentsFailedRouteImport } from './routes/payments/failed'
 import { Route as PaymentsCancelledRouteImport } from './routes/payments/cancelled'
 import { Route as AdminQuizRouteImport } from './routes/admin/quiz'
 import { Route as AdminOverviewRouteImport } from './routes/admin/overview'
+import { Route as AdminCalendarRouteImport } from './routes/admin/calendar'
 import { Route as AdminBookingsRouteImport } from './routes/admin/bookings'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin/analytics'
 import { Route as WeatherCalmSlotsIndexRouteImport } from './routes/weather/calm-slots/index'
@@ -139,6 +140,11 @@ const AdminOverviewRoute = AdminOverviewRouteImport.update({
   path: '/overview',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminCalendarRoute = AdminCalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminBookingsRoute = AdminBookingsRouteImport.update({
   id: '/bookings',
   path: '/bookings',
@@ -160,6 +166,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/bookings': typeof AdminBookingsRoute
+  '/admin/calendar': typeof AdminCalendarRoute
   '/admin/overview': typeof AdminOverviewRoute
   '/admin/quiz': typeof AdminQuizRoute
   '/payments/cancelled': typeof PaymentsCancelledRoute
@@ -186,6 +193,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRouteWithChildren
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/bookings': typeof AdminBookingsRoute
+  '/admin/calendar': typeof AdminCalendarRoute
   '/admin/overview': typeof AdminOverviewRoute
   '/admin/quiz': typeof AdminQuizRoute
   '/payments/cancelled': typeof PaymentsCancelledRoute
@@ -213,6 +221,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/bookings': typeof AdminBookingsRoute
+  '/admin/calendar': typeof AdminCalendarRoute
   '/admin/overview': typeof AdminOverviewRoute
   '/admin/quiz': typeof AdminQuizRoute
   '/payments/cancelled': typeof PaymentsCancelledRoute
@@ -241,6 +250,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/admin/analytics'
     | '/admin/bookings'
+    | '/admin/calendar'
     | '/admin/overview'
     | '/admin/quiz'
     | '/payments/cancelled'
@@ -267,6 +277,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/admin/analytics'
     | '/admin/bookings'
+    | '/admin/calendar'
     | '/admin/overview'
     | '/admin/quiz'
     | '/payments/cancelled'
@@ -293,6 +304,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/admin/analytics'
     | '/admin/bookings'
+    | '/admin/calendar'
     | '/admin/overview'
     | '/admin/quiz'
     | '/payments/cancelled'
@@ -487,6 +499,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminOverviewRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/calendar': {
+      id: '/admin/calendar'
+      path: '/calendar'
+      fullPath: '/admin/calendar'
+      preLoaderRoute: typeof AdminCalendarRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/bookings': {
       id: '/admin/bookings'
       path: '/bookings'
@@ -514,6 +533,7 @@ declare module '@tanstack/react-router' {
 interface AdminRouteChildren {
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminBookingsRoute: typeof AdminBookingsRoute
+  AdminCalendarRoute: typeof AdminCalendarRoute
   AdminOverviewRoute: typeof AdminOverviewRoute
   AdminQuizRoute: typeof AdminQuizRoute
 }
@@ -521,6 +541,7 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminBookingsRoute: AdminBookingsRoute,
+  AdminCalendarRoute: AdminCalendarRoute,
   AdminOverviewRoute: AdminOverviewRoute,
   AdminQuizRoute: AdminQuizRoute,
 }
