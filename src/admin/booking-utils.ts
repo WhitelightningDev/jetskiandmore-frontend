@@ -123,7 +123,7 @@ function parseTimeParts(raw?: string | null) {
 }
 
 function to24Hour(hours: number, minutes: number, suffix?: string) {
-  const clampedMinutes = clampMinutes(minutes)
+  clampMinutes(minutes)
   if (!suffix) return clampHours(hours)
   const normalized = clampHours(hours % 12)
   return suffix === 'pm' ? normalized + 12 : normalized
