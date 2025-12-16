@@ -72,6 +72,10 @@ function AdminLayout() {
         const res = await fetch(`${API_BASE}/api/admin/bookings?limit=100${statusParam}`, {
           headers: { Authorization: `Bearer ${token}` },
         })
+        if (res.status === 401) {
+          handleSessionExpired()
+          return
+        }
         if (!res.ok) throw new Error('Failed to load bookings')
         const data = (await res.json()) as Booking[]
         setBookings(data)
@@ -97,6 +101,10 @@ function AdminLayout() {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ])
+        if (aRes.status === 401 || qRes.status === 401) {
+          handleSessionExpired()
+          return
+        }
         if (!aRes.ok) throw new Error('Failed to load analytics')
         if (!qRes.ok) throw new Error('Failed to load quiz submissions')
         const aData = (await aRes.json()) as AnalyticsSummary
@@ -119,6 +127,10 @@ function AdminLayout() {
         const res = await fetch(`${API_BASE}/api/admin/analytics/pageviews?limit=50`, {
           headers: { Authorization: `Bearer ${token}` },
         })
+        if (res.status === 401) {
+          handleSessionExpired()
+          return
+        }
         if (!res.ok) throw new Error('Failed to load page view analytics')
         const data = (await res.json()) as PageViewAnalytics
         setPageViews(data)
@@ -139,6 +151,10 @@ function AdminLayout() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       })
+      if (res.status === 401) {
+        handleSessionExpired()
+        return false
+      }
       if (!res.ok) {
         const data = await res.json().catch(() => null)
         const msg = data?.detail || data?.message || res.statusText
@@ -169,6 +185,11 @@ function AdminLayout() {
     router.navigate({ to: '/admin' })
   }
 
+  function handleSessionExpired() {
+    setError('Session expired. Please sign in again.')
+    handleLogout()
+  }
+
   async function updateBookingStatus(id: string, status: string, message: string) {
     if (!token) return false
     if (!message.trim()) {
@@ -184,6 +205,10 @@ function AdminLayout() {
         },
         body: JSON.stringify({ status, message }),
       })
+      if (res.status === 401) {
+        handleSessionExpired()
+        return
+      }
       if (!res.ok) {
         const data = await res.json().catch(() => null)
         const msg = data?.detail || data?.message || res.statusText
