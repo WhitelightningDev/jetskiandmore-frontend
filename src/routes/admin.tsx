@@ -207,7 +207,7 @@ function AdminLayout() {
       })
       if (res.status === 401) {
         handleSessionExpired()
-        return
+        return false
       }
       if (!res.ok) {
         const data = await res.json().catch(() => null)
