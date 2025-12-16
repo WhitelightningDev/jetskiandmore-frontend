@@ -6,6 +6,7 @@ import ContactFab from '../components/ContactFab'
 import Breadcrumbs from '../components/Breadcrumbs'
 import Footer from '../components/Footer'
 import { API_BASE } from '@/lib/api'
+import HolidayBanner from '@/components/HolidayBanner'
 
 export const Route = createRootRoute({
   component: RootLayout,
@@ -22,6 +23,7 @@ function RootLayout() {
 
   return (
     <>
+      <HolidayBanner />
       <Header />
       <Breadcrumbs />
       <Outlet />
