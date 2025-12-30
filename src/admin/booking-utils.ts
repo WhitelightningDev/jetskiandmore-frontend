@@ -6,11 +6,11 @@ export type BookingWithMeta = Booking & {
 }
 
 const STATUS_TONES: Record<string, string> = {
-  approved: 'border-emerald-400/50 bg-emerald-500/10 text-emerald-50',
-  processing: 'border-amber-400/50 bg-amber-500/10 text-amber-50',
-  created: 'border-slate-300/40 bg-white/5 text-slate-100',
-  failed: 'border-rose-400/50 bg-rose-500/10 text-rose-50',
-  cancelled: 'border-slate-500/50 bg-slate-800 text-slate-100',
+  approved: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+  processing: 'border-amber-200 bg-amber-50 text-amber-800',
+  created: 'border-slate-200 bg-slate-50 text-slate-800',
+  failed: 'border-rose-200 bg-rose-50 text-rose-800',
+  cancelled: 'border-slate-200 bg-slate-100 text-slate-700',
 }
 
 export function withBookingMeta(bookings: Booking[]): BookingWithMeta[] {
@@ -62,7 +62,7 @@ export function toDateKey(date: Date) {
 
 export function statusTone(status?: string | null) {
   const key = (status || '').toLowerCase()
-  return STATUS_TONES[key] || 'border-cyan-400/40 bg-cyan-500/10 text-cyan-50'
+  return STATUS_TONES[key] || 'border-cyan-200 bg-cyan-50 text-cyan-800'
 }
 
 export function statusLabel(status?: string | null) {

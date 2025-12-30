@@ -95,24 +95,24 @@ function AdminCalendarPage() {
   return (
     <div className="space-y-6">
       <header className="space-y-1">
-        <p className="text-[11px] uppercase tracking-[0.22em] text-cyan-200/80">Bookings</p>
-        <h1 className="text-xl font-semibold text-white">Calendar</h1>
-        <p className="text-sm text-slate-300">
+        <p className="text-[11px] uppercase tracking-[0.22em] text-cyan-700">Bookings</p>
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Calendar</h1>
+        <p className="text-sm text-slate-600">
           Pick a day to see which slots are booked and who is riding.
         </p>
       </header>
 
-      <Card className="border-cyan-400/30 bg-gradient-to-r from-cyan-500/15 via-slate-900 to-slate-950 text-white shadow-lg shadow-cyan-500/20">
+      <Card className="border-slate-200 bg-gradient-to-r from-cyan-50 via-white to-indigo-50 shadow-sm">
         <CardHeader className="flex flex-row items-start justify-between gap-3">
           <div>
-            <CardTitle className="text-base">Next ride</CardTitle>
-            <CardDescription className="text-slate-200">
+            <CardTitle className="text-base text-slate-900">Next ride</CardTitle>
+            <CardDescription className="text-slate-600">
               {nextBooking
                 ? 'Earliest upcoming booking with a date.'
                 : 'No future bookings captured yet.'}
             </CardDescription>
           </div>
-          <Badge variant="secondary" className="bg-white/10 text-white">
+          <Badge variant="secondary" className="bg-white text-slate-700 border border-slate-200">
             <CalendarRange className="mr-1 h-4 w-4" />
             Auto-focus date
           </Badge>
@@ -123,37 +123,37 @@ function AdminCalendarPage() {
               <Badge variant="outline" className={statusTone(nextBooking.status)}>
                 {statusLabel(nextBooking.status)}
               </Badge>
-              <span className="font-semibold">
+              <span className="font-semibold text-slate-900">
                 {formatDateLabel(nextBooking.parsedDate ?? nextBooking.date)}
               </span>
-              <Badge variant="outline" className="bg-white/10 text-white">
+              <Badge variant="outline" className="border-slate-200 bg-white text-slate-800">
                 {formatRideTime(nextBooking.time)}
               </Badge>
-              <span className="text-slate-200">{nextBooking.rideId}</span>
-              <span className="text-slate-300">•</span>
-              <span className="text-slate-200">{nextBooking.fullName}</span>
+              <span className="text-slate-700">{nextBooking.rideId}</span>
+              <span className="text-slate-400">•</span>
+              <span className="text-slate-700">{nextBooking.fullName}</span>
             </>
           ) : (
-            <span className="text-slate-200">No upcoming dated bookings.</span>
+            <span className="text-slate-700">No upcoming dated bookings.</span>
           )}
         </CardContent>
       </Card>
 
       <div className="grid gap-4 lg:grid-cols-[360px,1fr]">
-        <Card className="border-white/10 bg-slate-900/80 shadow-lg shadow-cyan-500/10">
+        <Card className="border-slate-200 bg-white shadow-sm">
           <CardHeader className="flex flex-row items-start justify-between gap-3">
             <div>
-              <CardTitle className="text-base">Bookings calendar</CardTitle>
-              <CardDescription className="text-slate-300">
+              <CardTitle className="text-base text-slate-900">Bookings calendar</CardTitle>
+              <CardDescription className="text-slate-600">
                 Tap a date to see the rides and times.
               </CardDescription>
             </div>
-            <Badge variant="outline" className="border-cyan-400/50 bg-white/5 text-xs uppercase tracking-wide text-cyan-100">
+            <Badge variant="outline" className="border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-700">
               {bookedDates.length} dates
             </Badge>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-2">
+            <div className="rounded-2xl border border-slate-200 bg-white p-2">
               <Calendar
                 mode="single"
                 selected={selectedDate}
@@ -161,34 +161,40 @@ function AdminCalendarPage() {
                 modifiers={{ booked: bookedDates }}
                 modifiersClassNames={{
                   booked:
-                    'data-[selected=true]:bg-cyan-400/90 data-[selected=true]:text-slate-950 bg-cyan-500/20 text-white border border-cyan-400/50',
+                    'bg-cyan-50 text-cyan-900 border border-cyan-200 data-[selected-single=true]:bg-cyan-600 data-[selected-single=true]:text-white',
                 }}
                 classNames={{
-                  day: 'text-slate-100',
+                  caption_label: 'text-slate-900',
+                  dropdowns:
+                    'flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 shadow-inner',
+                  dropdown_root:
+                    'text-slate-900 border-slate-200 bg-white flex-1 rounded-lg px-2 py-1.5 min-w-[120px]',
+                  dropdown: 'text-slate-900',
+                  day: 'text-slate-900',
                   day_button:
-                    'text-slate-100 hover:text-white data-[selected=true]:text-slate-900 data-[outside=true]:text-slate-500',
+                    'text-slate-900 hover:bg-slate-100 hover:text-slate-900 data-[selected-single=true]:bg-cyan-600 data-[selected-single=true]:text-white data-[outside=true]:text-slate-400',
                 }}
                 captionLayout="dropdown"
               />
             </div>
-            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-300">
+            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600">
               <span className="inline-flex items-center gap-2">
-                <span className="h-3 w-3 rounded-full bg-cyan-400/80" />
+                <span className="h-3 w-3 rounded-full bg-cyan-500" />
                 Dates with bookings
               </span>
               <span className="inline-flex items-center gap-2">
-                <span className="h-3 w-3 rounded-full bg-white/80" />
+                <span className="h-3 w-3 rounded-full bg-slate-900" />
                 Selected day
               </span>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-white/10 bg-slate-900/80 shadow-lg shadow-cyan-500/10">
+        <Card className="border-slate-200 bg-white shadow-sm">
           <CardHeader className="flex flex-row items-start justify-between gap-3">
             <div>
-              <CardTitle className="text-base">{dayLabel}</CardTitle>
-              <CardDescription className="text-slate-300">
+              <CardTitle className="text-base text-slate-900">{dayLabel}</CardTitle>
+              <CardDescription className="text-slate-600">
                 {bookingsForDay.length > 0
                   ? `${bookingsForDay.length} ride${bookingsForDay.length === 1 ? '' : 's'} scheduled`
                   : loadingBookings
@@ -196,39 +202,39 @@ function AdminCalendarPage() {
                   : 'No bookings on this date yet.'}
               </CardDescription>
             </div>
-            <Badge variant="secondary" className="bg-white/10 text-white">
+            <Badge variant="secondary" className="bg-slate-100 text-slate-700">
               <Clock3 className="mr-1 h-4 w-4" />
               {bookingsForDay.length > 0 ? 'Times locked in' : 'Awaiting bookings'}
             </Badge>
           </CardHeader>
           <CardContent className="px-0">
             {bookingsForDay.length === 0 ? (
-              <div className="px-6 py-8 text-sm text-slate-300">
+              <div className="px-6 py-8 text-sm text-slate-600">
                 {loadingBookings ? 'Loading bookings…' : 'No bookings for this date.'}
               </div>
             ) : (
               <ScrollArea className="h-[520px]">
-                <div className="divide-y divide-white/5">
+                <div className="space-y-3 px-6 py-4">
                   {bookingsForDay.map((b) => {
                     const tone = statusTone(b.status)
                     return (
                       <div
                         key={b.id}
-                        className={`group flex items-start justify-between gap-3 px-6 py-4 transition hover:translate-x-1 rounded-xl border ${tone} shadow-inner`}
+                        className="flex items-start justify-between gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:bg-slate-50"
                       >
                         <div className="flex flex-col gap-1">
                           <div className="flex flex-wrap items-center gap-2">
                             <span className={`h-2.5 w-2.5 rounded-full border ${tone}`} />
-                            <Badge variant="outline" className="bg-white/10 text-xs font-semibold text-slate-50">
+                            <Badge variant="outline" className="border-slate-200 bg-slate-50 text-xs font-semibold text-slate-800">
                               {formatRideTime(b.time)}
                             </Badge>
-                            <span className="text-sm font-semibold text-white">{b.rideId}</span>
+                            <span className="text-sm font-semibold text-slate-900">{b.rideId}</span>
                             <Badge variant="outline" className={tone + ' capitalize'}>
                               {statusLabel(b.status)}
                             </Badge>
                           </div>
-                          <p className="text-sm font-medium text-white">{b.fullName}</p>
-                          <div className="flex flex-wrap items-center gap-3 text-xs text-slate-300">
+                          <p className="text-sm font-medium text-slate-900">{b.fullName}</p>
+                          <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600">
                             {b.email && (
                               <span className="inline-flex items-center gap-1">
                                 <Mail className="h-3.5 w-3.5" />
@@ -247,10 +253,10 @@ function AdminCalendarPage() {
                             </span>
                           </div>
                         </div>
-                        <div className="text-right text-sm text-slate-200">
-                          <div className="font-semibold">ZAR {(b.amountInCents / 100).toLocaleString('en-ZA')}</div>
+                        <div className="text-right text-sm text-slate-700">
+                          <div className="font-semibold text-slate-900">ZAR {(b.amountInCents / 100).toLocaleString('en-ZA')}</div>
                           {b.parsedDate && (
-                            <p className="text-[11px] text-slate-300">
+                            <p className="text-[11px] text-slate-500">
                               {formatDateLabel(b.parsedDate)}
                             </p>
                           )}

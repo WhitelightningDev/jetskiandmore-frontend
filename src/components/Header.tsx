@@ -8,6 +8,7 @@ import {
   ShieldCheck,
   Phone,
   CalendarDays,
+  CalendarX2,
   Sparkles,
   ArrowRight,
   Ship,
@@ -18,6 +19,7 @@ import {
 import { buttonVariants } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import jetskilogo from '@/lib/images/JetSkiLogo.png'
+import { BOOKINGS_PAUSED } from '@/lib/bookingStatus'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
@@ -111,14 +113,26 @@ export default function Header() {
               >
                 <Phone className="mr-2" size={16} /> Contact
               </Link>
-              <Link
-                to="/Bookings"
-                className={`${buttonVariants({
-                  size: 'sm',
-                })} shadow-[0_16px_40px_-22px_rgba(16,185,129,0.75)] transition-transform hover:-translate-y-[1px]`}
-              >
-                <CalendarDays className="mr-2" size={16} /> Book now
-              </Link>
+              {BOOKINGS_PAUSED ? (
+                <span
+                  className={`${buttonVariants({
+                    size: 'sm',
+                    variant: 'outline',
+                  })} cursor-not-allowed select-none opacity-80`}
+                  aria-disabled="true"
+                >
+                  <CalendarX2 className="mr-2" size={16} /> Bookings paused
+                </span>
+              ) : (
+                <Link
+                  to="/Bookings"
+                  className={`${buttonVariants({
+                    size: 'sm',
+                  })} shadow-[0_16px_40px_-22px_rgba(16,185,129,0.75)] transition-transform hover:-translate-y-[1px]`}
+                >
+                  <CalendarDays className="mr-2" size={16} /> Book now
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -163,15 +177,27 @@ export default function Header() {
               Safety checklist, weather review, and gear included for every session.
             </p>
             <div className="relative mt-3 flex gap-3">
-              <Link
-                to="/Bookings"
-                onClick={() => setIsOpen(false)}
-                className={`${buttonVariants({
-                  size: 'sm',
-                })} shadow-[0_16px_40px_-22px_rgba(16,185,129,0.75)]`}
-              >
-                <CalendarDays className="mr-2" size={16} /> Book now
-              </Link>
+              {BOOKINGS_PAUSED ? (
+                <span
+                  className={`${buttonVariants({
+                    size: 'sm',
+                    variant: 'outline',
+                  })} cursor-not-allowed select-none opacity-80`}
+                  aria-disabled="true"
+                >
+                  <CalendarX2 className="mr-2" size={16} /> Bookings paused
+                </span>
+              ) : (
+                <Link
+                  to="/Bookings"
+                  onClick={() => setIsOpen(false)}
+                  className={`${buttonVariants({
+                    size: 'sm',
+                  })} shadow-[0_16px_40px_-22px_rgba(16,185,129,0.75)]`}
+                >
+                  <CalendarDays className="mr-2" size={16} /> Book now
+                </Link>
+              )}
               <Link
                 to="/contact"
                 onClick={() => setIsOpen(false)}
@@ -218,9 +244,21 @@ export default function Header() {
           ))}
 
           <div className="mt-4 pt-4 border-t border-border/80">
-            <Link to="/Bookings" onClick={() => setIsOpen(false)} className={buttonVariants({ size: 'default' })}>
-              <CalendarDays className="mr-2" size={18} /> Book now
-            </Link>
+            {BOOKINGS_PAUSED ? (
+              <span
+                className={`${buttonVariants({
+                  size: 'default',
+                  variant: 'outline',
+                })} cursor-not-allowed select-none opacity-80`}
+                aria-disabled="true"
+              >
+                <CalendarX2 className="mr-2" size={18} /> Bookings paused
+              </span>
+            ) : (
+              <Link to="/Bookings" onClick={() => setIsOpen(false)} className={buttonVariants({ size: 'default' })}>
+                <CalendarDays className="mr-2" size={18} /> Book now
+              </Link>
+            )}
           </div>
         </nav>
       </aside>
