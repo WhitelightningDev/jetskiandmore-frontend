@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { CalendarDays, Clock, Users, Gift, MapPin, Info } from 'lucide-react'
+import { CalendarDays, CalendarX2, Clock, Users, Gift, MapPin, Info, MessageCircle, Phone } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,6 +10,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
 import { Calendar } from '@/components/ui/calendar'
@@ -18,6 +19,13 @@ import { getPaymentQuote, chargeWithBooking, initiatePayment, createPaymentLink,
 import { createYocoToken } from '@/lib/yoco'
 import { AddOnsSection } from '@/features/bookings/AddOnsSection'
 import { WeatherSnapshot } from '@/features/weather/WeatherSnapshot'
+import {
+  BOOKINGS_PAUSED,
+  BOOKINGS_PAUSED_FOLLOWUP,
+  BOOKINGS_PAUSED_MESSAGE,
+  BOOKINGS_PAUSED_TITLE,
+  BOOKINGS_WHATSAPP_URL,
+} from '@/lib/bookingStatus'
 
 export const Route = createFileRoute('/Bookings/')({
   component: RouteComponent,
@@ -179,6 +187,80 @@ function sanitizeRideId(id: unknown): string {
 }
 
 function RouteComponent() {
+  if (BOOKINGS_PAUSED) {
+    return (
+      <div className="bg-white">
+        <section className="mx-auto max-w-4xl px-4 py-10 md:py-14 space-y-6">
+          <div className="space-y-3">
+            <Badge variant="outline" className="w-fit border-amber-200 bg-amber-50 text-amber-800">
+              Maintenance
+            </Badge>
+            <h1 className="text-3xl md:text-4xl font-bold">{BOOKINGS_PAUSED_TITLE}</h1>
+            <p className="text-base text-muted-foreground">{BOOKINGS_PAUSED_MESSAGE}</p>
+            <p className="text-sm text-muted-foreground">{BOOKINGS_PAUSED_FOLLOWUP}</p>
+          </div>
+
+          <Alert variant="destructive" className="border-amber-200 bg-amber-50 text-amber-900">
+            <CalendarX2 className="h-5 w-5" aria-hidden />
+            <AlertTitle>Online bookings are offline</AlertTitle>
+            <AlertDescription>
+              We’re doing maintenance on the booking system. Please contact us and we will confirm a slot manually.
+            </AlertDescription>
+          </Alert>
+
+          <Card className="border-amber-100">
+            <CardHeader>
+              <CardTitle className="text-lg">Need a ride?</CardTitle>
+              <CardDescription>Reach out and we’ll lock in a time while maintenance is underway.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm text-muted-foreground">
+              <p>WhatsApp is quickest for availability checks. Calls and email work if you prefer.</p>
+            </CardContent>
+            <CardFooter className="flex flex-wrap gap-3">
+              <a
+                href={BOOKINGS_WHATSAPP_URL}
+                className={buttonVariants({ size: 'sm' })}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <MessageCircle className="mr-2 h-4 w-4" />
+                WhatsApp us
+              </a>
+              <a
+                href="tel:+27756588885"
+                className={buttonVariants({ variant: 'outline', size: 'sm' })}
+              >
+                <Phone className="mr-2 h-4 w-4" />
+                Call us
+              </a>
+              <Link
+                to="/contact"
+                className={buttonVariants({ variant: 'secondary', size: 'sm' })}
+              >
+                Contact page
+              </Link>
+            </CardFooter>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Plan ahead while we work</CardTitle>
+              <CardDescription>Browse rides and add-ons; we’ll finalise once bookings reopen.</CardDescription>
+            </CardHeader>
+            <CardFooter className="flex flex-wrap gap-2">
+              <Link to="/rides" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
+                View rides
+              </Link>
+              <Link to="/add-ons" className={buttonVariants({ size: 'sm' })}>
+                Check add-ons
+              </Link>
+            </CardFooter>
+          </Card>
+        </section>
+      </div>
+    )
+  }
+
   const search = Route.useSearch() as Partial<{
     rideId: string
     drone: unknown

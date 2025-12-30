@@ -14,6 +14,7 @@ import {
   LifeBuoy,
   AlertTriangle,
   BadgePercent,
+  CalendarX2,
 } from 'lucide-react'
 import Reveal from '@/components/Reveal'
 
@@ -51,6 +52,7 @@ import jetskiLogo from '@/lib/images/JetSkiLogo.png'
 import React from 'react'
 import { cn } from '@/lib/utils'
 import WeatherNudge from '@/components/WeatherNudge'
+import { BOOKINGS_PAUSED, BOOKINGS_PAUSED_MESSAGE } from '@/lib/bookingStatus'
 
 const GBAY_LAT = -34.165
 const GBAY_LON = 18.866
@@ -64,8 +66,51 @@ function App() {
   const [discountOpen, setDiscountOpen] = React.useState(false)
 
   React.useEffect(() => {
-    setDiscountOpen(true)
+    if (!BOOKINGS_PAUSED) {
+      setDiscountOpen(true)
+    }
   }, [])
+
+  const bookingButton = ({
+    label = 'Book now',
+    size = 'sm',
+    variant,
+    className,
+    showIcon = true,
+  }: {
+    label?: string
+    size?: NonNullable<Parameters<typeof buttonVariants>[0]>['size']
+    variant?: NonNullable<Parameters<typeof buttonVariants>[0]>['variant']
+    className?: string
+    showIcon?: boolean
+  }) => {
+    const iconSize = size === 'lg' ? 'h-5 w-5' : 'h-4 w-4'
+    if (BOOKINGS_PAUSED) {
+      return (
+        <span
+          className={buttonVariants({
+            size,
+            variant: variant ?? 'outline',
+            className: cn('cursor-not-allowed select-none opacity-80', className),
+          })}
+          aria-disabled="true"
+        >
+          {showIcon && <CalendarX2 className={`mr-2 ${iconSize}`} />}
+          Bookings paused
+        </span>
+      )
+    }
+    return (
+      <Link to="/Bookings" className={buttonVariants({ size, variant, className })}>
+        {showIcon && <CalendarDays className={`mr-2 ${iconSize}`} />}
+        {label}
+      </Link>
+    )
+  }
+
+  const heroCopy = BOOKINGS_PAUSED
+    ? 'Bookings are temporarily paused while we complete maintenance. Reach out and we’ll line up your slot manually.'
+    : 'Premium skis, safety-first briefings, and flexible slots from sunrise to sunset. Book online, arrive 15 minutes early, and we’ll handle the rest.'
   return (
     <div className="bg-background">
       <Dialog open={discountOpen} onOpenChange={setDiscountOpen}>
@@ -140,22 +185,24 @@ function App() {
 
             <Reveal delay={220} offset={4} duration={900}>
               <p className="text-base md:text-xl text-slate-100/90 max-w-2xl">
-                Premium skis, safety-first briefings, and flexible slots from sunrise to sunset. Book online, arrive 15 minutes early, and we’ll handle the rest.
+                {heroCopy}
               </p>
             </Reveal>
 
             <Reveal delay={320} offset={4} duration={900}>
               <div className="flex flex-col sm:flex-row gap-3">
-                <Link to="/Bookings" className={buttonVariants({ size: 'lg' })}>
-                  <CalendarDays className="mr-2 h-5 w-5" />
-                  Book now
-                </Link>
+                {bookingButton({ label: 'Book now', size: 'lg' })}
                 <Link to="/rides" className={buttonVariants({ variant: 'outline', size: 'lg' })}>
                   <Waves className="mr-2 h-5 w-5 text-black" />
                   <p className='text-black'>See rides &amp; pricing</p>
                 </Link>
               </div>
             </Reveal>
+            {BOOKINGS_PAUSED && (
+              <p className="mt-2 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-2 text-sm text-amber-50 ring-1 ring-white/20">
+                <CalendarX2 className="h-4 w-4" /> Online bookings are paused for maintenance. Contact us to schedule.
+              </p>
+            )}
 
             <Reveal delay={380} offset={4} duration={900}>
               <div className="flex flex-wrap gap-3 text-sm text-slate-100/80">
@@ -209,10 +256,7 @@ function App() {
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <Link to="/Bookings" className={buttonVariants({ size: 'sm' })}>
-                    <CalendarDays className="mr-2 h-4 w-4" />
-                    Book now
-                  </Link>
+                  {bookingButton({ label: 'Book now', size: 'sm' })}
                   <Link to="/contact" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
                     Questions? Chat to us
                   </Link>
@@ -236,9 +280,7 @@ function App() {
                     <p>3) Pay securely online — you’ll get confirmation instantly.</p>
                   </CardContent>
                   <CardFooter className="flex flex-wrap gap-2">
-                    <Link to="/Bookings" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
-                      Open booking form
-                    </Link>
+                    {bookingButton({ label: 'Open booking form', variant: 'outline', size: 'sm', showIcon: false })}
                   </CardFooter>
                 </Card>
               </Reveal>
@@ -376,9 +418,7 @@ function App() {
                       </Badge>
                       <Badge className="bg-emerald-600 text-white shadow-sm">From ZAR 1,488</Badge>
                     </div>
-                    <Link to="/Bookings" className={buttonVariants({ size: 'sm' })}>
-                      Select
-                    </Link>
+                    {bookingButton({ label: 'Select', size: 'sm', showIcon: false })}
                   </CardFooter>
                 </Card>
               </Reveal>
@@ -424,9 +464,7 @@ function App() {
                       </Badge>
                       <Badge className="bg-emerald-600 text-white shadow-sm">From ZAR 2,210</Badge>
                     </div>
-                    <Link to="/Bookings" className={buttonVariants({ size: 'sm' })}>
-                      Select
-                    </Link>
+                    {bookingButton({ label: 'Select', size: 'sm', showIcon: false })}
                   </CardFooter>
                 </Card>
               </Reveal>
@@ -676,16 +714,17 @@ function App() {
           <div className="absolute -right-16 top-0 h-52 w-52 rounded-full bg-cyan-400/15 blur-3xl" />
           <Card className="border-transparent bg-transparent shadow-none">
             <CardHeader className="text-center">
-              <CardTitle className="text-3xl md:text-4xl font-bold text-slate-900">Ready to ride?</CardTitle>
+              <CardTitle className="text-3xl md:text-4xl font-bold text-slate-900">
+                {BOOKINGS_PAUSED ? 'Bookings temporarily paused' : 'Ready to ride?'}
+              </CardTitle>
               <CardDescription className="text-base md:text-lg text-slate-600">
-                Pick a time. We’ll handle the rest.
+                {BOOKINGS_PAUSED
+                  ? BOOKINGS_PAUSED_MESSAGE
+                  : 'Pick a time. We’ll handle the rest.'}
               </CardDescription>
             </CardHeader>
             <CardFooter className="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Link to="/Bookings" className={buttonVariants({ size: 'lg' })}>
-                <CalendarDays className="mr-2 h-5 w-5" />
-                Book now
-              </Link>
+              {bookingButton({ label: 'Book now', size: 'lg' })}
               <Link to="/contact" className={buttonVariants({ variant: 'outline', size: 'lg' })}>
                 Questions? Contact us
               </Link>

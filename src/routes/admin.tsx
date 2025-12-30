@@ -245,13 +245,13 @@ function AdminLayout() {
 
   if (!token) {
     return (
-      <div className="min-h-screen bg-slate-950 text-white">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_10%,rgba(56,189,248,0.25),transparent_35%),radial-gradient(circle_at_80%_20%,rgba(14,116,144,0.22),transparent_30%),radial-gradient(circle_at_30%_80%,rgba(99,102,241,0.16),transparent_28%)] opacity-60" />
+      <div className="min-h-screen bg-slate-50 text-slate-900">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_10%,rgba(34,211,238,0.18),transparent_38%),radial-gradient(circle_at_85%_30%,rgba(59,130,246,0.10),transparent_35%),radial-gradient(circle_at_30%_85%,rgba(99,102,241,0.08),transparent_35%)]" />
         <div className="relative mx-auto flex min-h-screen max-w-6xl items-center justify-center px-4">
-          <Card className="w-full max-w-md border-white/10 bg-slate-900/80 text-white shadow-2xl shadow-cyan-500/10 backdrop-blur">
+          <Card className="w-full max-w-md border-slate-200 bg-white shadow-2xl shadow-cyan-500/10">
             <CardHeader>
               <CardTitle>Admin login</CardTitle>
-              <CardDescription className="text-slate-300">
+              <CardDescription>
                 Access the control center for bookings, revenue, and safety.
               </CardDescription>
             </CardHeader>
@@ -297,23 +297,23 @@ function AdminLayout() {
   }
 
   return (
-    <div className="relative min-h-screen bg-slate-950 text-slate-50">
-      <div className="pointer-events-none absolute inset-0 opacity-60">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_10%,rgba(56,189,248,0.25),transparent_35%),radial-gradient(circle_at_90%_20%,rgba(14,116,144,0.22),transparent_30%),radial-gradient(circle_at_30%_80%,rgba(99,102,241,0.16),transparent_28%)]" />
+    <div className="relative min-h-screen bg-slate-50 text-slate-900">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_10%,rgba(34,211,238,0.14),transparent_38%),radial-gradient(circle_at_90%_20%,rgba(59,130,246,0.10),transparent_35%),radial-gradient(circle_at_30%_80%,rgba(99,102,241,0.07),transparent_35%)]" />
       </div>
 
-      <div className="relative mx-auto max-w-7xl px-3 py-6 lg:py-12">
+      <div className="relative mx-auto max-w-7xl px-3 py-6 lg:py-10">
         <div className="flex flex-col gap-4 md:flex-row md:items-start">
-          <aside className="w-full shrink-0 self-start rounded-2xl border border-white/10 bg-slate-900/80 shadow-2xl shadow-cyan-500/10 backdrop-blur md:sticky md:top-4 lg:top-6 md:w-60 lg:w-64 md:max-h-[calc(100vh-2rem)] md:overflow-y-auto">
-            <div className="flex items-center justify-between gap-3 border-b border-white/5 px-5 py-4">
+          <aside className="w-full shrink-0 self-start rounded-2xl border border-slate-200 bg-white shadow-xl shadow-cyan-500/10 md:sticky md:top-4 lg:top-6 md:w-60 lg:w-64 md:max-h-[calc(100vh-2rem)] md:overflow-y-auto">
+            <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
               <div>
-                <p className="text-[11px] uppercase tracking-[0.2em] text-cyan-300/80">Control</p>
-                <p className="text-lg font-semibold text-white">Admin console</p>
+                <p className="text-[11px] uppercase tracking-[0.2em] text-cyan-700">Control</p>
+                <p className="text-lg font-semibold text-slate-900">Admin console</p>
               </div>
               <Button
                 variant="outline"
                 size="sm"
-                className="border-white/20 bg-white/5 text-white hover:bg-white/10"
+                className="border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                 onClick={handleLogout}
               >
                 <LogOut className="mr-2 h-4 w-4" />
@@ -330,46 +330,50 @@ function AdminLayout() {
                     preload="intent"
                     className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left transition ${
                       active
-                        ? 'border border-cyan-400/40 bg-white/10 text-white shadow-lg shadow-cyan-500/20'
-                        : 'border border-transparent text-slate-200 hover:border-cyan-400/30 hover:bg-white/5 hover:text-white'
+                        ? 'border border-cyan-200 bg-cyan-50 text-slate-900 shadow-sm'
+                        : 'border border-transparent text-slate-700 hover:border-slate-200 hover:bg-slate-50 hover:text-slate-900'
                     }`}
                   >
-                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-cyan-200">
+                    <span
+                      className={`inline-flex h-9 w-9 items-center justify-center rounded-lg border ${
+                        active ? 'border-cyan-200 bg-cyan-100 text-cyan-800' : 'border-slate-200 bg-white text-slate-700'
+                      }`}
+                    >
                       <item.icon className="h-4 w-4" />
                     </span>
                     <div className="flex flex-1 flex-col leading-tight">
                       <span className="text-sm font-semibold">{item.label}</span>
-                      <span className="text-xs text-slate-400">{item.description}</span>
+                      <span className="text-xs text-slate-500">{item.description}</span>
                     </div>
                   </Link>
                 )
               })}
             </div>
-            <div className="rounded-b-2xl border-t border-white/5 bg-white/5 px-5 py-4 text-xs text-slate-300">
+            <div className="rounded-b-2xl border-t border-slate-200 bg-slate-50 px-5 py-4 text-xs text-slate-600">
               {analytics ? (
                 <div className="space-y-1">
-                  <p className="text-[11px] uppercase tracking-[0.12em] text-cyan-200/80">
+                  <p className="text-[11px] uppercase tracking-[0.12em] text-cyan-700">
                     Snapshot
                   </p>
-                  <p className="flex items-center justify-between font-semibold text-white">
+                  <p className="flex items-center justify-between font-semibold text-slate-900">
                     ZAR {analytics.totalRevenueZar.toFixed(0)}
                   </p>
-                  <p className="text-slate-400">Total revenue to date</p>
+                  <p className="text-slate-500">Total revenue to date</p>
                 </div>
               ) : (
-                <p className="text-slate-400">Load analytics to see the quick snapshot.</p>
+                <p className="text-slate-500">Load analytics to see the quick snapshot.</p>
               )}
             </div>
           </aside>
 
           <main className="flex-1 space-y-6">
             {error && (
-              <Alert variant="destructive" className="border-rose-500/30 bg-rose-500/10 text-white">
+              <Alert variant="destructive">
                 <AlertTitle>Error</AlertTitle>
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-              <AdminContext.Provider
+            <AdminContext.Provider
               value={{
                 token,
                 bookings,
