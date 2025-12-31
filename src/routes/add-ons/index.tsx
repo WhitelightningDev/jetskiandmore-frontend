@@ -5,12 +5,11 @@ import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Camera, Droplets, Ship, Users, Gift, MapPin } from 'lucide-react'
-import droneImg from '@/lib/images/drone-video.png'
 import goproImg from '@/lib/images/gopro-footage.png'
 import wetsuitImg from '@/lib/images/wetsuit-hire.png'
 import boatImg from '@/lib/images/Spectatorboatride.png'
 import passengersImg from '@/lib/images/additional-passengers.png'
-import { formatZAR, DRONE_PRICE, WETSUIT_PRICE, BOAT_PRICE_PER_PERSON, EXTRA_PERSON_PRICE } from '@/features/bookings/AddOnsSection'
+import { formatZAR, WETSUIT_PRICE, BOAT_PRICE_PER_PERSON, EXTRA_PERSON_PRICE } from '@/features/bookings/AddOnsSection'
 
 export const Route = createFileRoute('/add-ons/')({
   component: RouteComponent,
@@ -28,20 +27,6 @@ type AddOn = {
 }
 
 const addons: AddOn[] = [
-  {
-    id: 'drone',
-    icon: <Camera className="h-5 w-5" />,
-    title: 'Drone video',
-    subtitle: 'Aerial footage of your ride',
-    priceLabel: `${formatZAR(DRONE_PRICE)} (free on select rides)`,
-    bullets: [
-      'Professional angles from above the water',
-      'Perfect for sharing on social or as a keepsake',
-      'Included with some 2‑ski sessions; otherwise priced per ride',
-    ],
-    highlight: 'Most popular',
-    image: droneImg,
-  },
   {
     id: 'gopro',
     icon: <Camera className="h-5 w-5" />,
@@ -117,7 +102,7 @@ function RouteComponent() {
                 Make your session unforgettable
               </CardTitle>
               <CardDescription>
-                Choose from professional video, comfort upgrades and spectator options that you can add when you book.
+                Choose from action footage, comfort upgrades and spectator options that you can add when you book.
               </CardDescription>
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground space-y-2">
@@ -140,7 +125,7 @@ function RouteComponent() {
               <span className="text-xs text-muted-foreground text-center px-4">
                 Image or highlight reel placeholder.
                 <br />
-                Show your favourite drone shot or group photo here.
+                Show your favourite ride shot or group photo here.
               </span>
             </div>
           </div>
