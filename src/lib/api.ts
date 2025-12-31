@@ -23,7 +23,6 @@ export async function postJSON<T>(path: string, body: unknown, init?: RequestIni
 
 // Payments
 export type Addons = {
-  drone: boolean
   gopro: boolean
   wetsuit: boolean
   boat: boolean

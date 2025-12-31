@@ -18,6 +18,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { getPaymentQuote, chargeWithBooking, initiatePayment, createPaymentLink, createCheckout, getAvailableTimes } from '@/lib/api'
 import { createYocoToken } from '@/lib/yoco'
 import { AddOnsSection } from '@/features/bookings/AddOnsSection'
+import type { AddonsState } from '@/features/bookings/AddOnsSection'
 import { WeatherSnapshot } from '@/features/weather/WeatherSnapshot'
 import {
   BOOKINGS_PAUSED,
@@ -84,54 +85,6 @@ const RIDES: Ride[] = [
     icon: <Users className="h-4 w-4" />,
   },
   {
-    id: '30-3',
-    title: '30‑min Rental (3 Jet‑Skis)',
-    subtitle: 'Triple launch, quick thrill',
-    price: 3825,
-    displayPrice: 'From ZAR 3,825',
-    icon: <Users className="h-4 w-4" />,
-  },
-  {
-    id: '60-3',
-    title: '60‑min Rental (3 Jet‑Skis)',
-    subtitle: 'A full hour for the squad',
-    price: 5865,
-    displayPrice: 'From ZAR 5,865',
-    icon: <Users className="h-4 w-4" />,
-  },
-  {
-    id: '30-4',
-    title: '30‑min Rental (4 Jet‑Skis)',
-    subtitle: 'Squad launch',
-    price: 4930,
-    displayPrice: 'From ZAR 4,930',
-    icon: <Users className="h-4 w-4" />,
-  },
-  {
-    id: '60-4',
-    title: '60‑min Rental (4 Jet‑Skis)',
-    subtitle: 'Full hour squad session',
-    price: 7650,
-    displayPrice: 'From ZAR 7,650',
-    icon: <Users className="h-4 w-4" />,
-  },
-  {
-    id: '30-5',
-    title: '30‑min Rental (5 Jet‑Skis)',
-    subtitle: 'Max fleet, fast fun',
-    price: 6035,
-    displayPrice: 'From ZAR 6,035',
-    icon: <Users className="h-4 w-4" />,
-  },
-  {
-    id: '60-5',
-    title: '60‑min Rental (5 Jet‑Skis)',
-    subtitle: 'Ultimate group session',
-    price: 9350,
-    displayPrice: 'From ZAR 9,350',
-    icon: <Users className="h-4 w-4" />,
-  },
-  {
     id: 'joy',
     title: 'Joy Ride (Instructed) • 10 min',
     subtitle: 'Instructor drives / assisted',
@@ -150,8 +103,6 @@ const RIDES: Ride[] = [
 ]
 
 // --- Add-on pricing rules ---
-const FREE_DRONE_RIDE_ID = '60-2' // 2 Jet-Skis • 60 min
-const DRONE_PRICE = 700
 const WETSUIT_PRICE = 150
 const BOAT_PRICE_PER_PERSON = 450
 const EXTRA_PERSON_PRICE = 350
@@ -175,7 +126,7 @@ function toInt(v: unknown, fallback: number) {
 
 function getSkiCount(rideId: string): number {
   const match = rideId.match(/^(?:30|60)-(\d+)/)
-  if (match) return Math.min(5, Math.max(1, parseInt(match[1], 10)))
+  if (match) return Math.min(2, Math.max(1, parseInt(match[1], 10)))
   if (rideId === 'joy' || rideId === 'group') return 0
   return 1
 }
@@ -263,7 +214,6 @@ function RouteComponent() {
 
   const search = Route.useSearch() as Partial<{
     rideId: string
-    drone: unknown
     wetsuit: unknown
     gopro: unknown
     boat: unknown
@@ -278,14 +228,13 @@ function RouteComponent() {
   const [email, setEmail] = React.useState<string>('')
   const [phone, setPhone] = React.useState<string>('')
   const [notes, setNotes] = React.useState<string>('')
-  const [addons, setAddons] = React.useState<{ drone: boolean; gopro: boolean; wetsuit: boolean; boat: boolean; boatCount: number; extraPeople: number }>({
-    drone: toBool(search.drone),
+  const [addons, setAddons] = React.useState<AddonsState>(() => ({
     gopro: toBool(search.gopro),
     wetsuit: toBool(search.wetsuit),
     boat: toBool(search.boat),
     boatCount: toInt(search.boatCount, 1),
     extraPeople: Math.max(0, Math.min(2, toInt(search.extraPeople, 0))),
-  })
+  }))
 
   // Payment state
   const [quoteCents, setQuoteCents] = React.useState<number | null>(null)
@@ -318,7 +267,6 @@ function RouteComponent() {
     setRideId((prev) => (prev === nextRide ? prev : nextRide))
     setAddons((prev) => {
       const next = {
-        drone: toBool(search.drone),
         gopro: toBool(search.gopro),
         wetsuit: toBool(search.wetsuit),
         boat: toBool(search.boat),
@@ -327,7 +275,6 @@ function RouteComponent() {
       }
       // Avoid unnecessary re-renders
       const same =
-        prev.drone === next.drone &&
         prev.gopro === next.gopro &&
         prev.wetsuit === next.wetsuit &&
         prev.boat === next.boat &&
@@ -335,7 +282,7 @@ function RouteComponent() {
         prev.extraPeople === next.extraPeople
       return same ? prev : next
     })
-  }, [search.boat, search.boatCount, search.drone, search.extraPeople, search.gopro, search.rideId, search.wetsuit])
+  }, [search.boat, search.boatCount, search.extraPeople, search.gopro, search.rideId, search.wetsuit])
 
   React.useEffect(() => {
     setAddons((a) => ({ ...a, extraPeople: Math.min(a.extraPeople, maxExtraPeople) }))
@@ -401,12 +348,11 @@ function RouteComponent() {
   const baseTotal = selectedRide?.price ?? 0
 
   // Add-on cost calculations
-  const droneCost = addons.drone ? (rideId === FREE_DRONE_RIDE_ID ? 0 : DRONE_PRICE) : 0
   const wetsuitCost = addons.wetsuit ? WETSUIT_PRICE : 0
   const boatCost = addons.boat ? BOAT_PRICE_PER_PERSON * Math.max(1, addons.boatCount || 1) : 0
   const extraPeopleCost = (addons.extraPeople || 0) * EXTRA_PERSON_PRICE
   const goproCost = 0 // priced on request / not included in estimate
-  const addonsTotal = droneCost + wetsuitCost + boatCost + extraPeopleCost + goproCost
+  const addonsTotal = wetsuitCost + boatCost + extraPeopleCost + goproCost
   const estimatedTotal = baseTotal + addonsTotal
 
   // Fixed location: Gordon's Bay Harbour (do NOT replace with geolocation)
@@ -571,11 +517,7 @@ function classifySeverity(speed?: number | null, gust?: number | null, direction
           <Badge variant="outline" className="rounded-full">Best: early mornings</Badge>
           <Badge variant="outline" className="rounded-full">Weather‑flexible</Badge>
           <Badge variant="outline" className="rounded-full">Gordon&apos;s Bay only</Badge>
-          {rideId === FREE_DRONE_RIDE_ID ? (
-            <Badge className="rounded-full">Drone footage included</Badge>
-          ) : (
-            <Badge className="rounded-full">Drone + {formatZAR(DRONE_PRICE)}</Badge>
-          )}
+         
           <Badge className="rounded-full">Wetsuit {formatZAR(WETSUIT_PRICE)}</Badge>
           {(() => {
             const match = selectedRide?.title.match(/\((\d+) Jet/)
@@ -887,7 +829,7 @@ function classifySeverity(speed?: number | null, gust?: number | null, direction
                 {/* Step 3: extras */}
                 {step === 3 && (
                   <div className="space-y-4">
-                    <AddOnsSection rideId={rideId} addons={addons} setAddons={setAddons} />
+                    <AddOnsSection addons={addons} setAddons={setAddons} />
                     <p className="text-xs text-muted-foreground">
                       Add-ons are optional. You can skip this step or adjust extras later by contacting us,
                       subject to availability.
@@ -979,14 +921,8 @@ function classifySeverity(speed?: number | null, gust?: number | null, direction
                   <span className="text-sm">Subtotal</span>
                   <span className="font-medium">{formatZAR(baseTotal)}</span>
                 </div>
-                {addons.drone || addons.wetsuit || addons.gopro || addons.boat || (addons.extraPeople || 0) > 0 ? (
+                {addons.wetsuit || addons.gopro || addons.boat || (addons.extraPeople || 0) > 0 ? (
                   <div className="space-y-1">
-                    {addons.drone ? (
-                      <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-                        <span>Drone video</span>
-                        <span className="text-muted-foreground">{droneCost === 0 ? 'Included' : formatZAR(droneCost)}</span>
-                      </div>
-                    ) : null}
                     {addons.gopro ? (
                       <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
                         <span>GoPro footage</span>

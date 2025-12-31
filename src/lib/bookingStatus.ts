@@ -1,4 +1,4 @@
-export const BOOKINGS_PAUSED = true
+export const BOOKINGS_PAUSED = false
 
 export const BOOKINGS_PAUSED_TITLE = 'Bookings temporarily paused'
 export const BOOKINGS_PAUSED_MESSAGE =

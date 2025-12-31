@@ -75,84 +75,6 @@ const rides: Ride[] = [
     cta: { to: '/Bookings', label: 'Book 2 skis (60m)' },
   },
   {
-    id: '30-3',
-    icon: <Users className="h-5 w-5" />,
-    title: '30‑min Rental (3 Jet‑Skis)',
-    subtitle: "Triple launch, quick thrill",
-    bullets: [
-      "Three skis launched together",
-      "Perfect for small crews",
-      "Safety briefing & jackets included",
-    ],
-    price: 'From ZAR 3,825',
-    cta: { to: '/Bookings', label: 'Book 3 skis (30m)' },
-  },
-  {
-    id: '60-3',
-    icon: <Users className="h-5 w-5" />,
-    title: '60‑min Rental (3 Jet‑Skis)',
-    subtitle: "A full hour for the squad",
-    bullets: [
-      "Great balance of time and pace",
-      "Plenty of room to rotate riders",
-      "Briefing & gear included",
-    ],
-    price: 'From ZAR 5,865',
-    cta: { to: '/Bookings', label: 'Book 3 skis (60m)' },
-  },
-  {
-    id: '30-4',
-    icon: <Users className="h-5 w-5" />,
-    title: '30‑min Rental (4 Jet‑Skis)',
-    subtitle: "Squad launch",
-    bullets: [
-      "Four skis side-by-side",
-      "Ideal for friends & families",
-      "Stay inside the marked zone",
-    ],
-    price: 'From ZAR 4,930',
-    cta: { to: '/Bookings', label: 'Book 4 skis (30m)' },
-  },
-  {
-    id: '60-4',
-    icon: <Users className="h-5 w-5" />,
-    title: '60‑min Rental (4 Jet‑Skis)',
-    subtitle: "Full hour squad session",
-    bullets: [
-      "Plenty of time to rotate riders",
-      "Briefing & jackets for everyone",
-      "Great for team events",
-    ],
-    price: 'From ZAR 7,650',
-    cta: { to: '/Bookings', label: 'Book 4 skis (60m)' },
-  },
-  {
-    id: '30-5',
-    icon: <Users className="h-5 w-5" />,
-    title: '30‑min Rental (5 Jet‑Skis)',
-    subtitle: "Max fleet, fast fun",
-    bullets: [
-      "All five skis on the water",
-      "Coordinated launch and guidance",
-      "Great for big groups",
-    ],
-    price: 'From ZAR 6,035',
-    cta: { to: '/Bookings', label: 'Book 5 skis (30m)' },
-  },
-  {
-    id: '60-5',
-    icon: <Users className="h-5 w-5" />,
-    title: '60‑min Rental (5 Jet‑Skis)',
-    subtitle: "Ultimate group session",
-    bullets: [
-      "Full hour across five skis",
-      "Rotations and guidance included",
-      "Best for events & celebrations",
-    ],
-    price: 'From ZAR 9,350',
-    cta: { to: '/Bookings', label: 'Book 5 skis (60m)' },
-  },
-  {
     id: 'joy',
     icon: <Ship className="h-5 w-5" />,
     title: 'Joy Ride (Instructed) • 10 min',
@@ -276,7 +198,7 @@ function RouteComponent() {
                 </Link>
               </div>
               <p className="text-sm text-slate-100/80">
-                Add extras like drone footage, wetsuits, or spectator boat rides in the booking form.
+                Add extras like GoPro footage, wetsuits, or spectator boat rides in the booking form.
               </p>
             </div>
 
@@ -319,7 +241,7 @@ function RouteComponent() {
               </CardContent>
               <CardFooter className="flex flex-wrap gap-2">
                 <Badge variant="secondary" className="bg-white/90 text-slate-900 border-white/40">
-                  Up to 5 skis per group
+                  Up to 2 skis per booking
                 </Badge>
                 <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
                   Sunrise &amp; sunset on request
@@ -336,7 +258,7 @@ function RouteComponent() {
 
         <div className="mb-8 rounded-2xl border border-sky-100 bg-white/95 p-5 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold text-slate-900">Want extras like drone video, wetsuits or boat rides?</p>
+            <p className="text-sm font-semibold text-slate-900">Want extras like GoPro footage, wetsuits or boat rides?</p>
             <p className="text-sm text-muted-foreground">Browse the add‑ons page; you’ll pick them in the booking form.</p>
           </div>
           <Link to="/add-ons" className={buttonVariants({ size: 'sm', className: 'bg-sky-600 text-white hover:bg-sky-700' })}>

@@ -276,7 +276,7 @@ function App() {
                   </CardHeader>
                   <CardContent className="text-sm text-muted-foreground space-y-2">
                     <p>1) Pick a ride and time in the booking form.</p>
-                    <p>2) Add extras like drone video or wetsuits if you want.</p>
+                    <p>2) Add extras like GoPro footage or wetsuits if you want.</p>
                     <p>3) Pay securely online — you’ll get confirmation instantly.</p>
                   </CardContent>
                   <CardFooter className="flex flex-wrap gap-2">
@@ -298,7 +298,7 @@ function App() {
                     <p>• Safety briefing on arrival.</p>
                     <p>• Life jackets for riders and passengers.</p>
                     <p>• Clearly marked riding zone for comfort and safety.</p>
-                    <p>• Optional add‑ons (drone video, GoPro, wetsuits).</p>
+                    <p>• Optional add‑ons (GoPro footage, wetsuits, boat rides).</p>
                   </CardContent>
                   <CardFooter>
                     <Link to="/safety" className={buttonVariants({ size: 'sm', variant: 'outline' })}>
