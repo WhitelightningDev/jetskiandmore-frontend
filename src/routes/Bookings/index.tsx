@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { CalendarDays, CalendarX2, Clock, Users, Gift, MapPin, Info, MessageCircle, Phone } from 'lucide-react'
+import { CalendarDays, CalendarX2, Clock, Users, Gift, MapPin, Info, MessageCircle, Phone, Ship } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -39,6 +39,12 @@ type Ride = {
   price: number
   displayPrice: string
   icon: React.ReactNode
+  durationMinutes?: number
+  pricePerJetSki?: number
+  minJetSkis?: number
+  maxJetSkis?: number
+  requiresGroup?: boolean
+  badge?: string
 }
 
 type RiderContact = {
@@ -51,6 +57,11 @@ type PassengerContact = {
   email: string
 }
 
+type AvailableSlot = {
+  time: string
+  availableJetSkis?: number
+}
+
 const RIDES: Ride[] = [
   {
     id: '30-1',
@@ -59,6 +70,8 @@ const RIDES: Ride[] = [
     price: 1488,
     displayPrice: 'From ZAR 1,488',
     icon: <Clock className="h-4 w-4" />,
+    minJetSkis: 1,
+    maxJetSkis: 1,
   },
   {
     id: '60-1',
@@ -67,6 +80,8 @@ const RIDES: Ride[] = [
     price: 2210,
     displayPrice: 'From ZAR 2,210',
     icon: <Clock className="h-4 w-4" />,
+    minJetSkis: 1,
+    maxJetSkis: 1,
   },
   {
     id: '30-2',
@@ -75,6 +90,8 @@ const RIDES: Ride[] = [
     price: 2635,
     displayPrice: 'From ZAR 2,635',
     icon: <Users className="h-4 w-4" />,
+    minJetSkis: 2,
+    maxJetSkis: 2,
   },
   {
     id: '60-2',
@@ -83,6 +100,8 @@ const RIDES: Ride[] = [
     price: 4080,
     displayPrice: 'From ZAR 4,080',
     icon: <Users className="h-4 w-4" />,
+    minJetSkis: 2,
+    maxJetSkis: 2,
   },
   {
     id: 'joy',
@@ -91,6 +110,8 @@ const RIDES: Ride[] = [
     price: 595,
     displayPrice: 'ZAR 595',
     icon: <Gift className="h-4 w-4" />,
+    minJetSkis: 0,
+    maxJetSkis: 0,
   },
   {
     id: 'group',
@@ -99,6 +120,22 @@ const RIDES: Ride[] = [
     price: 6375,
     displayPrice: 'From ZAR 6,375',
     icon: <Users className="h-4 w-4" />,
+    minJetSkis: 0,
+    maxJetSkis: 0,
+  },
+  {
+    id: 'coastal-cruise',
+    title: 'Coastal Cruise (60 min)',
+    subtitle: 'Group ride – explore the bay together',
+    price: 2210,
+    pricePerJetSki: 2210,
+    displayPrice: 'From ZAR 8,840 (4 skis)',
+    durationMinutes: 60,
+    minJetSkis: 4,
+    maxJetSkis: 6,
+    requiresGroup: true,
+    badge: 'Group experience',
+    icon: <Ship className="h-4 w-4" />,
   },
 ]
 
@@ -107,12 +144,42 @@ const WETSUIT_PRICE = 150
 const BOAT_PRICE_PER_PERSON = 450
 const EXTRA_PERSON_PRICE = 350
 
+const WEEKEND_ONLY_BLOCKED_DATE = '2026-01-17' // YYYY-MM-DD (local date)
+
 function formatZAR(n: number) {
   try {
     return new Intl.NumberFormat('en-ZA', { style: 'currency', currency: 'ZAR', maximumFractionDigits: 0 }).format(n)
   } catch {
     return `ZAR ${n.toFixed(0)}`
   }
+}
+
+function formatLocalDateKey(d: Date) {
+  const yyyy = d.getFullYear()
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  return `${yyyy}-${mm}-${dd}`
+}
+
+function isWeekendDate(d: Date) {
+  const day = d.getDay()
+  return day === 0 || day === 6
+}
+
+function isBlockedBookingDate(d: Date) {
+  return formatLocalDateKey(d) === WEEKEND_ONLY_BLOCKED_DATE
+}
+
+function startOfLocalDay(d: Date) {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate())
+}
+
+function isPastLocalDate(d: Date) {
+  return startOfLocalDay(d).getTime() < startOfLocalDay(new Date()).getTime()
+}
+
+function isBookableBookingDate(d: Date) {
+  return isWeekendDate(d) && !isBlockedBookingDate(d) && !isPastLocalDate(d)
 }
 
 function toBool(v: unknown) {
@@ -124,7 +191,13 @@ function toInt(v: unknown, fallback: number) {
   return Number.isFinite(n) && n > 0 ? n : fallback
 }
 
+function clamp(n: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, n))
+}
+
 function getSkiCount(rideId: string): number {
+  const ride = RIDES.find((r) => r.id === rideId)
+  if (ride?.minJetSkis != null) return ride.minJetSkis
   const match = rideId.match(/^(?:30|60)-(\d+)/)
   if (match) return Math.min(2, Math.max(1, parseInt(match[1], 10)))
   if (rideId === 'joy' || rideId === 'group') return 0
@@ -223,6 +296,7 @@ function RouteComponent() {
 
   const [rideId, setRideId] = React.useState<string>(sanitizeRideId(search.rideId))
   const [date, setDate] = React.useState<Date | undefined>(undefined)
+  const [dateError, setDateError] = React.useState<string | null>(null)
   const [time, setTime] = React.useState<string>('')
   const [fullName, setFullName] = React.useState<string>('')
   const [email, setEmail] = React.useState<string>('')
@@ -233,7 +307,7 @@ function RouteComponent() {
     wetsuit: toBool(search.wetsuit),
     boat: toBool(search.boat),
     boatCount: toInt(search.boatCount, 1),
-    extraPeople: Math.max(0, Math.min(2, toInt(search.extraPeople, 0))),
+    extraPeople: Math.max(0, toInt(search.extraPeople, 0)),
   }))
 
   // Payment state
@@ -243,23 +317,30 @@ function RouteComponent() {
   const [payOpen, setPayOpen] = React.useState(false)
 
   // Timeslot availability
-  const [availableTimes, setAvailableTimes] = React.useState<string[]>([])
+  const [availableSlots, setAvailableSlots] = React.useState<AvailableSlot[]>([])
   const [timesLoading, setTimesLoading] = React.useState(false)
   const [timesError, setTimesError] = React.useState<string | null>(null)
+  const timeslotKeyRef = React.useRef<{ rideId: string; dateStr: string } | null>(null)
 
   // Step-by-step flow
   const [step, setStep] = React.useState<1 | 2 | 3 | 4>(1)
+  const [jetSkiQty, setJetSkiQty] = React.useState<number>(() => Math.max(0, getSkiCount(rideId)))
   const [passengers, setPassengers] = React.useState<PassengerContact[]>([])
   const [riders, setRiders] = React.useState<RiderContact[]>([])
 
-  const additionalRidersCount = React.useMemo(() => Math.max(0, getSkiCount(rideId) - 1), [rideId])
+  const selectedRide = React.useMemo(() => RIDES.find((r) => r.id === rideId) ?? RIDES[0], [rideId])
+  const rideMinJetSkis = Math.max(0, selectedRide?.minJetSkis ?? 1)
+  const rideMaxJetSkis = Math.max(rideMinJetSkis, selectedRide?.maxJetSkis ?? rideMinJetSkis)
+  const requiresGroup = Boolean(selectedRide?.requiresGroup)
+  const requiredJetSkis = Math.max(jetSkiQty, rideMinJetSkis)
+  const hasRequiredJetSkis = jetSkiQty >= rideMinJetSkis
+  const additionalRidersCount = React.useMemo(() => Math.max(0, jetSkiQty - 1), [jetSkiQty])
 
   // Limit additional passenger counts based on ride selection
   const maxExtraPeople = React.useMemo(() => {
-    const skiCount = getSkiCount(rideId)
-    if (skiCount <= 0) return 0
-    return skiCount
-  }, [rideId])
+    if (requiredJetSkis <= 0) return 0
+    return requiredJetSkis
+  }, [requiredJetSkis])
 
   // Sync ride/add-ons if user navigates here with new search params (e.g., from Rides page)
   React.useEffect(() => {
@@ -271,7 +352,7 @@ function RouteComponent() {
         wetsuit: toBool(search.wetsuit),
         boat: toBool(search.boat),
         boatCount: toInt(search.boatCount, 1),
-        extraPeople: Math.max(0, Math.min(2, toInt(search.extraPeople, 0))),
+        extraPeople: Math.max(0, toInt(search.extraPeople, 0)),
       }
       // Avoid unnecessary re-renders
       const same =
@@ -283,6 +364,21 @@ function RouteComponent() {
       return same ? prev : next
     })
   }, [search.boat, search.boatCount, search.extraPeople, search.gopro, search.rideId, search.wetsuit])
+
+  React.useEffect(() => {
+    setJetSkiQty((prev) => clamp(Number.isFinite(prev as number) ? (prev as number) : rideMinJetSkis, rideMinJetSkis, rideMaxJetSkis))
+  }, [rideId, rideMinJetSkis, rideMaxJetSkis])
+
+  const filteredSlots = React.useMemo(
+    () => availableSlots.filter((slot) => slot.availableJetSkis == null || slot.availableJetSkis >= requiredJetSkis),
+    [availableSlots, requiredJetSkis]
+  )
+
+  React.useEffect(() => {
+    if (!time) return
+    const stillValid = filteredSlots.some((slot) => slot.time === time)
+    if (!stillValid) setTime('')
+  }, [filteredSlots, time])
 
   React.useEffect(() => {
     setAddons((a) => ({ ...a, extraPeople: Math.min(a.extraPeople, maxExtraPeople) }))
@@ -313,39 +409,67 @@ function RouteComponent() {
 
   // Fetch available times when ride or date changes
   React.useEffect(() => {
-    setTime('')
-    setAvailableTimes([])
+    const dateStr = date ? formatLocalDateKey(date) : ''
+    const prev = timeslotKeyRef.current
+    const rideOrDateChanged = !prev || prev.rideId !== rideId || prev.dateStr !== dateStr
+    if (rideOrDateChanged) {
+      setTime('')
+      setAvailableSlots([])
+    }
     setTimesError(null)
-    if (!date) return
-    const dateStr = date.toISOString().split('T')[0]
+    if (!date) {
+      timeslotKeyRef.current = { rideId, dateStr }
+      return
+    }
+    if (!isBookableBookingDate(date)) {
+      setTimesError('Bookings are available on Saturdays and Sundays only (17 Jan 2026 excluded).')
+      timeslotKeyRef.current = { rideId, dateStr }
+      return
+    }
+    timeslotKeyRef.current = { rideId, dateStr }
     setTimesLoading(true)
     ;(async () => {
       try {
-        const res = await getAvailableTimes(rideId, dateStr)
-        setAvailableTimes(res.times || [])
+        const res = await getAvailableTimes(rideId, dateStr, requiredJetSkis)
+        const normalized: AvailableSlot[] = Array.isArray(res.times)
+          ? res.times
+              .map((t: any) => {
+                if (typeof t === 'string') return { time: t }
+                if (t && typeof t === 'object' && typeof t.time === 'string') {
+                  const availableJetSkis =
+                    typeof t.availableJetSkis === 'number' ? t.availableJetSkis : undefined
+                  return { time: t.time, availableJetSkis }
+                }
+                return null
+              })
+              .filter((t): t is AvailableSlot => Boolean(t && t.time))
+          : []
+        setAvailableSlots(normalized)
       } catch (e: any) {
         setTimesError(e?.message || 'Failed to load available times')
-        setAvailableTimes([])
+        setAvailableSlots([])
       } finally {
         setTimesLoading(false)
       }
     })()
-  }, [rideId, date])
+  }, [rideId, date, requiredJetSkis])
 
   // Fetch authoritative payment quote from backend when inputs change
   React.useEffect(() => {
     (async () => {
       try {
-        const q = await getPaymentQuote(rideId, addons as any)
+        const q = await getPaymentQuote(rideId, addons as any, requiredJetSkis)
         setQuoteCents(q.amountInCents)
       } catch {
         setQuoteCents(null)
       }
     })()
-  }, [rideId, addons])
+  }, [rideId, addons, requiredJetSkis])
 
-  const selectedRide = React.useMemo(() => RIDES.find(r => r.id === rideId) ?? RIDES[0], [rideId])
-  const baseTotal = selectedRide?.price ?? 0
+  const baseTotal =
+    selectedRide?.pricePerJetSki != null
+      ? selectedRide.pricePerJetSki * Math.max(0, jetSkiQty)
+      : selectedRide?.price ?? 0
 
   // Add-on cost calculations
   const wetsuitCost = addons.wetsuit ? WETSUIT_PRICE : 0
@@ -427,7 +551,7 @@ function classifySeverity(speed?: number | null, gust?: number | null, direction
         })
 
         // Selected date daily forecast
-        const dayStr = date ? new Date(date).toISOString().split('T')[0] : undefined
+        const dayStr = date ? formatLocalDateKey(new Date(date)) : undefined
         const days: string[] = data?.daily?.time ?? []
         const idx = dayStr ? days.indexOf(dayStr) : 0
         if (idx > 0 && days[idx]) {
@@ -468,7 +592,8 @@ function classifySeverity(speed?: number | null, gust?: number | null, direction
   }
 
   // Step validation helpers
-  const basicsComplete = Boolean(rideId && date && time)
+  const dateIsBookable = Boolean(date && isBookableBookingDate(date))
+  const basicsComplete = Boolean(rideId && dateIsBookable && time && hasRequiredJetSkis)
   const contactComplete = Boolean(fullName.trim() && phone.trim() && email.trim())
   const passengersComplete =
     (addons.extraPeople || 0) === 0 ||
@@ -480,6 +605,14 @@ function classifySeverity(speed?: number | null, gust?: number | null, direction
 
   const goNext = () => {
     if (step === 1 && !step1Valid) {
+      if (!hasRequiredJetSkis) {
+        alert('Please select the minimum number of jet skis required for this experience.')
+        return
+      }
+      if (date && !dateIsBookable) {
+        alert('Bookings are available on Saturdays and Sundays only (17 Jan 2026 excluded).')
+        return
+      }
       alert('Please choose a date and time to continue.')
       return
     }
@@ -501,6 +634,14 @@ function classifySeverity(speed?: number | null, gust?: number | null, direction
   return (
     <div className="bg-white">
       <section className="mx-auto max-w-6xl px-4 py-10 md:py-14">
+        <Alert className="mb-6 border-amber-200 bg-amber-50 text-amber-900">
+          <Info className="h-5 w-5" aria-hidden />
+          <AlertTitle>Weekend bookings only</AlertTitle>
+          <AlertDescription>
+            We&apos;re currently only taking bookings on Saturdays and Sundays. Weekday bookings are unavailable. Note: 17 Jan 2026 is not bookable.
+          </AlertDescription>
+        </Alert>
+
         <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <h1 className="text-3xl md:text-4xl font-bold">Book your ride</h1>
           <Badge variant="secondary" className="flex items-center gap-1 self-start">
@@ -520,13 +661,15 @@ function classifySeverity(speed?: number | null, gust?: number | null, direction
          
           <Badge className="rounded-full">Wetsuit {formatZAR(WETSUIT_PRICE)}</Badge>
           {(() => {
-            const match = selectedRide?.title.match(/\((\d+) Jet/)
-            const skiCount = match ? match[1] : null
-            return skiCount ? (
-              <Badge variant="secondary" className="rounded-full">{skiCount} Jet‑Ski{skiCount === '1' ? '' : 's'}</Badge>
-            ) : (
-              <Badge variant="secondary" className="rounded-full">Passenger optional</Badge>
-            )
+            const count = Math.max(0, jetSkiQty)
+            if (count > 0) {
+              return (
+                <Badge variant="secondary" className="rounded-full">
+                  {count} Jet‑Ski{count === 1 ? '' : 's'}
+                </Badge>
+              )
+            }
+            return <Badge variant="secondary" className="rounded-full">Passenger optional</Badge>
           })()}
         </div>
 
@@ -580,6 +723,7 @@ function classifySeverity(speed?: number | null, gust?: number | null, direction
                             {RIDES.map((r) => (
                               <SelectItem key={r.id} value={r.id} className="whitespace-normal leading-tight">
                                 {r.title} — {r.displayPrice}
+                                {r.badge ? ' • ' + r.badge : ''}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -604,43 +748,132 @@ function classifySeverity(speed?: number | null, gust?: number | null, direction
                             <Calendar
                               mode="single"
                               selected={date}
-                              onSelect={setDate}
-                              disabled={(d) => d < new Date(new Date().setHours(0, 0, 0, 0))}
+                              onSelect={(d) => {
+                                setDateError(null)
+                                if (!d) {
+                                  setDate(undefined)
+                                  return
+                                }
+                                if (isPastLocalDate(d)) {
+                                  setDate(undefined)
+                                  return
+                                }
+                                if (!isWeekendDate(d)) {
+                                  setDate(undefined)
+                                  setDateError('Weekend bookings only — please choose a Saturday or Sunday.')
+                                  return
+                                }
+                                if (isBlockedBookingDate(d)) {
+                                  setDate(undefined)
+                                  setDateError('17 Jan 2026 is not available.')
+                                  return
+                                }
+                                setDate(d)
+                              }}
+                              disabled={(d) => isPastLocalDate(d) || !isWeekendDate(d) || isBlockedBookingDate(d)}
                               initialFocus
                             />
                           </PopoverContent>
                         </Popover>
+                        <p className="text-xs text-muted-foreground">
+                          Bookings are available on Saturdays and Sundays only. 17 Jan 2026 is unavailable.
+                        </p>
+                        {dateError ? (
+                          <p className="text-xs text-red-500">{dateError}</p>
+                        ) : null}
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="time">Preferred time</Label>
                         <Select
                           value={time}
                           onValueChange={setTime}
-                          disabled={!date || timesLoading || availableTimes.length === 0}
+                          disabled={!dateIsBookable || timesLoading || filteredSlots.length === 0}
                         >
                           <SelectTrigger id="time">
                             <SelectValue
                               placeholder={
                                 !date
                                   ? 'Select a date first'
+                                  : !dateIsBookable
+                                  ? 'Weekend bookings only'
                                   : timesLoading
                                   ? 'Loading times…'
-                                  : availableTimes.length === 0
-                                  ? 'No slots available'
+                                  : filteredSlots.length === 0
+                                  ? availableSlots.length === 0
+                                    ? 'No slots available'
+                                    : 'No slots with enough jet skis'
                                   : 'Select a time'
                               }
                             />
                           </SelectTrigger>
                           <SelectContent>
-                            {availableTimes.map((t) => (
-                              <SelectItem key={t} value={t}>
-                                {t}
+                            {filteredSlots.map((slot) => (
+                              <SelectItem key={slot.time} value={slot.time} className="flex items-center justify-between gap-2">
+                                <span>{slot.time}</span>
+                                {slot.availableJetSkis != null ? (
+                                  <span className="text-xs text-muted-foreground">
+                                    {slot.availableJetSkis} ski{slot.availableJetSkis === 1 ? '' : 's'} available
+                                  </span>
+                                ) : null}
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
                         {timesError && (
                           <p className="text-xs text-red-500">{timesError}</p>
+                        )}
+                        {!timesError && date && !timesLoading && filteredSlots.length === 0 && availableSlots.length > 0 && (
+                          <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2 py-1.5">
+                            No slots currently fit {requiredJetSkis} jet ski{requiredJetSkis === 1 ? '' : 's'}. Try a different date or adjust the quantity if flexible.
+                          </p>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="jet-ski-qty">Jet ski quantity</Label>
+                        {rideMaxJetSkis <= 0 ? (
+                          <p className="text-xs text-muted-foreground">Not required for this experience.</p>
+                        ) : (
+                          <div className="inline-flex items-center gap-2 rounded-lg border border-border/60 bg-background/50 px-3 py-2 w-fit">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              disabled={jetSkiQty <= rideMinJetSkis}
+                              onClick={() => setJetSkiQty((q) => clamp(q - 1, rideMinJetSkis, rideMaxJetSkis))}
+                              aria-label="Decrease jet ski quantity"
+                            >
+                              -
+                            </Button>
+                            <div className="min-w-[3ch] text-center font-semibold" aria-live="polite">
+                              {jetSkiQty}
+                            </div>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              disabled={jetSkiQty >= rideMaxJetSkis}
+                              onClick={() => setJetSkiQty((q) => clamp(q + 1, rideMinJetSkis, rideMaxJetSkis))}
+                              aria-label="Increase jet ski quantity"
+                            >
+                              +
+                            </Button>
+                            <span className="text-xs text-muted-foreground ml-2">
+                              Min {rideMinJetSkis} • Max {rideMaxJetSkis}
+                            </span>
+                          </div>
+                        )}
+                        {selectedRide?.id === 'coastal-cruise' ? (
+                          <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-md px-2 py-1.5">
+                            Minimum 4 jet skis required for Coastal Cruise. Group experience.
+                          </p>
+                        ) : (
+                          <p className="text-xs text-muted-foreground">
+                            {rideMinJetSkis === rideMaxJetSkis
+                              ? `Fixed at ${rideMinJetSkis} jet ski${rideMinJetSkis === 1 ? '' : 's'} for this ride.`
+                              : requiresGroup
+                              ? 'Group experience'
+                              : 'Adjust jet ski count as needed for this ride.'}
+                          </p>
                         )}
                       </div>
                     </div>
@@ -881,7 +1114,7 @@ function classifySeverity(speed?: number | null, gust?: number | null, direction
                         type="button"
                         size="sm"
                         onClick={() => setConfirmOpen(true)}
-                        disabled={!allRequiredComplete}
+                        disabled={!allRequiredComplete || !hasRequiredJetSkis}
                       >
                         Book &amp; Pay
                       </Button>
@@ -904,6 +1137,11 @@ function classifySeverity(speed?: number | null, gust?: number | null, direction
               <div className="space-y-1">
                 <p className="text-sm font-medium">{selectedRide.title}</p>
                 <p className="text-xs text-muted-foreground">{selectedRide.subtitle}</p>
+                {(requiresGroup || selectedRide?.badge) && (
+                  <Badge variant="outline" className="mt-1">
+                    {selectedRide?.badge || 'Group experience'}
+                  </Badge>
+                )}
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                 <div>
@@ -915,6 +1153,12 @@ function classifySeverity(speed?: number | null, gust?: number | null, direction
                   <p className="font-medium">Gordon&apos;s Bay Harbour</p>
                 </div>
               </div>
+              {rideMaxJetSkis > 0 && (
+                <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+                  <p className="text-muted-foreground">Jet skis</p>
+                  <p className="font-medium">{jetSkiQty}</p>
+                </div>
+              )}
               <Separator />
               <div className="space-y-2">
                 <div className="flex flex-wrap items-center justify-between gap-2">
@@ -1062,9 +1306,17 @@ function classifySeverity(speed?: number | null, gust?: number | null, direction
           <DialogFooter>
             <Button variant="outline" onClick={() => setPayOpen(false)}>Cancel</Button>
             <Button onClick={async () => {
+              if (!hasRequiredJetSkis) {
+                alert('Please meet the minimum jet ski requirement before paying.')
+                return
+              }
+              if (!date || !dateIsBookable) {
+                alert('Bookings are available on Saturdays and Sundays only (17 Jan 2026 excluded).')
+                return
+              }
               setPaying(true)
-                  const formattedDate = date ? date.toISOString().split('T')[0] : null
-                  const booking = { rideId, date: formattedDate, time, fullName, email, phone, notes, addons, passengers, riders }
+                  const formattedDate = date ? formatLocalDateKey(date) : null
+                  const booking = { rideId, date: formattedDate, time, fullName, email, phone, notes, addons, passengers, riders, jetSkiQty: requiredJetSkis }
               try {
                 // Preferred: Checkout API (Bearer token)
                 const co = await createCheckout(booking)

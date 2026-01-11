@@ -30,10 +30,10 @@ export type Addons = {
   extraPeople: number
 }
 
-export async function getPaymentQuote(rideId: string, addons: Addons) {
+export async function getPaymentQuote(rideId: string, addons: Addons, jetSkiQty?: number) {
   return postJSON<{ currency: 'ZAR'; amountInCents: number }>(
     '/api/payments/quote',
-    { rideId, addons }
+    { rideId, addons, jetSkiQty }
   )
 }
 
@@ -50,11 +50,14 @@ export async function getPaymentConfig() {
   return (await res.json()) as { publicKey: string; currency: 'ZAR' }
 }
 
-export async function getAvailableTimes(rideId: string, date: string) {
+export async function getAvailableTimes(rideId: string, date: string, jetSkiQty?: number) {
   const params = new URLSearchParams({ rideId, date })
+  if (typeof jetSkiQty === 'number' && jetSkiQty >= 0) {
+    params.append('jetSkiQty', String(jetSkiQty))
+  }
   const res = await fetch(`${API_BASE}/api/timeslots?${params.toString()}`)
   if (!res.ok) throw new Error('Failed to load available times')
-  return (await res.json()) as { rideId: string; date: string; times: string[] }
+  return (await res.json()) as { rideId: string; date: string; times: Array<string | { time: string; availableJetSkis?: number }> }
 }
 
 export async function initiatePayment(booking: any) {

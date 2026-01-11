@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { MapPin, Clock, Users, Ship, CalendarDays, ShieldCheck, BadgePercent } from 'lucide-react'
+import { MapPin, Clock, Users, Ship, CalendarDays, ShieldCheck } from 'lucide-react'
 
 export const Route = createFileRoute('/rides/')({
   component: RouteComponent,
@@ -19,6 +19,7 @@ type Ride = {
   bullets: string[]
   price: string
   cta?: { to: string; label: string; variant?: 'default' | 'outline' | 'ghost' }
+  badge?: string
 }
 
 const rides: Ride[] = [
@@ -100,6 +101,20 @@ const rides: Ride[] = [
     price: 'From ZAR 6,375',
     cta: { to: '/Bookings', label: 'Enquire / Book' },
   },
+  {
+    id: 'coastal-cruise',
+    icon: <Ship className="h-5 w-5" />,
+    title: 'Coastal Cruise • 60 min',
+    subtitle: 'Guided group ride along the bay',
+    bullets: [
+      'Requires minimum 4 jet skis to operate',
+      'Price per jet ski, up to 6 skis',
+      'Ideal for teams or friends riding together',
+    ],
+    price: 'From ZAR 8,840 (4 skis)',
+    badge: 'Group experience',
+    cta: { to: '/Bookings', label: 'Book Coastal Cruise' },
+  },
 ]
 
 function RideCard({ ride }: { ride: Ride }) {
@@ -112,8 +127,7 @@ function RideCard({ ride }: { ride: Ride }) {
             {ride.title}
           </CardTitle>
           <Badge variant="secondary" className="bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-sm">
-            <BadgePercent className="mr-1.5 h-3.5 w-3.5" />
-            15% off
+            {ride.badge || 'Featured'}
           </Badge>
         </div>
         <CardDescription>{ride.subtitle}</CardDescription>
