@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useRouterState } from '@tanstack/react-router'
 import { useState } from 'react'
 import {
   Home,
@@ -23,6 +23,22 @@ import { BOOKINGS_PAUSED } from '@/lib/bookingStatus'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
+  const routerState = useRouterState()
+  const pathname = routerState.location.pathname || ''
+  const venturesActive = ['/rides', '/boat-ride', '/fishing-charters'].some((path) => pathname.startsWith(path))
+  const navLinkBaseClass =
+    'relative px-4 py-2 rounded-full text-sm font-semibold text-foreground/75 transition-all duration-200 border border-transparent hover:text-foreground hover:bg-primary/10 hover:border-primary/30 hover:-translate-y-[1px] shadow-[0_1px_0_0_rgba(255,255,255,0.06)]'
+  const navLinkActiveClass =
+    'relative px-4 py-2 rounded-full text-sm font-semibold text-primary bg-primary/15 border border-primary/30 shadow-[0_10px_30px_-18px_rgba(16,185,129,0.7)]'
+  const drawerLinkBaseClass =
+    'group flex items-center justify-between gap-3 p-3.5 rounded-2xl border border-border/40 bg-background/60 hover:border-primary/40 hover:bg-primary/8 transition-all mb-2 shadow-[0_4px_18px_-15px_rgba(15,23,42,0.6)]'
+  const drawerLinkActiveClass =
+    'group flex items-center justify-between gap-3 p-3.5 rounded-2xl border border-primary/50 bg-primary/12 text-primary hover:bg-primary/12 transition-all mb-2 shadow-[0_10px_30px_-18px_rgba(16,185,129,0.7)]'
+  const ventureLinks = [
+    { to: '/rides', label: 'Jet skis', icon: <Waves size={20} /> },
+    { to: '/boat-ride', label: 'Boat rides', icon: <Ship size={20} /> },
+    { to: '/fishing-charters', label: 'Fishing charters', icon: <Fish size={20} /> },
+  ]
 
   return (
     <>
@@ -57,27 +73,33 @@ export default function Header() {
 
             {/* Desktop nav */}
             <nav className="hidden md:flex items-center gap-2 ml-4 px-2 py-1 rounded-full bg-background/70 border border-border/60 shadow-inner shadow-primary/5">
-              {[
-                { to: '/home', label: 'Home' },
-                { to: '/rides', label: 'Jet ski Rides' },
-                { to: '/boat-ride', label: 'Boat ride' },
-                { to: '/fishing-charters', label: 'Fishing charters' },
-              ].map((item) => (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  activeProps={{
-                    className:
-                      'relative px-4 py-2 rounded-full text-sm font-semibold text-primary bg-primary/15 border border-primary/30 shadow-[0_10px_30px_-18px_rgba(16,185,129,0.7)]',
-                  }}
-                  className="relative px-4 py-2 rounded-full text-sm font-semibold text-foreground/75 transition-all duration-200 border border-transparent hover:text-foreground hover:bg-primary/10 hover:border-primary/30 hover:-translate-y-[1px] shadow-[0_1px_0_0_rgba(255,255,255,0.06)]"
-                >
-                  {item.label}
-                </Link>
-              ))}
+              <Link
+                to="/home"
+                activeProps={{ className: navLinkActiveClass }}
+                className={navLinkBaseClass}
+              >
+                Home
+              </Link>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="relative px-4 py-2 rounded-full text-sm font-semibold text-foreground/75 transition-all duration-200 border border-transparent hover:text-foreground hover:bg-primary/10 hover:border-primary/30 hover:-translate-y-[1px] shadow-[0_1px_0_0_rgba(255,255,255,0.06)] flex items-center gap-2">
+                  <button className={`${venturesActive ? navLinkActiveClass : navLinkBaseClass} flex items-center gap-2`}>
+                    Our Ventures
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="min-w-[200px] border-primary/20 shadow-[0_16px_40px_-30px_rgba(15,23,42,0.55)]">
+                  {ventureLinks.map((venture) => (
+                    <DropdownMenuItem key={venture.to} asChild>
+                      <Link to={venture.to} className="flex items-center gap-2">
+                        {venture.icon}
+                        {venture.label}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className={`${navLinkBaseClass} flex items-center gap-2`}>
                     <MoreHorizontal className="h-4 w-4" />
                     More
                   </button>
@@ -213,9 +235,6 @@ export default function Header() {
 
           {[
             { to: '/home', label: 'Home', icon: <Home size={20} /> },
-            { to: '/rides', label: 'Rides', icon: <Waves size={20} /> },
-            { to: '/boat-ride', label: 'Boat ride', icon: <Ship size={20} /> },
-            { to: '/fishing-charters', label: 'Fishing charters', icon: <Fish size={20} /> },
             { to: '/safety', label: 'Safety', icon: <ShieldCheck size={20} /> },
             { to: '/weather', label: 'Weather', icon: <Waves size={20} /> },
             { to: '/admin', label: 'Admin', icon: <ShieldCheck size={20} /> },
@@ -224,11 +243,8 @@ export default function Header() {
               key={item.to}
               to={item.to}
               onClick={() => setIsOpen(false)}
-              className="group flex items-center justify-between gap-3 p-3.5 rounded-2xl border border-border/40 bg-background/60 hover:border-primary/40 hover:bg-primary/8 transition-all mb-2 shadow-[0_4px_18px_-15px_rgba(15,23,42,0.6)]"
-              activeProps={{
-                className:
-                  'group flex items-center justify-between gap-3 p-3.5 rounded-2xl border border-primary/50 bg-primary/12 text-primary hover:bg-primary/12 transition-all mb-2 shadow-[0_10px_30px_-18px_rgba(16,185,129,0.7)]',
-              }}
+              className={drawerLinkBaseClass}
+              activeProps={{ className: drawerLinkActiveClass }}
             >
               <span className="flex items-center gap-3">
                 <span className="flex items-center justify-center w-10 h-10 rounded-xl border border-primary/20 bg-primary/10 text-primary">
@@ -242,6 +258,30 @@ export default function Header() {
               />
             </Link>
           ))}
+
+          <div className="mt-4 space-y-2">
+            <p className="px-1 text-xs font-semibold uppercase tracking-[0.16em] text-foreground/60">Our Ventures</p>
+            {ventureLinks.map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                onClick={() => setIsOpen(false)}
+                className={drawerLinkBaseClass}
+                activeProps={{ className: drawerLinkActiveClass }}
+              >
+                <span className="flex items-center gap-3">
+                  <span className="flex items-center justify-center w-10 h-10 rounded-xl border border-primary/20 bg-primary/10 text-primary">
+                    {item.icon}
+                  </span>
+                  <span className="font-medium">{item.label}</span>
+                </span>
+                <ArrowRight
+                  size={18}
+                  className="text-foreground/40 transition-all duration-200 group-hover:translate-x-1 group-hover:text-primary"
+                />
+              </Link>
+            ))}
+          </div>
 
           <div className="mt-4 pt-4 border-t border-border/80">
             {BOOKINGS_PAUSED ? (
