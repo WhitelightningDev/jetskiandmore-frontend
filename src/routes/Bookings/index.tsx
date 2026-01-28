@@ -217,7 +217,7 @@ function RouteComponent() {
         <section className="mx-auto max-w-4xl px-4 py-10 md:py-14 space-y-6">
           <div className="space-y-3">
             <Badge variant="outline" className="w-fit border-amber-200 bg-amber-50 text-amber-800">
-              Maintenance
+              Servicing
             </Badge>
             <h1 className="text-3xl md:text-4xl font-bold">{BOOKINGS_PAUSED_TITLE}</h1>
             <p className="text-base text-muted-foreground">{BOOKINGS_PAUSED_MESSAGE}</p>
@@ -226,19 +226,20 @@ function RouteComponent() {
 
           <Alert variant="destructive" className="border-amber-200 bg-amber-50 text-amber-900">
             <CalendarX2 className="h-5 w-5" aria-hidden />
-            <AlertTitle>Online bookings are offline</AlertTitle>
+            <AlertTitle>Online bookings are paused</AlertTitle>
             <AlertDescription>
-              We’re doing maintenance on the booking system. Please contact us and we will confirm a slot manually.
+              Some of our jet skis are currently undergoing servicing. Please contact us and we will confirm a slot
+              manually once we are back up and running.
             </AlertDescription>
           </Alert>
 
           <Card className="border-amber-100">
             <CardHeader>
-              <CardTitle className="text-lg">Need a ride?</CardTitle>
-              <CardDescription>Reach out and we’ll lock in a time while maintenance is underway.</CardDescription>
+              <CardTitle className="text-lg">Want to book for later?</CardTitle>
+              <CardDescription>Reach out and we’ll keep in touch and confirm availability once servicing is done.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2 text-sm text-muted-foreground">
-              <p>WhatsApp is quickest for availability checks. Calls and email work if you prefer.</p>
+              <p>WhatsApp is quickest. Calls and email work if you prefer.</p>
             </CardContent>
             <CardFooter className="flex flex-wrap gap-3">
               <a
