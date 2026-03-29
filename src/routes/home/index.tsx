@@ -16,7 +16,7 @@ import {
   CalendarX2,
   Camera,
   BadgeCheck,
-  Tag,
+  MessageCircle,
 } from 'lucide-react'
 import Reveal from '@/components/Reveal'
 
@@ -46,8 +46,8 @@ import harbourImg from '@/lib/images/IMG_3202.jpg'
 import jetskiLogo from '@/lib/images/JetSkiLogo.png'
 import React from 'react'
 import { cn } from '@/lib/utils'
-import WeatherNudge from '@/components/WeatherNudge'
-import { BOOKINGS_PAUSED_MESSAGE, BOOKINGS_PAUSED_TITLE } from '@/lib/bookingStatus'
+import HeroWeatherCard from '@/components/HeroWeatherCard'
+import { BOOKINGS_PAUSED_MESSAGE, BOOKINGS_PAUSED_TITLE, BOOKINGS_WHATSAPP_URL } from '@/lib/bookingStatus'
 import { pickPrimaryBookingAction, useBookingControls } from '@/lib/bookingControls'
 
 const GBAY_LAT = -34.165
@@ -155,69 +155,80 @@ function App() {
           />
         </div>
 
-        <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/55 to-black/10" aria-hidden />
-        <div
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_15%,rgba(236,72,153,0.22),transparent_40%),radial-gradient(circle_at_75%_20%,rgba(59,130,246,0.18),transparent_42%),radial-gradient(circle_at_30%_85%,rgba(168,85,247,0.18),transparent_45%)]"
-          aria-hidden
-        />
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/25 via-slate-950/55 to-slate-950/80" aria-hidden />
 
         <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-8 md:pt-10 lg:pt-12 pb-24 md:pb-28">
-          {/* Hero top bar (desktop only, homepage replaces the global header) */}
-          <div className="hidden md:flex items-center justify-between gap-4 rounded-full border border-white/15 bg-white/10 px-4 py-2 backdrop-blur-xl shadow-[0_16px_50px_-35px_rgba(0,0,0,0.7)]">
-            <Link to="/home" className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/20 px-3 py-1.5">
-              <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white ring-1 ring-white/40 shadow-[0_10px_25px_-18px_rgba(0,0,0,0.75)] overflow-hidden">
-                <img src={jetskiLogo} alt="JetSki & More" className="h-6 w-6 object-contain" loading="eager" />
-              </span>
-              <span className="text-sm font-semibold tracking-tight">Jet Ski &amp; More</span>
-            </Link>
+          {/* Hero nav (desktop only, homepage replaces the global header) */}
+          <div className="hidden md:block">
+            <div className="rounded-2xl border border-slate-200/60 bg-white/95 shadow-[0_18px_50px_-35px_rgba(0,0,0,0.65)] backdrop-blur">
+              <div className="flex items-center justify-between gap-4 px-4 py-3">
+                <Link to="/home" className="inline-flex items-center gap-3 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500">
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white ring-1 ring-slate-200 shadow-sm overflow-hidden">
+                    <img src={jetskiLogo} alt="JetSki & More" className="h-8 w-8 object-contain" loading="eager" />
+                  </span>
+                  <span className="text-base font-semibold tracking-tight text-slate-900">Jet Ski &amp; More</span>
+                </Link>
 
-            <nav className="hidden lg:flex items-center gap-6 text-sm text-white/80">
-              <Link to="/home" className="hover:text-white transition-colors">Home</Link>
-              <Link to="/rides" className="hover:text-white transition-colors">Rides</Link>
-              <Link to="/boat-ride" className="hover:text-white transition-colors">Boat rides</Link>
-              <Link to="/fishing-charters" className="hover:text-white transition-colors">Fishing</Link>
-              <Link to="/safety" className="hover:text-white transition-colors">Safety</Link>
-            </nav>
+                <nav className="hidden md:flex items-center gap-2 rounded-full bg-slate-100 px-2 py-1 text-sm">
+                  {[
+                    { to: '/home', label: 'Home' },
+                    { to: '/rides', label: 'Rides' },
+                    { to: '/boat-ride', label: 'Boat rides' },
+                    { to: '/safety', label: 'Safety' },
+                    { to: '/contact', label: 'Contact' },
+                  ].map((item) => (
+                    <Link
+                      key={item.to}
+                      to={item.to as any}
+                      className="rounded-full px-3 py-1.5 font-medium text-slate-600 hover:text-slate-900 transition-colors"
+                      activeProps={{
+                        className:
+                          'rounded-full px-3 py-1.5 font-semibold bg-white text-slate-900 shadow-sm ring-1 ring-slate-200',
+                      }}
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </nav>
 
-            {primary.enabled ? (
-              <Link
-                to={primary.to}
-                className={buttonVariants({
-                  size: 'sm',
-                  className:
-                    'rounded-full bg-white/15 text-white hover:bg-white/20 border border-white/20 shadow-[0_18px_60px_-40px_rgba(0,0,0,0.75)]',
-                })}
-              >
-                {primary.label}
-              </Link>
-            ) : (
-              <span
-                className={buttonVariants({
-                  size: 'sm',
-                  variant: 'outline',
-                  className: 'rounded-full cursor-not-allowed select-none opacity-80 border-white/30 text-white',
-                })}
-                aria-disabled="true"
-              >
-                Bookings closed
-              </span>
-            )}
-          </div>
-
-          {/* Hero meta (top-right) */}
-          <div className="hidden md:flex justify-end mt-4">
-            <div className="inline-flex flex-wrap items-center justify-end gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm text-white/90 backdrop-blur-xl shadow-[0_16px_50px_-35px_rgba(0,0,0,0.7)]">
-              <span className="inline-flex items-center gap-2">
-                <Tag className="h-4 w-4 text-white/85" aria-hidden />
-                <span className="font-semibold">From ZAR 1,488</span>
-              </span>
-              <span className="text-white/25">•</span>
-              <span className="inline-flex items-center gap-2">
-                <BadgeCheck className="h-4 w-4 text-white/85" aria-hidden />
-                <span className="font-semibold">SAMSA since 2020</span>
-              </span>
-              <span className="text-white/25">•</span>
-              <span className="font-semibold">6th year running</span>
+                <div className="flex items-center gap-2">
+                  <a
+                    href={BOOKINGS_WHATSAPP_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={buttonVariants({
+                      variant: 'outline',
+                      size: 'sm',
+                      className: 'bg-white text-slate-900 border-slate-200 hover:bg-slate-50',
+                    })}
+                  >
+                    <MessageCircle className="mr-2 h-4 w-4" aria-hidden />
+                    WhatsApp
+                  </a>
+                  {primary.enabled ? (
+                    <Link
+                      to={primary.to}
+                      className={buttonVariants({
+                        size: 'sm',
+                        className: 'bg-sky-800 text-white hover:bg-sky-900 shadow-sm',
+                      })}
+                    >
+                      {primary.to === '/boat-ride' ? 'Book a Boat Ride' : primary.label}
+                    </Link>
+                  ) : (
+                    <span
+                      className={buttonVariants({
+                        size: 'sm',
+                        variant: 'outline',
+                        className: 'cursor-not-allowed select-none opacity-80 border-slate-200 text-slate-600',
+                      })}
+                      aria-disabled="true"
+                    >
+                      Bookings closed
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -251,17 +262,17 @@ function App() {
               <Reveal delay={320} offset={4} duration={900}>
                 <div className="flex flex-col sm:flex-row gap-3">
                   {bookingButton({
-                    label: primary.label,
+                    label: primary.to === '/boat-ride' ? 'Request a Boat Ride' : primary.label,
                     size: 'lg',
-                    variant: 'outline',
-                    className: 'rounded-full bg-white/15 text-white border-white/25 hover:bg-white/20 hover:text-white',
+                    className: 'rounded-xl bg-sky-800 text-white hover:bg-sky-900 shadow-sm',
+                    showIcon: false,
                   })}
                   <Link
                     to="/rides"
                     className={buttonVariants({
-                      variant: 'outline',
                       size: 'lg',
-                      className: 'rounded-full border-white/25 bg-white/10 text-white hover:bg-white/15 hover:text-white',
+                      variant: 'outline',
+                      className: 'rounded-xl border-white/20 bg-white/10 text-white hover:bg-white/15 hover:text-white',
                     })}
                   >
                     <Waves className="mr-2 h-5 w-5" />
@@ -270,34 +281,27 @@ function App() {
                 </div>
               </Reveal>
 
-              <p className="text-xs sm:text-sm text-white/75 max-w-2xl">
+              <p className="text-xs sm:text-sm text-white/70 max-w-2xl">
                 Structured onboarding, safety briefing, and clear operating zones — run by a professional team.
               </p>
-
-              {jetSkiClosed && (
-                <p className="inline-flex items-center gap-2 rounded-full bg-white/95 px-3 py-2 text-sm text-slate-900 shadow-sm ring-1 ring-white/30">
-                  <CalendarX2 className="h-4 w-4 text-amber-700" /> Jet ski online bookings are currently closed.
-                  {controls.boatRideBookingsEnabled ? ' Boat rides are still available.' : null}
-                </p>
-              )}
             </div>
 
             <div className="hidden lg:block lg:col-span-5" aria-hidden />
           </div>
 
           {/* Hero stats strip */}
-          <div className="mt-10 md:mt-12 rounded-2xl border border-white/15 bg-white/10 backdrop-blur-xl px-4 sm:px-6 py-4 shadow-[0_18px_60px_-45px_rgba(0,0,0,0.75)]">
+          <div className="mt-10 md:mt-12 rounded-2xl border border-white/10 bg-slate-950/35 backdrop-blur px-4 sm:px-6 py-4 shadow-[0_18px_60px_-45px_rgba(0,0,0,0.75)]">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
               {[
                 { icon: <MapPin className="h-4 w-4" aria-hidden />, value: 'Gordon’s Bay Harbour', label: 'One location' },
                 { icon: <ShieldCheck className="h-4 w-4" aria-hidden />, value: 'Safety briefing', label: 'Before every ride' },
                 { icon: <CalendarDays className="h-4 w-4" aria-hidden />, value: 'Online booking', label: 'Fast checkout' },
                 { icon: <Camera className="h-4 w-4" aria-hidden />, value: 'Photos / drone', label: 'Add‑ons available' },
-                { icon: <BadgeCheck className="h-4 w-4" aria-hidden />, value: 'Established since 2020', label: 'Professional operations' },
+                { icon: <BadgeCheck className="h-4 w-4" aria-hidden />, value: 'Since 2020', label: 'SAMSA certified' },
               ].map((item) => (
                 <div key={item.value} className="flex items-center gap-3">
-                  <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white ring-1 ring-white/15">
-                    {item.icon}
+                  <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/10">
+                    <span className="text-amber-300">{item.icon}</span>
                   </span>
                   <div className="leading-tight">
                     <p className="text-sm font-semibold text-white">{item.value}</p>
@@ -321,7 +325,9 @@ function App() {
           />
         </svg>
       </section>
-      <WeatherNudge />
+      <section className="relative z-20 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 -mt-12 md:-mt-16 pb-10 md:pb-12">
+        <HeroWeatherCard />
+      </section>
 
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 lg:py-16 space-y-12">
         <Reveal offset={4} duration={900}>
