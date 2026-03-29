@@ -1,7 +1,5 @@
-import { Link } from '@tanstack/react-router'
 import { Flower2, Leaf, Snowflake, Sun, type LucideIcon } from 'lucide-react'
-import { buttonVariants } from '@/components/ui/button'
-import { pickPrimaryBookingAction, useBookingControls } from '@/lib/bookingControls'
+import { useBookingControls } from '@/lib/bookingControls'
 
 type SeasonKey = 'summer' | 'autumn' | 'winter' | 'spring'
 
@@ -32,40 +30,46 @@ function formatReopenDate(d: Date) {
 
 function getSeasonTheme(season: SeasonKey): {
   label: string
-  gradient: string
+  bg: string
   Icon: LucideIcon
-  decoClass: string
 } {
   switch (season) {
     case 'autumn':
       return {
         label: 'Autumn',
-        gradient: 'from-amber-950 via-orange-700 to-amber-950',
+        bg: 'bg-sky-950',
         Icon: Leaf,
-        decoClass: 'text-amber-200/25',
       }
     case 'winter':
       return {
         label: 'Winter',
-        gradient: 'from-slate-950 via-sky-900 to-slate-950',
+        bg: 'bg-sky-950',
         Icon: Snowflake,
-        decoClass: 'text-sky-200/20',
       }
     case 'spring':
       return {
         label: 'Spring',
-        gradient: 'from-emerald-950 via-lime-700 to-emerald-950',
+        bg: 'bg-sky-950',
         Icon: Flower2,
-        decoClass: 'text-lime-200/20',
       }
     case 'summer':
     default:
       return {
         label: 'Summer',
-        gradient: 'from-cyan-950 via-sky-700 to-cyan-950',
+        bg: 'bg-sky-950',
         Icon: Sun,
-        decoClass: 'text-yellow-200/20',
       }
+  }
+}
+
+function formatReopenLabel(reopenDate: Date, now: Date) {
+  const sameYear = reopenDate.getFullYear() === now.getFullYear()
+  try {
+    return new Intl.DateTimeFormat('en-ZA', sameYear ? { day: 'numeric', month: 'long' } : { day: 'numeric', month: 'long', year: 'numeric' }).format(
+      reopenDate,
+    )
+  } catch {
+    return sameYear ? formatReopenDate(reopenDate).replace(/\s*\d{4}\s*$/, '') : formatReopenDate(reopenDate)
   }
 }
 
@@ -77,58 +81,18 @@ export default function BookingPauseBanner() {
   const season = getSeasonKey(now)
   const theme = getSeasonTheme(season)
   const reopenDate = nextReopenDate(now)
-  const primary = pickPrimaryBookingAction(controls)
-
-  const primaryLabel =
-    primary.to === '/boat-ride'
-      ? 'Book a boat ride'
-      : primary.to === '/fishing-charters'
-        ? 'Enquire fishing'
-        : 'Contact us'
 
   return (
-    <div className={`relative overflow-hidden bg-gradient-to-r ${theme.gradient} text-white`}>
-      <div className="pointer-events-none absolute inset-0">
-        <theme.Icon className={`absolute -right-8 -top-8 h-24 w-24 rotate-12 ${theme.decoClass}`} aria-hidden />
-        <theme.Icon className={`absolute right-24 -bottom-10 h-28 w-28 -rotate-12 ${theme.decoClass}`} aria-hidden />
-        <theme.Icon className={`absolute left-10 -top-10 h-20 w-20 rotate-6 ${theme.decoClass}`} aria-hidden />
-      </div>
-
-      <div className="relative mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 sm:px-6 lg:px-8 py-3 text-sm">
-        <div className="flex items-start gap-3">
-          <theme.Icon className="mt-0.5 h-5 w-5 shrink-0" aria-hidden />
-          <div className="leading-tight">
-            <p className="font-semibold">Jet ski bookings closed • {theme.label}</p>
-            <p className="text-white/80">
-              {primary.enabled
-                ? `Other experiences are still available. We'll be open again on ${formatReopenDate(reopenDate)}.`
-                : `We’ll be open again on ${formatReopenDate(reopenDate)}.`}
-            </p>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {primary.enabled ? (
-            <Link
-              to={primary.to}
-              className={buttonVariants({
-                size: 'sm',
-                className: 'bg-white/95 text-slate-900 hover:bg-white',
-              })}
-            >
-              {primaryLabel}
-            </Link>
-          ) : null}
-          <Link
-            to="/contact"
-            className={buttonVariants({
-              variant: 'outline',
-              size: 'sm',
-              className: 'border-white/50 text-white hover:bg-white/10',
-            })}
-          >
-            Contact us
-          </Link>
-        </div>
+    <div className={`border-b border-white/10 ${theme.bg} text-white`}>
+      <div className="mx-auto flex max-w-7xl items-center justify-center gap-2 px-4 sm:px-6 lg:px-8 py-2 text-xs sm:text-sm">
+        <theme.Icon className="h-4 w-4 text-white/85" aria-hidden />
+        <span className="font-semibold">Jet ski bookings closed for the season</span>
+        <span className="text-white/40">•</span>
+        <span className="text-white/90">
+          {controls.boatRideBookingsEnabled ? 'Boat rides still available' : 'Other experiences may be limited'}
+        </span>
+        <span className="text-white/40">•</span>
+        <span className="text-white/90">Reopening {formatReopenLabel(reopenDate, now)}</span>
       </div>
     </div>
   )

@@ -51,7 +51,7 @@ type AudienceSummary = {
 }
 
 function AdminMarketingPage() {
-  const { token, bookings, setError } = useAdminContext()
+  const { token, bookings, setError, handleLogout } = useAdminContext()
   const [campaigns, setCampaigns] = React.useState<MarketingCampaign[]>([])
   const [audience, setAudience] = React.useState<AudienceSummary | null>(null)
   const [recipients, setRecipients] = React.useState<string[]>([])
@@ -68,13 +68,28 @@ function AdminMarketingPage() {
   const [composerOpen, setComposerOpen] = React.useState(false)
   const [editing, setEditing] = React.useState<MarketingCampaign | null>(null)
 
+  async function fetchAdmin(path: string, init?: RequestInit) {
+    if (!token) throw new Error('Session expired. Please sign in again.')
+    const res = await fetch(`${API_BASE}${path}`, {
+      ...init,
+      headers: {
+        ...(init?.headers || {}),
+        Authorization: `Bearer ${token}`,
+      },
+    })
+    if (res.status === 401) {
+      setError('Session expired. Please sign in again.')
+      handleLogout()
+      throw new Error('Unauthorized')
+    }
+    return res
+  }
+
   async function refreshCampaigns() {
     if (!token) return
     try {
       setLoading(true)
-      const res = await fetch(`${API_BASE}/api/admin/marketing/campaigns?limit=50`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const res = await fetchAdmin(`/api/admin/marketing/campaigns?limit=50`)
       if (!res.ok) {
         const data = await res.json().catch(() => null)
         throw new Error(data?.detail || data?.message || res.statusText)
@@ -92,9 +107,7 @@ function AdminMarketingPage() {
     if (!token) return
     try {
       setLoadingAudience(true)
-      const res = await fetch(`${API_BASE}/api/admin/marketing/audience/summary`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const res = await fetchAdmin(`/api/admin/marketing/audience/summary`)
       if (!res.ok) {
         const data = await res.json().catch(() => null)
         throw new Error(data?.detail || data?.message || res.statusText)
@@ -113,9 +126,9 @@ function AdminMarketingPage() {
     if (!token) return
     try {
       setLoadingRecipients(true)
-      const res = await fetch(`${API_BASE}/api/admin/marketing/recipients/export`, {
+      const res = await fetchAdmin(`/api/admin/marketing/recipients/export`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ rideId: null, status: null, lastNDays: null }),
       })
       if (!res.ok) {
@@ -163,13 +176,13 @@ function AdminMarketingPage() {
     }
 
     const isUpdate = Boolean(input.id)
-    const url = isUpdate
-      ? `${API_BASE}/api/admin/marketing/campaigns/${encodeURIComponent(String(input.id))}`
-      : `${API_BASE}/api/admin/marketing/campaigns`
+    const path = isUpdate
+      ? `/api/admin/marketing/campaigns/${encodeURIComponent(String(input.id))}`
+      : `/api/admin/marketing/campaigns`
 
-    const res = await fetch(url, {
+    const res = await fetchAdmin(path, {
       method: isUpdate ? 'PUT' : 'POST',
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     })
     if (!res.ok) {
@@ -187,9 +200,8 @@ function AdminMarketingPage() {
   async function deleteCampaign(id: string) {
     if (!token) return
     if (!window.confirm('Delete this campaign?')) return
-    const res = await fetch(`${API_BASE}/api/admin/marketing/campaigns/${encodeURIComponent(id)}`, {
+    const res = await fetchAdmin(`/api/admin/marketing/campaigns/${encodeURIComponent(id)}`, {
       method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` },
     })
     if (!res.ok) {
       const data = await res.json().catch(() => null)
@@ -202,9 +214,9 @@ function AdminMarketingPage() {
     if (!token) return
     const toEmail = window.prompt('Send test email to:')
     if (!toEmail) return
-    const res = await fetch(`${API_BASE}/api/admin/marketing/campaigns/${encodeURIComponent(id)}/send-test`, {
+    const res = await fetchAdmin(`/api/admin/marketing/campaigns/${encodeURIComponent(id)}/send-test`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ toEmail }),
     })
     if (!res.ok) {
@@ -216,9 +228,8 @@ function AdminMarketingPage() {
 
   async function sendCampaign(id: string) {
     if (!token) return
-    const previewRes = await fetch(`${API_BASE}/api/admin/marketing/campaigns/${encodeURIComponent(id)}/recipients-preview`, {
+    const previewRes = await fetchAdmin(`/api/admin/marketing/campaigns/${encodeURIComponent(id)}/recipients-preview`, {
       method: 'GET',
-      headers: { Authorization: `Bearer ${token}` },
     })
     if (!previewRes.ok) {
       const data = await previewRes.json().catch(() => null)
@@ -227,9 +238,9 @@ function AdminMarketingPage() {
     const preview = (await previewRes.json()) as { count: number; sample: string[] }
     if (!window.confirm(`Send this campaign to ${preview.count} recipients now?`)) return
 
-    const res = await fetch(`${API_BASE}/api/admin/marketing/campaigns/${encodeURIComponent(id)}/send`, {
+    const res = await fetchAdmin(`/api/admin/marketing/campaigns/${encodeURIComponent(id)}/send`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({}),
     })
     if (!res.ok) {
@@ -247,9 +258,9 @@ function AdminMarketingPage() {
     const daysRaw = window.prompt('Last N days (optional):', '90')
     const lastNDays = daysRaw ? Number(daysRaw) : null
 
-    const res = await fetch(`${API_BASE}/api/admin/marketing/recipients/export`, {
+    const res = await fetchAdmin(`/api/admin/marketing/recipients/export`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         rideId: (rideId || '').trim() || null,
         lastNDays: Number.isFinite(lastNDays as any) ? lastNDays : null,
@@ -328,7 +339,7 @@ function AdminMarketingPage() {
 	                      New campaign
 	                    </Button>
 	                  </DialogTrigger>
-	                <DialogContent className="max-w-3xl">
+	                <DialogContent className="max-w-3xl max-h-[calc(100vh-2rem)] overflow-y-auto">
 	                  <DialogHeader>
 	                    <DialogTitle>{editing ? 'Edit campaign' : 'New campaign'}</DialogTitle>
 	                    <DialogDescription>Build a clean email (HTML is generated automatically).</DialogDescription>
