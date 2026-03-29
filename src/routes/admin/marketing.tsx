@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import { Download, Mail, Plus, Send, Trash2 } from 'lucide-react'
+import { Copy, Download, Mail, Plus, RefreshCw, Send, Trash2 } from 'lucide-react'
 
 import { API_BASE } from '@/lib/api'
 import { Badge } from '@/components/ui/badge'
@@ -54,8 +54,11 @@ function AdminMarketingPage() {
   const { token, bookings, setError } = useAdminContext()
   const [campaigns, setCampaigns] = React.useState<MarketingCampaign[]>([])
   const [audience, setAudience] = React.useState<AudienceSummary | null>(null)
+  const [recipients, setRecipients] = React.useState<string[]>([])
+  const [recipientsUpdatedAt, setRecipientsUpdatedAt] = React.useState<Date | null>(null)
   const [loading, setLoading] = React.useState(false)
   const [loadingAudience, setLoadingAudience] = React.useState(false)
+  const [loadingRecipients, setLoadingRecipients] = React.useState(false)
 
   const rideIds = React.useMemo(() => {
     const ids = Array.from(new Set(bookings.map((b) => b.rideId).filter(Boolean))).sort()
@@ -65,49 +68,79 @@ function AdminMarketingPage() {
   const [composerOpen, setComposerOpen] = React.useState(false)
   const [editing, setEditing] = React.useState<MarketingCampaign | null>(null)
 
-  React.useEffect(() => {
+  async function refreshCampaigns() {
     if (!token) return
-    ;(async () => {
-      try {
-        setLoading(true)
-        const res = await fetch(`${API_BASE}/api/admin/marketing/campaigns?limit=50`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        if (!res.ok) {
-          const data = await res.json().catch(() => null)
-          throw new Error(data?.detail || data?.message || res.statusText)
-        }
-        const data = (await res.json()) as { items: MarketingCampaign[] }
-        setCampaigns(data.items || [])
-      } catch (e: any) {
-        setError(e?.message ?? 'Failed to load campaigns')
-      } finally {
-        setLoading(false)
+    try {
+      setLoading(true)
+      const res = await fetch(`${API_BASE}/api/admin/marketing/campaigns?limit=50`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        throw new Error(data?.detail || data?.message || res.statusText)
       }
-    })()
-  }, [setError, token])
+      const data = (await res.json()) as { items: MarketingCampaign[] }
+      setCampaigns(data.items || [])
+    } catch (e: any) {
+      setError(e?.message ?? 'Failed to load campaigns')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function refreshAudienceSummary() {
+    if (!token) return
+    try {
+      setLoadingAudience(true)
+      const res = await fetch(`${API_BASE}/api/admin/marketing/audience/summary`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        throw new Error(data?.detail || data?.message || res.statusText)
+      }
+      const data = (await res.json()) as AudienceSummary
+      setAudience(data)
+    } catch {
+      // Non-blocking: show the rest of the page even if this fails.
+      setAudience(null)
+    } finally {
+      setLoadingAudience(false)
+    }
+  }
+
+  async function refreshRecipients() {
+    if (!token) return
+    try {
+      setLoadingRecipients(true)
+      const res = await fetch(`${API_BASE}/api/admin/marketing/recipients/export`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rideId: null, status: null, lastNDays: null }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        throw new Error(data?.detail || data?.message || res.statusText)
+      }
+      const data = (await res.json()) as { emails: string[] }
+      setRecipients((data.emails || []).filter(Boolean))
+      setRecipientsUpdatedAt(new Date())
+    } catch (e: any) {
+      setError(e?.message ?? 'Failed to load recipients')
+    } finally {
+      setLoadingRecipients(false)
+    }
+  }
+
+  async function refreshAudienceAll() {
+    await Promise.allSettled([refreshAudienceSummary(), refreshRecipients()])
+  }
 
   React.useEffect(() => {
     if (!token) return
-    ;(async () => {
-      try {
-        setLoadingAudience(true)
-        const res = await fetch(`${API_BASE}/api/admin/marketing/audience/summary`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        if (!res.ok) {
-          const data = await res.json().catch(() => null)
-          throw new Error(data?.detail || data?.message || res.statusText)
-        }
-        const data = (await res.json()) as AudienceSummary
-        setAudience(data)
-      } catch (e: any) {
-        // Non-blocking: show the rest of the page even if this fails.
-        setAudience(null)
-      } finally {
-        setLoadingAudience(false)
-      }
-    })()
+    refreshCampaigns()
+    refreshAudienceAll()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token])
 
   async function upsertCampaign(input: Partial<MarketingCampaign>): Promise<MarketingCampaign> {
@@ -231,6 +264,12 @@ function AdminMarketingPage() {
     downloadTextFile(csv, `jetskiandmore-recipients-${new Date().toISOString().slice(0, 10)}.csv`)
   }
 
+  async function copyAllRecipients() {
+    try {
+      await navigator.clipboard.writeText((recipients || []).join('\n'))
+    } catch {}
+  }
+
   return (
     <div className="space-y-6">
       <header className="space-y-2">
@@ -247,50 +286,76 @@ function AdminMarketingPage() {
           <TabsTrigger value="assets">Assets</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="campaigns">
-          <Card className="border-slate-200 bg-white shadow-sm">
-            <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <CardTitle className="text-base text-slate-900">Email campaigns</CardTitle>
-                <CardDescription className="text-slate-600">
-                  Draft, test, and send campaigns to your customer list.
-                </CardDescription>
-              </div>
+	        <TabsContent value="campaigns">
+	          <Card className="border-slate-200 bg-white shadow-sm">
+	            <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+	              <div>
+	                <CardTitle className="text-base text-slate-900">Email campaigns</CardTitle>
+	                <CardDescription className="text-slate-600">
+	                  Draft, test, and send campaigns to your customer list.
+	                </CardDescription>
+	              </div>
 
-              <Dialog open={composerOpen} onOpenChange={setComposerOpen}>
-                <DialogTrigger asChild>
-                  <Button size="sm">
-                    <Plus className="mr-2 h-4 w-4" />
-                    New campaign
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-3xl">
-                  <DialogHeader>
-                    <DialogTitle>{editing ? 'Edit campaign' : 'New campaign'}</DialogTitle>
-                    <DialogDescription>Build a clean email (HTML is generated automatically).</DialogDescription>
-                  </DialogHeader>
-                  <CampaignComposer
-                    rideIds={rideIds}
-                    initial={editing}
-                    onCancel={() => {
-                      setEditing(null)
-                      setComposerOpen(false)
-                    }}
-                    onSave={async (draft) => {
-                      const saved = await upsertCampaign({ ...editing, ...draft })
-                      setEditing(null)
-                      setComposerOpen(false)
-                      return saved
-                    }}
-                  />
-                </DialogContent>
-              </Dialog>
-            </CardHeader>
-            <CardContent className="overflow-x-auto">
-              {loading ? (
-                <div className="p-4 text-sm text-slate-600">Loading campaigns…</div>
-              ) : campaigns.length === 0 ? (
-                <div className="p-4 text-sm text-slate-600">No campaigns yet.</div>
+	              <div className="flex flex-wrap items-center justify-end gap-2">
+	                <Button
+	                  variant="outline"
+	                  size="sm"
+	                  onClick={async () => {
+	                    try {
+	                      const saved = await upsertCampaign(buildThankYouCampaignDraft())
+	                      setEditing(saved)
+	                      setComposerOpen(true)
+	                    } catch (e: any) {
+	                      setError(e?.message ?? 'Failed to create campaign')
+	                    }
+	                  }}
+	                >
+	                  Create thank-you campaign
+	                </Button>
+	                <Button variant="outline" size="sm" onClick={refreshCampaigns} disabled={loading}>
+	                  <RefreshCw className="mr-2 h-4 w-4" />
+	                  Refresh
+	                </Button>
+	                <Dialog open={composerOpen} onOpenChange={setComposerOpen}>
+	                  <DialogTrigger asChild>
+	                    <Button
+	                      size="sm"
+	                      onClick={() => {
+	                        setEditing(null)
+	                      }}
+	                    >
+	                      <Plus className="mr-2 h-4 w-4" />
+	                      New campaign
+	                    </Button>
+	                  </DialogTrigger>
+	                <DialogContent className="max-w-3xl">
+	                  <DialogHeader>
+	                    <DialogTitle>{editing ? 'Edit campaign' : 'New campaign'}</DialogTitle>
+	                    <DialogDescription>Build a clean email (HTML is generated automatically).</DialogDescription>
+	                  </DialogHeader>
+	                  <CampaignComposer
+	                    rideIds={rideIds}
+	                    initial={editing}
+	                    onCancel={() => {
+	                      setEditing(null)
+	                      setComposerOpen(false)
+	                    }}
+	                    onSave={async (draft) => {
+	                      const saved = await upsertCampaign({ ...editing, ...draft })
+	                      setEditing(null)
+	                      setComposerOpen(false)
+	                      return saved
+	                    }}
+	                  />
+	                </DialogContent>
+	                </Dialog>
+	              </div>
+	            </CardHeader>
+	            <CardContent className="overflow-x-auto">
+	              {loading ? (
+	                <div className="p-4 text-sm text-slate-600">Loading campaigns…</div>
+	              ) : campaigns.length === 0 ? (
+	                <div className="p-4 text-sm text-slate-600">No campaigns yet.</div>
               ) : (
                 <Table>
                   <TableHeader>
@@ -315,8 +380,8 @@ function AdminMarketingPage() {
                         <TableCell className="text-slate-600">
                           {formatAudience(c.audience)}
                         </TableCell>
-                        <TableCell className="text-right">
-                          <div className="inline-flex flex-wrap justify-end gap-2">
+	                        <TableCell className="text-right">
+	                          <div className="inline-flex flex-wrap justify-end gap-2">
                             <Button
                               variant="outline"
                               size="sm"
@@ -331,10 +396,10 @@ function AdminMarketingPage() {
                               <Send className="mr-2 h-4 w-4" />
                               Test
                             </Button>
-                            <Button size="sm" onClick={() => sendCampaign(c.id)} disabled={c.status === 'sent'}>
-                              <Mail className="mr-2 h-4 w-4" />
-                              Send
-                            </Button>
+	                            <Button size="sm" onClick={() => sendCampaign(c.id)} disabled={c.status === 'sent'}>
+	                              <Mail className="mr-2 h-4 w-4" />
+	                              Send
+	                            </Button>
                             <Button variant="ghost" size="icon" onClick={() => deleteCampaign(c.id)}>
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -346,25 +411,31 @@ function AdminMarketingPage() {
                 </Table>
               )}
             </CardContent>
-          </Card>
-        </TabsContent>
+	          </Card>
+	        </TabsContent>
 
-        <TabsContent value="audience">
-          <div className="grid gap-4 lg:grid-cols-2">
-            <Card className="border-slate-200 bg-white shadow-sm">
-              <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <CardTitle className="text-base text-slate-900">Audience summary</CardTitle>
-                  <CardDescription className="text-slate-600">Unique customer emails derived from bookings.</CardDescription>
-                </div>
-                <Button variant="outline" size="sm" onClick={downloadRecipientsCsv}>
-                  <Download className="mr-2 h-4 w-4" />
-                  Export CSV
-                </Button>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {loadingAudience ? (
-                  <p className="text-sm text-slate-600">Loading audience…</p>
+	        <TabsContent value="audience">
+	          <div className="grid gap-4 lg:grid-cols-2">
+	            <Card className="border-slate-200 bg-white shadow-sm">
+	              <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+	                <div>
+	                  <CardTitle className="text-base text-slate-900">Audience summary</CardTitle>
+	                  <CardDescription className="text-slate-600">Unique customer emails derived from bookings.</CardDescription>
+	                </div>
+	                <div className="flex flex-wrap items-center justify-end gap-2">
+	                  <Button variant="outline" size="sm" onClick={refreshAudienceAll} disabled={loadingAudience || loadingRecipients}>
+	                    <RefreshCw className="mr-2 h-4 w-4" />
+	                    Update
+	                  </Button>
+	                  <Button variant="outline" size="sm" onClick={downloadRecipientsCsv}>
+	                    <Download className="mr-2 h-4 w-4" />
+	                    Export CSV
+	                  </Button>
+	                </div>
+	              </CardHeader>
+	              <CardContent className="space-y-4">
+	                {loadingAudience ? (
+	                  <p className="text-sm text-slate-600">Loading audience…</p>
                 ) : !audience ? (
                   <p className="text-sm text-slate-600">No audience data yet.</p>
                 ) : (
@@ -387,14 +458,59 @@ function AdminMarketingPage() {
                     </div>
                   </>
                 )}
-              </CardContent>
-            </Card>
+	              </CardContent>
+	            </Card>
 
-            <Card className="border-slate-200 bg-white shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-base text-slate-900">How to use this</CardTitle>
-                <CardDescription className="text-slate-600">Practical marketing workflows.</CardDescription>
-              </CardHeader>
+	            <Card className="border-slate-200 bg-white shadow-sm">
+	              <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+	                <div>
+	                  <CardTitle className="text-base text-slate-900">All booking emails</CardTitle>
+	                  <CardDescription className="text-slate-600">
+	                    This list updates from the bookings database (used for campaign recipients).
+	                  </CardDescription>
+	                </div>
+	                <div className="flex flex-wrap items-center justify-end gap-2">
+	                  <Button variant="outline" size="sm" onClick={refreshRecipients} disabled={loadingRecipients}>
+	                    <RefreshCw className="mr-2 h-4 w-4" />
+	                    Update list
+	                  </Button>
+	                  <Button variant="outline" size="sm" onClick={copyAllRecipients} disabled={recipients.length === 0}>
+	                    <Copy className="mr-2 h-4 w-4" />
+	                    Copy all
+	                  </Button>
+	                </div>
+	              </CardHeader>
+	              <CardContent className="space-y-3">
+	                <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-slate-700">
+	                  <span className="font-semibold text-slate-900">
+	                    {loadingRecipients ? 'Loading…' : `${recipients.length.toLocaleString()} emails`}
+	                  </span>
+	                  <span className="text-xs text-slate-500">
+	                    {recipientsUpdatedAt ? `Updated ${formatUpdatedAt(recipientsUpdatedAt)}` : ''}
+	                  </span>
+	                </div>
+	                <Textarea
+	                  readOnly
+	                  value={
+	                    loadingRecipients
+	                      ? 'Loading…'
+	                      : recipients.length === 0
+	                      ? 'No booking emails yet.'
+	                      : recipients.join('\n')
+	                  }
+	                  className="min-h-[240px] font-mono text-xs"
+	                />
+	                <p className="text-xs text-slate-500">
+	                  Tip: Click “Update list” after new bookings are added. Campaign sending also pulls the latest bookings automatically.
+	                </p>
+	              </CardContent>
+	            </Card>
+
+	            <Card className="border-slate-200 bg-white shadow-sm">
+	              <CardHeader>
+	                <CardTitle className="text-base text-slate-900">How to use this</CardTitle>
+	                <CardDescription className="text-slate-600">Practical marketing workflows.</CardDescription>
+	              </CardHeader>
               <CardContent className="space-y-3 text-sm text-slate-700">
                 <p>Export CSV and upload to Mailchimp / Brevo / Klaviyo for advanced automations.</p>
                 <p>Use campaigns here for quick broadcasts: weather windows, weekday specials, partner updates.</p>
@@ -708,4 +824,42 @@ function downloadTextFile(text: string, filename: string) {
   a.click()
   a.remove()
   URL.revokeObjectURL(url)
+}
+
+function buildThankYouCampaignDraft(): MarketingCampaign {
+  return {
+    id: '',
+    name: 'Thank you + apology (supporters)',
+    subject: 'Thank you for your support — Jet Ski & More',
+    preheader: 'We appreciate you. We’re improving after weather and technical disruptions.',
+    content: [
+      'Hi there,',
+      '',
+      'Thank you for supporting Jet Ski & More.',
+      '',
+      'We also want to apologise to anyone we could not help on the day due to technical difficulties, or because weather and sea conditions were not safe to operate. Safety comes first — and we know it’s frustrating when plans change.',
+      '',
+      'We’re improving our systems and operations so that communication is clearer, bookings are smoother, and you get the best possible experience when conditions allow.',
+      '',
+      'If you were impacted and you’d like us to prioritise you for a future slot, reply to this email with your name and the date you tried to ride.',
+      '',
+      'Thank you again — we truly appreciate your support and we strive to deliver a great, safe experience every time.',
+      '',
+      'Jet Ski & More',
+      '',
+      'If you prefer not to receive updates, reply “unsubscribe” and we will remove you manually.',
+    ].join('\n'),
+    ctaLabel: 'Book again',
+    ctaUrl: 'https://www.jetskiandmore.com/Bookings',
+    audience: { rideId: null, status: null, lastNDays: 365 },
+    status: 'draft',
+  }
+}
+
+function formatUpdatedAt(date: Date) {
+  try {
+    return date.toLocaleString('en-ZA', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+  } catch {
+    return String(date)
+  }
 }
