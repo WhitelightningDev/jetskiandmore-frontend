@@ -32,6 +32,7 @@ import { Route as AdminQuizRouteImport } from './routes/admin/quiz'
 import { Route as AdminOverviewRouteImport } from './routes/admin/overview'
 import { Route as AdminCalendarRouteImport } from './routes/admin/calendar'
 import { Route as AdminBookingsRouteImport } from './routes/admin/bookings'
+import { Route as AdminBookingControlsRouteImport } from './routes/admin/booking-controls'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin/analytics'
 import { Route as WeatherCalmSlotsIndexRouteImport } from './routes/weather/calm-slots/index'
 
@@ -150,6 +151,11 @@ const AdminBookingsRoute = AdminBookingsRouteImport.update({
   path: '/bookings',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminBookingControlsRoute = AdminBookingControlsRouteImport.update({
+  id: '/booking-controls',
+  path: '/booking-controls',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
   id: '/analytics',
   path: '/analytics',
@@ -165,6 +171,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/booking-controls': typeof AdminBookingControlsRoute
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/calendar': typeof AdminCalendarRoute
   '/admin/overview': typeof AdminOverviewRoute
@@ -192,6 +199,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/booking-controls': typeof AdminBookingControlsRoute
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/calendar': typeof AdminCalendarRoute
   '/admin/overview': typeof AdminOverviewRoute
@@ -220,6 +228,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/booking-controls': typeof AdminBookingControlsRoute
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/calendar': typeof AdminCalendarRoute
   '/admin/overview': typeof AdminOverviewRoute
@@ -249,6 +258,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/admin/analytics'
+    | '/admin/booking-controls'
     | '/admin/bookings'
     | '/admin/calendar'
     | '/admin/overview'
@@ -276,6 +286,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/admin/analytics'
+    | '/admin/booking-controls'
     | '/admin/bookings'
     | '/admin/calendar'
     | '/admin/overview'
@@ -303,6 +314,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/admin/analytics'
+    | '/admin/booking-controls'
     | '/admin/bookings'
     | '/admin/calendar'
     | '/admin/overview'
@@ -513,6 +525,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminBookingsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/booking-controls': {
+      id: '/admin/booking-controls'
+      path: '/booking-controls'
+      fullPath: '/admin/booking-controls'
+      preLoaderRoute: typeof AdminBookingControlsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/analytics': {
       id: '/admin/analytics'
       path: '/analytics'
@@ -532,6 +551,7 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
+  AdminBookingControlsRoute: typeof AdminBookingControlsRoute
   AdminBookingsRoute: typeof AdminBookingsRoute
   AdminCalendarRoute: typeof AdminCalendarRoute
   AdminOverviewRoute: typeof AdminOverviewRoute
@@ -540,6 +560,7 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAnalyticsRoute: AdminAnalyticsRoute,
+  AdminBookingControlsRoute: AdminBookingControlsRoute,
   AdminBookingsRoute: AdminBookingsRoute,
   AdminCalendarRoute: AdminCalendarRoute,
   AdminOverviewRoute: AdminOverviewRoute,

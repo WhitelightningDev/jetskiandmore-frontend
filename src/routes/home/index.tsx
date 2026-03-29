@@ -14,6 +14,8 @@ import {
   LifeBuoy,
   AlertTriangle,
   CalendarX2,
+  Camera,
+  BadgeCheck,
 } from 'lucide-react'
 import Reveal from '@/components/Reveal'
 
@@ -44,7 +46,8 @@ import jetskiLogo from '@/lib/images/JetSkiLogo.png'
 import React from 'react'
 import { cn } from '@/lib/utils'
 import WeatherNudge from '@/components/WeatherNudge'
-import { BOOKINGS_PAUSED, BOOKINGS_PAUSED_MESSAGE } from '@/lib/bookingStatus'
+import { BOOKINGS_PAUSED_MESSAGE, BOOKINGS_PAUSED_TITLE } from '@/lib/bookingStatus'
+import { pickPrimaryBookingAction, useBookingControls } from '@/lib/bookingControls'
 
 const GBAY_LAT = -34.165
 const GBAY_LON = 18.866
@@ -55,6 +58,9 @@ export const Route = createFileRoute('/home/')({
 
 function App() {
   const [ready] = React.useState(true)
+  const { controls } = useBookingControls()
+  const primary = pickPrimaryBookingAction(controls)
+  const jetSkiClosed = !controls.jetSkiBookingsEnabled
 
   const bookingButton = ({
     label = 'Book now',
@@ -70,7 +76,7 @@ function App() {
     showIcon?: boolean
   }) => {
     const iconSize = size === 'lg' ? 'h-5 w-5' : 'h-4 w-4'
-    if (BOOKINGS_PAUSED) {
+    if (!primary.enabled) {
       return (
         <span
           className={buttonVariants({
@@ -81,21 +87,56 @@ function App() {
           aria-disabled="true"
         >
           {showIcon && <CalendarX2 className={`mr-2 ${iconSize}`} />}
-          Bookings paused
+          Bookings closed
         </span>
       )
     }
     return (
-      <Link to="/Bookings" className={buttonVariants({ size, variant, className })}>
+      <Link to={primary.to} className={buttonVariants({ size, variant, className })}>
         {showIcon && <CalendarDays className={`mr-2 ${iconSize}`} />}
         {label}
       </Link>
     )
   }
 
-  const heroCopy = BOOKINGS_PAUSED
-    ? 'Bookings are temporarily paused while we complete maintenance. Reach out and we’ll line up your slot manually.'
-    : 'Premium skis, safety-first briefings, and flexible slots from sunrise to sunset. Book online, arrive 15 minutes early, and we’ll handle the rest.'
+  const jetSkiButton = ({
+    label = 'Book jet skis',
+    size = 'sm',
+    variant,
+    className,
+  }: {
+    label?: string
+    size?: NonNullable<Parameters<typeof buttonVariants>[0]>['size']
+    variant?: NonNullable<Parameters<typeof buttonVariants>[0]>['variant']
+    className?: string
+  }) => {
+    const iconSize = size === 'lg' ? 'h-5 w-5' : 'h-4 w-4'
+    if (jetSkiClosed) {
+      return (
+        <span
+          className={buttonVariants({
+            size,
+            variant: variant ?? 'outline',
+            className: cn('cursor-not-allowed select-none opacity-80', className),
+          })}
+          aria-disabled="true"
+        >
+          <CalendarX2 className={`mr-2 ${iconSize}`} />
+          Jet ski bookings closed
+        </span>
+      )
+    }
+    return (
+      <Link to="/Bookings" className={buttonVariants({ size, variant, className })}>
+        <CalendarDays className={`mr-2 ${iconSize}`} />
+        {label}
+      </Link>
+    )
+  }
+
+  const heroCopy = jetSkiClosed
+    ? BOOKINGS_PAUSED_MESSAGE
+    : 'Safety-first guided experiences with structured onboarding, briefing, and online booking.'
   return (
     <div className="bg-background">
       {/* HERO */}
@@ -113,7 +154,7 @@ function App() {
           />
         </div>
 
-        <div className="relative mx-auto max-w-6xl px-4 py-16 md:py-24">
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 md:py-24">
           <div className="max-w-3xl space-y-6">
             <Reveal direction="down" offset={4} duration={900}>
               <div className="flex flex-wrap items-center gap-2 text-sm">
@@ -132,7 +173,7 @@ function App() {
 
             <Reveal delay={120} offset={4} duration={900}>
               <h1 className="text-4xl leading-[1.05] font-black drop-shadow md:text-6xl">
-                Jet Ski Rentals &amp; Guided Rides on Crystal Waters
+                Licensed Jet Ski Rides in Gordon&apos;s Bay Harbour
               </h1>
             </Reveal>
 
@@ -151,22 +192,29 @@ function App() {
                 </Link>
               </div>
             </Reveal>
-            {BOOKINGS_PAUSED && (
-              <p className="mt-2 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-2 text-sm text-amber-50 ring-1 ring-white/20">
-                <CalendarX2 className="h-4 w-4" /> Online bookings are paused for maintenance. Contact us to schedule.
+            {jetSkiClosed && (
+              <p className="mt-2 inline-flex items-center gap-2 rounded-full bg-white/95 px-3 py-2 text-sm text-slate-900 shadow-sm ring-1 ring-white/30">
+                <CalendarX2 className="h-4 w-4 text-amber-700" /> Jet ski online bookings are currently closed.
+                {controls.boatRideBookingsEnabled ? ' Boat rides are still available.' : null}
               </p>
             )}
 
             <Reveal delay={380} offset={4} duration={900}>
               <div className="flex flex-wrap gap-3 text-sm text-slate-100/80">
                 <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 ring-1 ring-slate-200 text-black">
-                  <Clock className="h-4 w-4 text-black" /> 30–120 min sessions
+                  <MapPin className="h-4 w-4 text-black" /> Gordon&apos;s Bay Harbour
                 </span>
                 <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 ring-1 ring-slate-200 text-black">
-                  <ShieldCheck className="h-4 w-4 text-black" /> Safety briefing &amp; life jackets
+                  <ShieldCheck className="h-4 w-4 text-black" /> Safety briefing before every ride
                 </span>
                 <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 ring-1 ring-slate-200 text-black">
-                  <MapPin className="h-4 w-4 text-black" /> Gordon&apos;s Bay Harbour only
+                  <CalendarDays className="h-4 w-4 text-black" /> Online booking
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 ring-1 ring-slate-200 text-black">
+                  <Camera className="h-4 w-4 text-black" /> Photos / drone add‑ons
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 ring-1 ring-slate-200 text-black">
+                  <BadgeCheck className="h-4 w-4 text-black" /> SAMSA certified since 2020
                 </span>
               </div>
             </Reveal>
@@ -189,112 +237,164 @@ function App() {
       </section>
       <WeatherNudge />
 
-      <section className="mx-auto max-w-6xl px-4 py-12 space-y-12">
-        {/* BOOKING ESSENTIALS */}
-        <div className="relative overflow-hidden rounded-3xl border border-primary/10 bg-gradient-to-b from-white/95 via-white to-primary/10 shadow-[0_30px_90px_-50px_rgba(14,116,144,0.5)]">
-          <div className="absolute -left-12 -top-24 h-52 w-52 rounded-full bg-primary/15 blur-3xl" />
-          <div className="absolute -right-14 top-10 h-64 w-64 rounded-full bg-sky-400/15 blur-3xl" />
-          <div className="absolute bottom-0 left-1/3 h-24 w-48 rounded-full bg-primary/10 blur-3xl" />
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 lg:py-16 space-y-12">
+        {/* ENTERPRISE INTRO (Below Hero) */}
+        <div className="space-y-10">
+          <Reveal direction="down" offset={4} duration={850}>
+            <div className="flex flex-col items-center gap-4 text-center">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                Built for teams, events &amp; tour groups
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-sm text-slate-500">
+                <span className="inline-flex items-center gap-2">
+                  <Users className="h-4 w-4" aria-hidden /> Corporate teams
+                </span>
+                <span className="inline-flex items-center gap-2">
+                  <Gift className="h-4 w-4" aria-hidden /> Event planners
+                </span>
+                <span className="inline-flex items-center gap-2">
+                  <Ship className="h-4 w-4" aria-hidden /> Boat ride add‑ons
+                </span>
+                <span className="inline-flex items-center gap-2">
+                  <ShieldCheck className="h-4 w-4" aria-hidden /> Safety‑first ops
+                </span>
+                <span className="inline-flex items-center gap-2">
+                  <MapPin className="h-4 w-4" aria-hidden /> Gordon&apos;s Bay Harbour
+                </span>
+              </div>
+            </div>
+          </Reveal>
 
-          <div className="relative p-6 md:p-10">
-            <Reveal direction="down" offset={4} duration={850}>
-              <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="space-y-2">
-                  <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary ring-1 ring-primary/20">
-                    Booking essentials
-                  </span>
-                  <h2 className="text-3xl md:text-4xl font-bold text-slate-900">Booking essentials (at a glance)</h2>
-                  <p className="text-sm md:text-base text-slate-600 max-w-2xl">
-                    Everything you need to know before you lock in a slot — clear, fast, and ready to ride.
-                  </p>
-                </div>
+          <div className="grid items-start gap-10 lg:grid-cols-12">
+            <Reveal offset={4} duration={900} className="lg:col-span-4">
+              <div className="space-y-4">
+                <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary ring-1 ring-primary/20">
+                  Enterprise jet ski rentals
+                </span>
+                <h2 className="text-3xl md:text-4xl font-bold text-slate-900">Enterprise‑ready water experiences. Simple.</h2>
+                <p className="text-sm md:text-base text-slate-600">
+                  From quick thrill rides to group sessions (5+ people), we run a tight operation with clear comms,
+                  safety‑first briefings, and options to add a boat ride for spectators.
+                </p>
                 <div className="flex flex-wrap gap-2">
-                  {bookingButton({ label: 'Book now', size: 'sm' })}
-                  <Link to="/contact" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
-                    Questions? Chat to us
-                  </Link>
+                  {jetSkiButton({ label: 'Book jet skis', size: 'sm' })}
+                  {controls.boatRideBookingsEnabled ? (
+                    <Link to="/boat-ride" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
+                      Book a boat ride
+                    </Link>
+                  ) : null}
                 </div>
+                {jetSkiClosed ? (
+                  <p className="text-sm text-slate-600">Jet ski online bookings are currently closed.</p>
+                ) : null}
               </div>
             </Reveal>
 
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-              <Reveal duration={800}>
-                <Card className="h-full rounded-2xl border border-slate-200/80 bg-white/90 shadow-[0_20px_50px_-30px_rgba(15,23,42,0.35)] backdrop-blur-sm">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center gap-2">
-                      <CalendarDays className="h-5 w-5 text-primary" />
-                      How booking works
-                    </CardTitle>
-                    <CardDescription>3 quick steps to ride</CardDescription>
-                  </CardHeader>
-                  <CardContent className="text-sm text-muted-foreground space-y-2">
-                    <p>1) Pick a ride and time in the booking form.</p>
-                    <p>2) Add extras like GoPro footage or wetsuits if you want.</p>
-                    <p>3) Pay securely online — you’ll get confirmation instantly.</p>
-                  </CardContent>
-                  <CardFooter className="flex flex-wrap gap-2">
-                    {bookingButton({ label: 'Open booking form', variant: 'outline', size: 'sm', showIcon: false })}
-                  </CardFooter>
-                </Card>
-              </Reveal>
-
-              <Reveal delay={80} duration={800}>
-                <Card className="h-full rounded-2xl border border-emerald-200/80 bg-emerald-50/70 shadow-[0_18px_45px_-30px_rgba(16,185,129,0.55)]">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center gap-2">
-                      <ShieldCheck className="h-5 w-5 text-emerald-600" />
-                      What’s included
-                    </CardTitle>
-                    <CardDescription>Every ride, every time</CardDescription>
-                  </CardHeader>
-                  <CardContent className="text-sm text-slate-700 space-y-2">
-                    <p>• Safety briefing on arrival.</p>
-                    <p>• Life jackets for riders and passengers.</p>
-                    <p>• Clearly marked riding zone for comfort and safety.</p>
-                    <p>• Optional add‑ons (GoPro footage, wetsuits, boat rides).</p>
-                  </CardContent>
-                  <CardFooter>
-                    <Link to="/safety" className={buttonVariants({ size: 'sm', variant: 'outline' })}>
-                      View safety info
-                    </Link>
-                  </CardFooter>
-                </Card>
-              </Reveal>
-
-              <Reveal delay={160} duration={800}>
-                <Card className="h-full rounded-2xl border border-amber-200/80 bg-amber-50/70 shadow-[0_18px_45px_-30px_rgba(245,158,11,0.45)]">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center gap-2">
-                      <Clock className="h-5 w-5 text-amber-600" />
-                      Before you arrive
-                    </CardTitle>
-                    <CardDescription>So check‑in is smooth</CardDescription>
-                  </CardHeader>
-                  <CardContent className="text-sm text-slate-700 space-y-2">
-                    <p>• Arrive 15 minutes early at Gordon’s Bay Harbour.</p>
-                    <p>• Bring a towel, sunscreen, and swimwear (or hire a wetsuit).</p>
-                    <p>• Riders must be 16+ to drive; passengers 8+.</p>
-                    <p>• We reschedule if weather turns unsafe — no fuss.</p>
-                  </CardContent>
-                  <CardFooter className="flex flex-wrap items-center gap-2">
-                    <Badge variant="secondary" className="rounded-full">
-                      Gordon&apos;s Bay only
-                    </Badge>
-                    <Link to="/contact" className={buttonVariants({ size: 'sm', variant: 'outline' })}>
-                      Need directions?
-                    </Link>
-                  </CardFooter>
-                </Card>
-              </Reveal>
+            <div className="grid gap-6 sm:grid-cols-2 lg:col-span-8">
+              {(
+                [
+                  {
+                    icon: <Users className="h-5 w-5 text-primary" aria-hidden />,
+                    title: 'Group capacity',
+                    desc: 'Ideal for team days and events — including our 2 hr 30 min group sessions for 5+ people.',
+                  },
+                  {
+                    icon: <ShieldCheck className="h-5 w-5 text-primary" aria-hidden />,
+                    title: 'Safety‑first operations',
+                    desc: 'On‑arrival safety briefing, life jackets, and a clearly marked riding zone.',
+                  },
+                  {
+                    icon: <CalendarDays className="h-5 w-5 text-primary" aria-hidden />,
+                    title: 'Fast scheduling',
+                    desc: 'Book online when open, or message us for larger groups and tailored timeslots.',
+                  },
+                  {
+                    icon: <MapPin className="h-5 w-5 text-primary" aria-hidden />,
+                    title: 'Simple logistics',
+                    desc: 'One location: Gordon’s Bay Harbour. Arrive 15 minutes early and we’ll handle the rest.',
+                  },
+                  {
+                    icon: <Gift className="h-5 w-5 text-primary" aria-hidden />,
+                    title: 'Add‑ons & extras',
+                    desc: 'GoPro footage, wetsuits, and spectator boat rides to round out the experience.',
+                  },
+                  {
+                    icon: <Ship className="h-5 w-5 text-primary" aria-hidden />,
+                    title: 'Boat rides available',
+                    desc: 'Book a False Bay boat ride as a stand‑alone outing or alongside your jet ski day.',
+                  },
+                ] as const
+              ).map((f) => (
+                <Reveal key={f.title} offset={4} duration={850}>
+                  <div className="flex gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                    <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/15">
+                      {f.icon}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-slate-900">{f.title}</p>
+                      <p className="mt-1 text-sm text-slate-600">{f.desc}</p>
+                    </div>
+                  </div>
+                </Reveal>
+              ))}
             </div>
           </div>
+
+          <Reveal offset={4} duration={900}>
+            <div className="overflow-hidden rounded-3xl border border-slate-200 bg-[#3f2b96] text-white shadow-[0_30px_80px_-55px_rgba(63,43,150,0.75)]">
+              <div className="grid md:grid-cols-12">
+                <div className="p-8 md:col-span-5 md:p-10">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/70">Enterprise enquiries</p>
+                  <h3 className="mt-3 text-2xl md:text-3xl font-bold">Give us a shout</h3>
+                  <p className="mt-3 text-white/85">
+                    Tell us your group size, preferred dates, and whether you want to add a boat ride. We’ll confirm the
+                    best plan and keep it simple.
+                  </p>
+                  <div className="mt-6 flex flex-wrap gap-2">
+                    <Link
+                      to="/contact"
+                      className={buttonVariants({
+                        size: 'sm',
+                        className: 'bg-white text-slate-900 hover:bg-white/90',
+                      })}
+                    >
+                      Contact us
+                    </Link>
+                  <Link
+                    to="/boat-ride"
+                    className={buttonVariants({
+                      size: 'sm',
+                      variant: 'outline',
+                      className: 'border-white/40 text-white hover:bg-white/10',
+                    })}
+                  >
+                    View boat rides
+                  </Link>
+                </div>
+                {jetSkiClosed ? (
+                  <p className="mt-4 text-sm text-white/80">Jet ski online bookings are currently closed.</p>
+                ) : null}
+                </div>
+                <div className="relative md:col-span-7">
+                  <img
+                    src={harbourImg}
+                    alt="Gordon’s Bay Harbour"
+                    className="h-64 w-full object-cover md:h-full"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-l from-transparent via-[#3f2b96]/10 to-[#3f2b96]/55" aria-hidden />
+                </div>
+              </div>
+            </div>
+          </Reveal>
         </div>
 
         {/* OFFER CARDS */}
         <div className="relative overflow-hidden rounded-3xl border border-primary/10 bg-gradient-to-b from-white via-white to-sky-50 shadow-[0_30px_90px_-50px_rgba(14,116,144,0.5)]">
           <div className="absolute -left-16 top-10 h-60 w-60 rounded-full bg-primary/15 blur-3xl" />
           <div className="absolute -right-20 bottom-12 h-72 w-72 rounded-full bg-sky-400/15 blur-3xl" />
-          <div className="relative p-6 md:p-10">
+          <div className="relative p-6 sm:p-8 lg:p-10">
             <Reveal direction="down" offset={4} duration={850}>
               <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-3">
@@ -329,9 +429,9 @@ function App() {
               </div>
             </Reveal>
 
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
               <Reveal offset={4} duration={900}>
-                <Card className="flex flex-col rounded-2xl border border-slate-200/80 bg-white/90 shadow-[0_20px_50px_-30px_rgba(15,23,42,0.35)] backdrop-blur-sm hover:-translate-y-1 hover:shadow-[0_24px_70px_-40px_rgba(14,116,144,0.45)] transition-all">
+                <Card className="h-full flex flex-col rounded-2xl border border-slate-200/80 bg-white/90 shadow-[0_20px_50px_-30px_rgba(15,23,42,0.35)] backdrop-blur-sm hover:-translate-y-1 hover:shadow-[0_24px_70px_-40px_rgba(14,116,144,0.45)] transition-all">
                   <CardHeader className="pb-3">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <CardTitle className="flex items-center gap-2">
@@ -365,7 +465,7 @@ function App() {
               </Reveal>
 
               <Reveal delay={120} offset={4} duration={900}>
-                <Card className="flex flex-col rounded-2xl border border-slate-200/80 bg-white/90 shadow-[0_20px_50px_-30px_rgba(15,23,42,0.35)] backdrop-blur-sm hover:-translate-y-1 hover:shadow-[0_24px_70px_-40px_rgba(14,116,144,0.45)] transition-all">
+                <Card className="h-full flex flex-col rounded-2xl border border-slate-200/80 bg-white/90 shadow-[0_20px_50px_-30px_rgba(15,23,42,0.35)] backdrop-blur-sm hover:-translate-y-1 hover:shadow-[0_24px_70px_-40px_rgba(14,116,144,0.45)] transition-all">
                   <CardHeader className="pb-3">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <CardTitle className="flex items-center gap-2">
@@ -399,7 +499,7 @@ function App() {
               </Reveal>
 
               <Reveal delay={240} offset={4} duration={900}>
-                <Card className="flex flex-col rounded-2xl border border-amber-300/60 bg-gradient-to-br from-amber-50 via-white to-amber-100/70 shadow-[0_22px_60px_-38px_rgba(245,158,11,0.5)] hover:-translate-y-1 transition-all">
+                <Card className="h-full flex flex-col rounded-2xl border border-amber-300/60 bg-gradient-to-br from-amber-50 via-white to-amber-100/70 shadow-[0_22px_60px_-38px_rgba(245,158,11,0.5)] hover:-translate-y-1 transition-all">
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                       <CardTitle className="flex items-center gap-2">
@@ -439,7 +539,7 @@ function App() {
         <div className="relative overflow-hidden rounded-3xl border border-primary/10 bg-gradient-to-b from-white via-white to-primary/8 shadow-[0_30px_90px_-50px_rgba(14,116,144,0.5)]">
           <div className="absolute -left-16 top-4 h-48 w-48 rounded-full bg-primary/15 blur-3xl" />
           <div className="absolute -right-14 bottom-6 h-56 w-56 rounded-full bg-sky-400/15 blur-3xl" />
-          <div className="relative p-6 md:p-10">
+          <div className="relative p-6 sm:p-8 lg:p-10">
             <Reveal direction="down" offset={4} duration={850}>
               <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
                 <div className="space-y-3">
@@ -474,7 +574,7 @@ function App() {
         <div className="relative overflow-hidden rounded-3xl border border-primary/10 bg-gradient-to-b from-white via-white to-primary/10 shadow-[0_30px_90px_-50px_rgba(14,116,144,0.5)]">
           <div className="absolute -left-10 top-0 h-52 w-52 rounded-full bg-amber-300/25 blur-3xl" />
           <div className="absolute -right-12 bottom-0 h-60 w-60 rounded-full bg-cyan-400/15 blur-3xl" />
-          <div className="relative p-6 md:p-10">
+          <div className="relative p-6 sm:p-8 lg:p-10">
             <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="space-y-2">
                 <span className="inline-flex items-center gap-2 rounded-full bg-amber-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-700 ring-1 ring-amber-400/30">
@@ -614,7 +714,7 @@ function App() {
                       <img
                         src={harbourImg}
                         alt="Gordon's Bay Harbour"
-                        className="h-70 w-full object-cover"
+                        className="h-64 w-full object-cover sm:h-72"
                         loading="lazy"
                       />
                     </div>
@@ -644,10 +744,10 @@ function App() {
           <Card className="border-transparent bg-transparent shadow-none">
             <CardHeader className="text-center">
               <CardTitle className="text-3xl md:text-4xl font-bold text-slate-900">
-                {BOOKINGS_PAUSED ? 'Bookings temporarily paused' : 'Ready to ride?'}
+                {jetSkiClosed ? BOOKINGS_PAUSED_TITLE : 'Ready to ride?'}
               </CardTitle>
               <CardDescription className="text-base md:text-lg text-slate-600">
-                {BOOKINGS_PAUSED
+                {jetSkiClosed
                   ? BOOKINGS_PAUSED_MESSAGE
                   : 'Pick a time. We’ll handle the rest.'}
               </CardDescription>

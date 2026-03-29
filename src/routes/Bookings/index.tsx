@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { CalendarDays, CalendarX2, Clock, Users, Gift, MapPin, Info, MessageCircle, Phone, Ship } from 'lucide-react'
+import { CalendarDays, Clock, Users, Gift, MapPin, Info, MessageCircle, Phone, Ship, Fish, X } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -20,13 +20,8 @@ import { createYocoToken } from '@/lib/yoco'
 import { AddOnsSection } from '@/features/bookings/AddOnsSection'
 import type { AddonsState } from '@/features/bookings/AddOnsSection'
 import { WeatherSnapshot } from '@/features/weather/WeatherSnapshot'
-import {
-  BOOKINGS_PAUSED,
-  BOOKINGS_PAUSED_FOLLOWUP,
-  BOOKINGS_PAUSED_MESSAGE,
-  BOOKINGS_PAUSED_TITLE,
-  BOOKINGS_WHATSAPP_URL,
-} from '@/lib/bookingStatus'
+import { BOOKINGS_WHATSAPP_URL } from '@/lib/bookingStatus'
+import { useBookingControls } from '@/lib/bookingControls'
 
 export const Route = createFileRoute('/Bookings/')({
   component: RouteComponent,
@@ -210,38 +205,81 @@ function sanitizeRideId(id: unknown): string {
   return exists ? id : '30-1'
 }
 
+function SeasonClosedToast() {
+  const [open, setOpen] = React.useState(true)
+
+  React.useEffect(() => {
+    const id = window.setTimeout(() => setOpen(false), 6500)
+    return () => window.clearTimeout(id)
+  }, [])
+
+  if (!open) return null
+
+  return (
+    <div className="fixed bottom-4 right-4 z-50 w-[calc(100%-2rem)] max-w-sm">
+      <div
+        role="status"
+        aria-live="polite"
+        className="flex items-start gap-3 rounded-lg border bg-white px-4 py-3 shadow-lg"
+      >
+        <Info className="mt-0.5 h-4 w-4 text-amber-900" aria-hidden />
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium leading-tight text-amber-950">Closed for the season</p>
+          <p className="text-sm leading-snug text-muted-foreground">
+            Jet ski bookings are unavailable. Boat rides are still available.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+          aria-label="Dismiss notification"
+        >
+          <X className="h-4 w-4" aria-hidden />
+        </button>
+      </div>
+    </div>
+  )
+}
+
 function RouteComponent() {
-  if (BOOKINGS_PAUSED) {
+  const { controls } = useBookingControls()
+
+  if (!controls.jetSkiBookingsEnabled) {
     return (
       <div className="bg-white">
+        <SeasonClosedToast />
         <section className="mx-auto max-w-4xl px-4 py-10 md:py-14 space-y-6">
-          <div className="space-y-3">
-            <Badge variant="outline" className="w-fit border-amber-200 bg-amber-50 text-amber-800">
-              Servicing
-            </Badge>
-            <h1 className="text-3xl md:text-4xl font-bold">{BOOKINGS_PAUSED_TITLE}</h1>
-            <p className="text-base text-muted-foreground">{BOOKINGS_PAUSED_MESSAGE}</p>
-            <p className="text-sm text-muted-foreground">{BOOKINGS_PAUSED_FOLLOWUP}</p>
+          <div className="space-y-2">
+            <h1 className="text-3xl md:text-4xl font-bold">Bookings</h1>
+            <p className="text-base text-muted-foreground">
+              Jet ski online bookings are currently closed.
+              {controls.boatRideBookingsEnabled ? ' Boat rides are still available.' : null}
+              {controls.fishingChartersBookingsEnabled ? ' Fishing charters are available on enquiry.' : null}
+              {' '}
+              If you&apos;ve already made a booking and payment, please contact us and we will assist.
+            </p>
           </div>
-
-          <Alert variant="destructive" className="border-amber-200 bg-amber-50 text-amber-900">
-            <CalendarX2 className="h-5 w-5" aria-hidden />
-            <AlertTitle>Online bookings are paused</AlertTitle>
-            <AlertDescription>
-              Some of our jet skis are currently undergoing servicing. Please contact us and we will confirm a slot
-              manually once we are back up and running.
-            </AlertDescription>
-          </Alert>
 
           <Card className="border-amber-100">
             <CardHeader>
-              <CardTitle className="text-lg">Want to book for later?</CardTitle>
-              <CardDescription>Reach out and we’ll keep in touch and confirm availability once servicing is done.</CardDescription>
+              <CardTitle className="text-lg">Get in touch</CardTitle>
+              <CardDescription>WhatsApp is quickest. Calls and email work if you prefer.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-2 text-sm text-muted-foreground">
-              <p>WhatsApp is quickest. Calls and email work if you prefer.</p>
-            </CardContent>
+            <CardContent className="space-y-2 text-sm text-muted-foreground" />
             <CardFooter className="flex flex-wrap gap-3">
+              {controls.boatRideBookingsEnabled ? (
+                <Link to="/boat-ride" className={buttonVariants({ variant: 'secondary', size: 'sm' })}>
+                  <Ship className="mr-2 h-4 w-4" />
+                  Book a boat ride
+                </Link>
+              ) : null}
+              {controls.fishingChartersBookingsEnabled ? (
+                <Link to="/fishing-charters" className={buttonVariants({ variant: 'secondary', size: 'sm' })}>
+                  <Fish className="mr-2 h-4 w-4" />
+                  Fishing charters
+                </Link>
+              ) : null}
               <a
                 href={BOOKINGS_WHATSAPP_URL}
                 className={buttonVariants({ size: 'sm' })}
@@ -634,7 +672,7 @@ function classifySeverity(speed?: number | null, gust?: number | null, direction
 
   return (
     <div className="bg-white">
-      <section className="mx-auto max-w-6xl px-4 py-10 md:py-14">
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 md:py-14">
         <Alert className="mb-6 border-amber-200 bg-amber-50 text-amber-900">
           <Info className="h-5 w-5" aria-hidden />
           <AlertTitle>Weekend bookings only</AlertTitle>

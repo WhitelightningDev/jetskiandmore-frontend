@@ -3,9 +3,12 @@ import { Link } from '@tanstack/react-router'
 import { CloudSun, X } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { pickPrimaryBookingAction, useBookingControls } from '@/lib/bookingControls'
 
 export default function WeatherNudge() {
   const [visible, setVisible] = useState(false)
+  const { controls } = useBookingControls()
+  const primary = pickPrimaryBookingAction(controls)
 
   useEffect(() => {
     const timer = setTimeout(() => setVisible(true), 1200)
@@ -31,9 +34,17 @@ export default function WeatherNudge() {
               <Link to="/weather" className={cn(buttonVariants({ size: 'sm', variant: 'secondary' }), 'bg-white text-slate-900 hover:bg-white/90')}>
                 View weather
               </Link>
-              <Link to="/Bookings" className={cn(buttonVariants({ size: 'sm', variant: 'outline' }), 'border-white/50 text-black hover:bg-gray/10')}>
-                Book anyway
-              </Link>
+              {primary.enabled ? (
+                <Link
+                  to={primary.to}
+                  className={cn(
+                    buttonVariants({ size: 'sm', variant: 'outline' }),
+                    'border-white/50 text-black hover:bg-gray/10',
+                  )}
+                >
+                  Book now
+                </Link>
+              ) : null}
             </div>
           </div>
           <button

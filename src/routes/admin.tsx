@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Link, Outlet, createFileRoute, useRouter, useRouterState } from '@tanstack/react-router'
-import { BarChart3, CalendarClock, CalendarRange, LayoutDashboard, LogOut, ShieldCheck } from 'lucide-react'
+import { BarChart3, CalendarClock, CalendarRange, LayoutDashboard, LogOut, ShieldCheck, SlidersHorizontal } from 'lucide-react'
 
 import { API_BASE } from '@/lib/api'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -37,6 +37,7 @@ const navItems = [
   { id: 'bookings', label: 'Bookings', to: '/admin/bookings', icon: CalendarClock, description: 'Manage customers' },
   { id: 'calendar', label: 'Calendar', to: '/admin/calendar', icon: CalendarRange, description: 'Date & time grid' },
   { id: 'quiz', label: 'Safety & quiz', to: '/admin/quiz', icon: ShieldCheck, description: 'Compliance review' },
+  { id: 'booking-controls', label: 'Booking controls', to: '/admin/booking-controls', icon: SlidersHorizontal, description: 'Switch bookings on/off' },
 ]
 
 function AdminLayout() {

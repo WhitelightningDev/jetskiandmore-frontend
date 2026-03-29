@@ -15,17 +15,20 @@ import {
   Fish,
   CloudSun,
   MoreHorizontal,
+  BadgeCheck,
 } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import jetskilogo from '@/lib/images/JetSkiLogo.png'
-import { BOOKINGS_PAUSED } from '@/lib/bookingStatus'
+import { pickPrimaryBookingAction, useBookingControls } from '@/lib/bookingControls'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
   const routerState = useRouterState()
   const pathname = routerState.location.pathname || ''
   const venturesActive = ['/rides', '/boat-ride', '/fishing-charters'].some((path) => pathname.startsWith(path))
+  const { controls } = useBookingControls()
+  const primaryBooking = pickPrimaryBookingAction(controls)
   const navLinkBaseClass =
     'relative px-4 py-2 rounded-full text-sm font-semibold text-foreground/75 transition-all duration-200 border border-transparent hover:text-foreground hover:bg-primary/10 hover:border-primary/30 hover:-translate-y-[1px] shadow-[0_1px_0_0_rgba(255,255,255,0.06)]'
   const navLinkActiveClass =
@@ -126,6 +129,10 @@ export default function Header() {
 
             {/* Right actions */}
             <div className="ml-auto flex items-center gap-3">
+              <span className="hidden md:inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-2 text-xs font-semibold text-primary">
+                <BadgeCheck className="h-4 w-4" aria-hidden />
+                From ZAR 1,488 • SINCE 2020 • 5 Years
+              </span>
               <Link
                 to="/contact"
                 className={`${buttonVariants({
@@ -135,7 +142,16 @@ export default function Header() {
               >
                 <Phone className="mr-2" size={16} /> Contact
               </Link>
-              {BOOKINGS_PAUSED ? (
+              {primaryBooking.enabled ? (
+                <Link
+                  to={primaryBooking.to}
+                  className={`${buttonVariants({
+                    size: 'sm',
+                  })} shadow-[0_16px_40px_-22px_rgba(16,185,129,0.75)] transition-transform hover:-translate-y-[1px]`}
+                >
+                  <CalendarDays className="mr-2" size={16} /> Book now
+                </Link>
+              ) : (
                 <span
                   className={`${buttonVariants({
                     size: 'sm',
@@ -143,17 +159,8 @@ export default function Header() {
                   })} cursor-not-allowed select-none opacity-80`}
                   aria-disabled="true"
                 >
-                  <CalendarX2 className="mr-2" size={16} /> Bookings paused
+                  <CalendarX2 className="mr-2" size={16} /> Bookings closed
                 </span>
-              ) : (
-                <Link
-                  to="/Bookings"
-                  className={`${buttonVariants({
-                    size: 'sm',
-                  })} shadow-[0_16px_40px_-22px_rgba(16,185,129,0.75)] transition-transform hover:-translate-y-[1px]`}
-                >
-                  <CalendarDays className="mr-2" size={16} /> Book now
-                </Link>
               )}
             </div>
           </div>
@@ -199,19 +206,9 @@ export default function Header() {
               Safety checklist, weather review, and gear included for every session.
             </p>
             <div className="relative mt-3 flex gap-3">
-              {BOOKINGS_PAUSED ? (
-                <span
-                  className={`${buttonVariants({
-                    size: 'sm',
-                    variant: 'outline',
-                  })} cursor-not-allowed select-none opacity-80`}
-                  aria-disabled="true"
-                >
-                  <CalendarX2 className="mr-2" size={16} /> Bookings paused
-                </span>
-              ) : (
+              {primaryBooking.enabled ? (
                 <Link
-                  to="/Bookings"
+                  to={primaryBooking.to}
                   onClick={() => setIsOpen(false)}
                   className={`${buttonVariants({
                     size: 'sm',
@@ -219,6 +216,16 @@ export default function Header() {
                 >
                   <CalendarDays className="mr-2" size={16} /> Book now
                 </Link>
+              ) : (
+                <span
+                  className={`${buttonVariants({
+                    size: 'sm',
+                    variant: 'outline',
+                  })} cursor-not-allowed select-none opacity-80`}
+                  aria-disabled="true"
+                >
+                  <CalendarX2 className="mr-2" size={16} /> Bookings closed
+                </span>
               )}
               <Link
                 to="/contact"
@@ -284,7 +291,11 @@ export default function Header() {
           </div>
 
           <div className="mt-4 pt-4 border-t border-border/80">
-            {BOOKINGS_PAUSED ? (
+            {primaryBooking.enabled ? (
+              <Link to={primaryBooking.to} onClick={() => setIsOpen(false)} className={buttonVariants({ size: 'default' })}>
+                <CalendarDays className="mr-2" size={18} /> Book now
+              </Link>
+            ) : (
               <span
                 className={`${buttonVariants({
                   size: 'default',
@@ -292,12 +303,8 @@ export default function Header() {
                 })} cursor-not-allowed select-none opacity-80`}
                 aria-disabled="true"
               >
-                <CalendarX2 className="mr-2" size={18} /> Bookings paused
+                <CalendarX2 className="mr-2" size={18} /> Bookings closed
               </span>
-            ) : (
-              <Link to="/Bookings" onClick={() => setIsOpen(false)} className={buttonVariants({ size: 'default' })}>
-                <CalendarDays className="mr-2" size={18} /> Book now
-              </Link>
             )}
           </div>
         </nav>
