@@ -264,8 +264,8 @@ function RouteComponent() {
                     Bookings closed
                   </span>
                 )}
-                <Link
-                  to="#available"
+                <a
+                  href="#available"
                   className={buttonVariants({
                     variant: 'outline',
                     size: 'lg',
@@ -273,7 +273,7 @@ function RouteComponent() {
                   })}
                 >
                   See what’s available
-                </Link>
+                </a>
               </div>
               <p className="text-sm text-slate-100/80">
                 {jetSkisOpen
@@ -348,7 +348,7 @@ function RouteComponent() {
               subtitle="Guided jet ski rides & rentals"
               icon={<Waves className="h-5 w-5" aria-hidden />}
               enabled={jetSkisOpen}
-              status={jetSkisOpen ? 'Open for online booking' : 'Closed for the season'}
+              status={jetSkisOpen ? 'Open for online booking' : 'Closed for the season (reopens 1 November)'}
               to={jetSkisOpen ? '/Bookings' : '/jet-ski-rental-gordons-bay'}
               ctaLabel={jetSkisOpen ? 'Book jet skis' : 'See details'}
             />
@@ -465,7 +465,7 @@ function RouteComponent() {
             <Card className="shadow-md bg-white/95 border border-amber-100">
               <CardHeader>
                 <CardTitle>Jet skis are closed for the season</CardTitle>
-                <CardDescription>Boat rides and fishing enquiries can still be available.</CardDescription>
+                <CardDescription>Boat rides and fishing enquiries can still be available. We reopen on 1 November.</CardDescription>
               </CardHeader>
               <CardFooter className="flex flex-wrap gap-2">
                 {boatRidesOpen ? (
