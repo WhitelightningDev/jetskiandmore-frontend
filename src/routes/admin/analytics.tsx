@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from 'recharts'
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis } from 'recharts'
 import { Eye, Receipt, Trophy } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -35,6 +35,13 @@ const bookingsChartConfig: ChartConfig = {
   revenue: {
     label: 'Revenue (ZAR)',
     color: '#7c3aed',
+  },
+}
+
+const activeHoursChartConfig: ChartConfig = {
+  views: {
+    label: 'Views',
+    color: '#22d3ee',
   },
 }
 
@@ -176,6 +183,23 @@ function AdminAnalyticsPage() {
       // ignore
     }
   }
+
+  const activeHours = React.useMemo(() => {
+    const hours = Array.from({ length: 24 }, (_, hour) => ({ hour, views: 0 }))
+    for (const item of timeOfDay) {
+      const h = Number(item.hour)
+      if (!Number.isFinite(h)) continue
+      if (h < 0 || h > 23) continue
+      hours[h].views = Number(item.views || 0)
+    }
+    const top = [...hours].sort((a, b) => (b.views || 0) - (a.views || 0)).filter((h) => (h.views || 0) > 0)
+    return {
+      hours,
+      top3: top.slice(0, 3),
+      max: Math.max(1, ...hours.map((h) => h.views || 0)),
+      total: hours.reduce((sum, h) => sum + (h.views || 0), 0),
+    }
+  }, [timeOfDay])
 
   return (
     <div className="space-y-6">
@@ -620,37 +644,67 @@ function AdminAnalyticsPage() {
             <div>
               <CardTitle className="text-base">Active hours</CardTitle>
               <CardDescription className="text-slate-600">
-                Hour-of-day activity to time promos.
+                When people are browsing (South Africa time).
               </CardDescription>
             </div>
+            {activeHours.top3.length > 0 ? (
+              <div className="text-xs text-slate-500 sm:text-right">
+                <div className="text-slate-700">Best times to post</div>
+                <div>
+                  {activeHours.top3
+                    .map((h) => `${formatHour(h.hour)} (${h.views})`)
+                    .join(' • ')}
+                </div>
+              </div>
+            ) : null}
           </CardHeader>
           <CardContent>
-            {timeOfDay.length === 0 ? (
+            {activeHours.total === 0 ? (
               <p className="text-sm text-slate-600">{loadingPageViews ? 'Loading…' : 'No time-of-day data yet.'}</p>
             ) : (
-              (() => {
-                const maxViews = Math.max(1, ...timeOfDay.map((v) => v.views || 0))
-                return (
-              <div className="grid grid-cols-4 gap-2 text-xs text-slate-700 sm:grid-cols-6 md:grid-cols-8">
-                {timeOfDay.map((t) => (
-                  <div key={t.hour} className="flex flex-col gap-1 rounded-md border border-slate-200 bg-slate-50 p-2">
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold">{formatHour(t.hour)}</span>
-                      <span className="text-[11px] text-slate-500">{t.views}</span>
-                    </div>
-                    <div className="h-1.5 overflow-hidden rounded-full bg-slate-200">
-                      <div
-                        className="h-full rounded-full bg-cyan-400/80"
-                        style={{
-                          width: `${Math.min(100, (t.views / maxViews) * 100)}%`,
-                        }}
-                      />
-                    </div>
+              <div className="space-y-3">
+                <div className="rounded-xl border border-slate-200 bg-gradient-to-b from-white to-slate-50 p-3">
+                  <div className="h-56 w-full">
+                    <ChartContainer config={activeHoursChartConfig} className="h-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={activeHours.hours} margin={{ left: 12, right: 12, top: 10, bottom: 4 }}>
+                          <CartesianGrid vertical={false} strokeOpacity={0.12} strokeDasharray="3 3" />
+                          <XAxis
+                            dataKey="hour"
+                            tickLine={false}
+                            axisLine={false}
+                            tickMargin={8}
+                            interval={2}
+                            tickFormatter={(v) => formatHour(Number(v))}
+                          />
+                          <YAxis
+                            tickLine={false}
+                            axisLine={false}
+                            tickMargin={6}
+                            width={36}
+                            allowDecimals={false}
+                          />
+                          <ChartTooltip
+                            cursor={false}
+                            content={
+                              <ChartTooltipContent
+                                indicator="dot"
+                                labelFormatter={(value) => `Around ${formatHour(Number(value))}`}
+                                valueFormatter={(value) => `${Number(value ?? 0).toLocaleString()} views`}
+                              />
+                            }
+                          />
+                          <Bar dataKey="views" fill="var(--color-views)" radius={[6, 6, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </ChartContainer>
                   </div>
-                ))}
+                </div>
+
+                <p className="text-xs text-slate-500">
+                  Each bar = page views that happened during that hour. Use the top hours to schedule promos, posts, and emails.
+                </p>
               </div>
-                )
-              })()
             )}
           </CardContent>
         </Card>
