@@ -75,7 +75,7 @@ function AdminQuizPage() {
           </Badge>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid gap-4 lg:grid-cols-[1.15fr,0.85fr]">
+          <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
             <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4 shadow-inner">
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="space-y-1">

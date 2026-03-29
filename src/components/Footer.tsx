@@ -2,8 +2,12 @@ import { Link } from '@tanstack/react-router'
 import { Waves, Phone, Mail, Anchor, CalendarClock } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
 import jetskilogo from '@/lib/images/JetSkiLogo.png'
+import { pickPrimaryBookingAction, useBookingControls } from '@/lib/bookingControls'
 
 export default function Footer() {
+  const { controls } = useBookingControls()
+  const primary = pickPrimaryBookingAction(controls)
+
   return (
     <footer className="mt-16 bg-gradient-to-b from-background via-background to-primary/10 border-t border-primary/10 text-foreground">
       <div className="mx-auto max-w-7xl px-4 py-12">
@@ -23,13 +27,15 @@ export default function Footer() {
               We prep the skis, you bring the thrill.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Link
-                to="/Bookings"
-                className={`${buttonVariants({ size: 'sm' })} shadow-[0_16px_40px_-22px_rgba(16,185,129,0.75)]`}
-              >
-                <CalendarClock className="mr-2" size={16} />
-                Book a slot
-              </Link>
+              {primary.enabled ? (
+                <Link
+                  to={primary.to}
+                  className={`${buttonVariants({ size: 'sm' })} shadow-[0_16px_40px_-22px_rgba(16,185,129,0.75)]`}
+                >
+                  <CalendarClock className="mr-2" size={16} />
+                  Book now
+                </Link>
+              ) : null}
               <Link
                 to="/contact"
                 className={`${buttonVariants({
@@ -54,13 +60,18 @@ export default function Footer() {
 
           <div>
             <h4 className="text-sm font-semibold uppercase tracking-[0.18em] text-primary mb-3">Quick links</h4>
-            <div className="space-y-2">
+            <div className="grid grid-cols-2 gap-x-6 gap-y-2">
               {[
                 { to: '/home', label: 'Home' },
                 { to: '/rides', label: 'Rides' },
                 { to: '/safety', label: 'Safety' },
                 { to: '/weather', label: 'Weather' },
                 { to: '/contact', label: 'Contact' },
+                { to: '/why-ride-with-us', label: 'Why ride with us' },
+                { to: '/jet-ski-rental-gordons-bay', label: 'Jet ski rental guide' },
+                { to: '/jet-ski-faqs-gordons-bay', label: 'Jet ski FAQs' },
+                { to: '/things-to-do-gordons-bay-on-the-water', label: 'Things to do' },
+                { to: '/guided-jet-ski-rides-false-bay', label: 'Guided rides (False Bay)' },
                 { to: '/admin', label: 'Admin' },
               ].map((item) => (
                 <Link
