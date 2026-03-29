@@ -32,6 +32,7 @@ import { Separator } from '@/components/ui/separator'
 import { AdminContext } from '@/admin/context'
 import type { AnalyticsSummary, Booking, PageViewAnalytics, QuizSubmission } from '@/admin/types'
 import { cn } from '@/lib/utils'
+import { toast } from '@/components/ui/use-toast'
 
 export { useAdminContext } from '@/admin/context'
 export type {
@@ -239,7 +240,11 @@ function AdminLayout() {
   async function updateBookingStatus(id: string, status: string, message: string) {
     if (!token) return false
     if (!message.trim()) {
-      window.alert('Please provide a short message explaining this status change.')
+      toast({
+        title: 'Message required',
+        description: 'Please provide a short message explaining this status change.',
+        variant: 'destructive',
+      })
       return false
     }
     try {

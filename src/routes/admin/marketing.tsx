@@ -1,8 +1,18 @@
 import * as React from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import { Copy, Download, Mail, Plus, RefreshCw, Send, Trash2 } from 'lucide-react'
+import { Copy, Download, Eye, Mail, Plus, RefreshCw, Send, Trash2 } from 'lucide-react'
 
 import { API_BASE } from '@/lib/api'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -15,6 +25,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { useAdminContext } from '@/admin/context'
+import { toast } from '@/components/ui/use-toast'
 
 export const Route = createFileRoute('/admin/marketing')({
   component: AdminMarketingPage,
@@ -35,6 +46,7 @@ type MarketingCampaign = {
   ctaLabel?: string | null
   ctaUrl?: string | null
   audience?: CampaignAudience | null
+  html?: string | null
   status: 'draft' | 'sent'
   createdAt?: string | null
   updatedAt?: string | null
@@ -67,6 +79,25 @@ function AdminMarketingPage() {
 
   const [composerOpen, setComposerOpen] = React.useState(false)
   const [editing, setEditing] = React.useState<MarketingCampaign | null>(null)
+  const [previewTarget, setPreviewTarget] = React.useState<MarketingCampaign | null>(null)
+  const [previewOpen, setPreviewOpen] = React.useState(false)
+
+  const [deleteTarget, setDeleteTarget] = React.useState<MarketingCampaign | null>(null)
+  const [deleteOpen, setDeleteOpen] = React.useState(false)
+
+  const [testTarget, setTestTarget] = React.useState<MarketingCampaign | null>(null)
+  const [testOpen, setTestOpen] = React.useState(false)
+  const [testEmail, setTestEmail] = React.useState('')
+  const [testSending, setTestSending] = React.useState(false)
+
+  const [sendTarget, setSendTarget] = React.useState<MarketingCampaign | null>(null)
+  const [sendPreview, setSendPreview] = React.useState<{ count: number; sample: string[] } | null>(null)
+  const [sendOpen, setSendOpen] = React.useState(false)
+  const [sendSending, setSendSending] = React.useState(false)
+
+  const [recipientRideId, setRecipientRideId] = React.useState<string>('all')
+  const [recipientStatus, setRecipientStatus] = React.useState<string>('all')
+  const [recipientLastNDays, setRecipientLastNDays] = React.useState<string>('')
 
   async function fetchAdmin(path: string, init?: RequestInit) {
     if (!token) throw new Error('Session expired. Please sign in again.')
@@ -126,10 +157,15 @@ function AdminMarketingPage() {
     if (!token) return
     try {
       setLoadingRecipients(true)
+      const lastNDaysNum = recipientLastNDays.trim() ? Number(recipientLastNDays) : null
       const res = await fetchAdmin(`/api/admin/marketing/recipients/export`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rideId: null, status: null, lastNDays: null }),
+        body: JSON.stringify({
+          rideId: recipientRideId === 'all' ? null : recipientRideId,
+          status: recipientStatus === 'all' ? null : recipientStatus,
+          lastNDays: Number.isFinite(lastNDaysNum as any) && (lastNDaysNum as any) > 0 ? lastNDaysNum : null,
+        }),
       })
       if (!res.ok) {
         const data = await res.json().catch(() => null)
@@ -199,7 +235,6 @@ function AdminMarketingPage() {
 
   async function deleteCampaign(id: string) {
     if (!token) return
-    if (!window.confirm('Delete this campaign?')) return
     const res = await fetchAdmin(`/api/admin/marketing/campaigns/${encodeURIComponent(id)}`, {
       method: 'DELETE',
     })
@@ -208,12 +243,11 @@ function AdminMarketingPage() {
       throw new Error(data?.detail || data?.message || res.statusText)
     }
     setCampaigns((prev) => prev.filter((c) => c.id !== id))
+    toast({ title: 'Campaign deleted', variant: 'success' })
   }
 
-  async function sendTest(id: string) {
+  async function sendTest(id: string, toEmail: string) {
     if (!token) return
-    const toEmail = window.prompt('Send test email to:')
-    if (!toEmail) return
     const res = await fetchAdmin(`/api/admin/marketing/campaigns/${encodeURIComponent(id)}/send-test`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -223,10 +257,14 @@ function AdminMarketingPage() {
       const data = await res.json().catch(() => null)
       throw new Error(data?.detail || data?.message || res.statusText)
     }
-    window.alert('Test email sent (check inbox/spam).')
+    toast({
+      title: 'Test email sent',
+      description: `Sent to ${toEmail}. Check inbox/spam.`,
+      variant: 'success',
+    })
   }
 
-  async function sendCampaign(id: string) {
+  async function getSendPreview(id: string) {
     if (!token) return
     const previewRes = await fetchAdmin(`/api/admin/marketing/campaigns/${encodeURIComponent(id)}/recipients-preview`, {
       method: 'GET',
@@ -235,9 +273,11 @@ function AdminMarketingPage() {
       const data = await previewRes.json().catch(() => null)
       throw new Error(data?.detail || data?.message || previewRes.statusText)
     }
-    const preview = (await previewRes.json()) as { count: number; sample: string[] }
-    if (!window.confirm(`Send this campaign to ${preview.count} recipients now?`)) return
+    return (await previewRes.json()) as { count: number; sample: string[] }
+  }
 
+  async function sendCampaign(id: string) {
+    if (!token) return
     const res = await fetchAdmin(`/api/admin/marketing/campaigns/${encodeURIComponent(id)}/send`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -249,21 +289,24 @@ function AdminMarketingPage() {
     }
     const updated = (await res.json()) as MarketingCampaign
     setCampaigns((prev) => prev.map((c) => (c.id === updated.id ? updated : c)))
-    window.alert(`Sent: ${updated.stats?.sent ?? 0}, failed: ${updated.stats?.failed ?? 0}`)
+    toast({
+      title: 'Campaign sent',
+      description: `Sent: ${updated.stats?.sent ?? 0} • Failed: ${updated.stats?.failed ?? 0}`,
+      variant: 'success',
+    })
   }
 
   async function downloadRecipientsCsv() {
     if (!token) return
-    const rideId = window.prompt('Ride filter (optional), e.g. joy / group / 30-1:', '')
-    const daysRaw = window.prompt('Last N days (optional):', '90')
-    const lastNDays = daysRaw ? Number(daysRaw) : null
+    const lastNDaysNum = recipientLastNDays.trim() ? Number(recipientLastNDays) : null
 
     const res = await fetchAdmin(`/api/admin/marketing/recipients/export`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        rideId: (rideId || '').trim() || null,
-        lastNDays: Number.isFinite(lastNDays as any) ? lastNDays : null,
+        rideId: recipientRideId === 'all' ? null : recipientRideId,
+        status: recipientStatus === 'all' ? null : recipientStatus,
+        lastNDays: Number.isFinite(lastNDaysNum as any) && (lastNDaysNum as any) > 0 ? lastNDaysNum : null,
       }),
     })
     if (!res.ok) {
@@ -273,6 +316,7 @@ function AdminMarketingPage() {
     const data = (await res.json()) as { emails: string[] }
     const csv = ['email', ...(data.emails || [])].join('\n')
     downloadTextFile(csv, `jetskiandmore-recipients-${new Date().toISOString().slice(0, 10)}.csv`)
+    toast({ title: 'CSV exported', description: 'Downloaded recipients list.', variant: 'success' })
   }
 
   async function copyAllRecipients() {
@@ -280,6 +324,38 @@ function AdminMarketingPage() {
       await navigator.clipboard.writeText((recipients || []).join('\n'))
     } catch {}
   }
+
+  async function openSendDialog(campaign: MarketingCampaign) {
+    try {
+      setSendTarget(campaign)
+      setSendPreview(null)
+      setSendOpen(true)
+      const preview = await getSendPreview(campaign.id)
+      setSendPreview(preview || null)
+    } catch (e: any) {
+      setError(e?.message ?? 'Failed to load recipient preview')
+      toast({ title: 'Could not load recipients', description: e?.message ?? 'Please try again.', variant: 'destructive' })
+    }
+  }
+
+  function openPreview(campaign: MarketingCampaign) {
+    setPreviewTarget(campaign)
+    setPreviewOpen(true)
+  }
+
+  const previewHtml = React.useMemo(() => {
+    if (!previewTarget) return ''
+    return (
+      previewTarget.html ??
+      renderEmailHtml({
+        title: previewTarget.subject || previewTarget.name || 'Jet Ski & More',
+        preheader: previewTarget.preheader ?? null,
+        content: previewTarget.content ?? null,
+        ctaLabel: previewTarget.ctaLabel ?? null,
+        ctaUrl: previewTarget.ctaUrl ?? null,
+      })
+    )
+  }, [previewTarget])
 
   return (
     <div className="space-y-6">
@@ -339,7 +415,7 @@ function AdminMarketingPage() {
 	                      New campaign
 	                    </Button>
 	                  </DialogTrigger>
-	                <DialogContent className="max-w-3xl max-h-[calc(100vh-2rem)] overflow-y-auto">
+	                <DialogContent className="w-[95vw] max-w-5xl max-h-[calc(100vh-2rem)] overflow-y-auto">
 	                  <DialogHeader>
 	                    <DialogTitle>{editing ? 'Edit campaign' : 'New campaign'}</DialogTitle>
 	                    <DialogDescription>Build a clean email (HTML is generated automatically).</DialogDescription>
@@ -393,25 +469,44 @@ function AdminMarketingPage() {
                         </TableCell>
 	                        <TableCell className="text-right">
 	                          <div className="inline-flex flex-wrap justify-end gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setEditing(c)
-                                setComposerOpen(true)
+	                            <Button
+	                              variant="outline"
+	                              size="sm"
+	                              onClick={() => {
+	                                setEditing(c)
+	                                setComposerOpen(true)
+	                              }}
+	                            >
+	                              Edit
+	                            </Button>
+	                            <Button variant="outline" size="sm" onClick={() => openPreview(c)}>
+	                              <Eye className="mr-2 h-4 w-4" />
+	                              Preview
+	                            </Button>
+	                            <Button
+	                              variant="outline"
+	                              size="sm"
+	                              onClick={() => {
+	                                setTestTarget(c)
+                                setTestEmail('')
+                                setTestOpen(true)
                               }}
                             >
-                              Edit
-                            </Button>
-                            <Button variant="outline" size="sm" onClick={() => sendTest(c.id)}>
                               <Send className="mr-2 h-4 w-4" />
                               Test
                             </Button>
-	                            <Button size="sm" onClick={() => sendCampaign(c.id)} disabled={c.status === 'sent'}>
-	                              <Mail className="mr-2 h-4 w-4" />
-	                              Send
-	                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => deleteCampaign(c.id)}>
+		                            <Button size="sm" onClick={() => openSendDialog(c)} disabled={c.status === 'sent'}>
+		                              <Mail className="mr-2 h-4 w-4" />
+		                              Send
+		                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => {
+                                setDeleteTarget(c)
+                                setDeleteOpen(true)
+                              }}
+                            >
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
@@ -491,20 +586,65 @@ function AdminMarketingPage() {
 	                  </Button>
 	                </div>
 	              </CardHeader>
-	              <CardContent className="space-y-3">
-	                <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-slate-700">
-	                  <span className="font-semibold text-slate-900">
-	                    {loadingRecipients ? 'Loading…' : `${recipients.length.toLocaleString()} emails`}
-	                  </span>
-	                  <span className="text-xs text-slate-500">
-	                    {recipientsUpdatedAt ? `Updated ${formatUpdatedAt(recipientsUpdatedAt)}` : ''}
-	                  </span>
-	                </div>
-	                <Textarea
-	                  readOnly
-	                  value={
-	                    loadingRecipients
-	                      ? 'Loading…'
+		              <CardContent className="space-y-3">
+		                <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-slate-700">
+		                  <span className="font-semibold text-slate-900">
+		                    {loadingRecipients ? 'Loading…' : `${recipients.length.toLocaleString()} emails`}
+		                  </span>
+		                  <span className="text-xs text-slate-500">
+		                    {recipientsUpdatedAt ? `Updated ${formatUpdatedAt(recipientsUpdatedAt)}` : ''}
+		                  </span>
+		                </div>
+		                <div className="grid gap-3 sm:grid-cols-3">
+		                  <div className="space-y-1">
+		                    <Label className="text-xs uppercase tracking-wide text-slate-600">Ride</Label>
+		                    <Select value={recipientRideId} onValueChange={setRecipientRideId}>
+		                      <SelectTrigger>
+		                        <SelectValue />
+		                      </SelectTrigger>
+		                      <SelectContent>
+		                        <SelectItem value="all">All rides</SelectItem>
+		                        {rideIds.map((id) => (
+		                          <SelectItem key={id} value={id}>
+		                            {id}
+		                          </SelectItem>
+		                        ))}
+		                      </SelectContent>
+		                    </Select>
+		                  </div>
+		                  <div className="space-y-1">
+		                    <Label className="text-xs uppercase tracking-wide text-slate-600">Status</Label>
+		                    <Select value={recipientStatus} onValueChange={setRecipientStatus}>
+		                      <SelectTrigger>
+		                        <SelectValue />
+		                      </SelectTrigger>
+		                      <SelectContent>
+		                        <SelectItem value="all">All statuses</SelectItem>
+		                        <SelectItem value="approved">Approved</SelectItem>
+		                        <SelectItem value="pending">Pending</SelectItem>
+		                        <SelectItem value="failed">Failed</SelectItem>
+		                        <SelectItem value="cancelled">Cancelled</SelectItem>
+		                      </SelectContent>
+		                    </Select>
+		                  </div>
+		                  <div className="space-y-1">
+		                    <Label htmlFor="recipient-days" className="text-xs uppercase tracking-wide text-slate-600">
+		                      Last N days
+		                    </Label>
+		                    <Input
+		                      id="recipient-days"
+		                      inputMode="numeric"
+		                      placeholder="e.g. 90"
+		                      value={recipientLastNDays}
+		                      onChange={(e) => setRecipientLastNDays(e.target.value)}
+		                    />
+		                  </div>
+		                </div>
+		                <Textarea
+		                  readOnly
+		                  value={
+		                    loadingRecipients
+		                      ? 'Loading…'
 	                      : recipients.length === 0
 	                      ? 'No booking emails yet.'
 	                      : recipients.join('\n')
@@ -535,7 +675,7 @@ function AdminMarketingPage() {
           </div>
         </TabsContent>
 
-        <TabsContent value="assets">
+	        <TabsContent value="assets">
           <Card className="border-slate-200 bg-white shadow-sm">
             <CardHeader>
               <CardTitle className="text-base text-slate-900">Marketing assets</CardTitle>
@@ -562,8 +702,239 @@ function AdminMarketingPage() {
               />
             </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
+	        </TabsContent>
+	      </Tabs>
+
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete campaign?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteTarget
+                ? `This will permanently delete “${deleteTarget.name}”. This cannot be undone.`
+                : 'This will permanently delete the selected campaign.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteTarget(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 text-white hover:bg-red-700"
+              onClick={async () => {
+                if (!deleteTarget) return
+                try {
+                  await deleteCampaign(deleteTarget.id)
+                } finally {
+                  setDeleteTarget(null)
+                  setDeleteOpen(false)
+                }
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <Dialog
+        open={testOpen}
+        onOpenChange={(open) => {
+          setTestOpen(open)
+          if (!open) {
+            setTestTarget(null)
+            setTestSending(false)
+            setTestEmail('')
+          }
+        }}
+      >
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Send test email</DialogTitle>
+            <DialogDescription>
+              Sends this campaign to a single address for previewing formatting.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="test-email">Recipient email</Label>
+              <Input
+                id="test-email"
+                type="email"
+                value={testEmail}
+                onChange={(e) => setTestEmail(e.target.value)}
+                placeholder="name@email.com"
+              />
+            </div>
+            <div className="flex items-center justify-end gap-2">
+              <Button variant="outline" onClick={() => setTestOpen(false)} disabled={testSending}>
+                Cancel
+              </Button>
+              <Button
+                onClick={async () => {
+                  if (!testTarget) return
+                  if (!testEmail.trim()) {
+                    toast({ title: 'Email required', description: 'Enter a valid email address.', variant: 'destructive' })
+                    return
+                  }
+                  try {
+                    setTestSending(true)
+                    await sendTest(testTarget.id, testEmail.trim())
+                    setTestOpen(false)
+                  } catch (e: any) {
+                    toast({ title: 'Test email failed', description: e?.message ?? 'Please try again.', variant: 'destructive' })
+                  } finally {
+                    setTestSending(false)
+                  }
+                }}
+                disabled={testSending}
+              >
+                {testSending ? 'Sending…' : 'Send test'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog
+        open={sendOpen}
+        onOpenChange={(open) => {
+          setSendOpen(open)
+          if (!open) {
+            setSendTarget(null)
+            setSendPreview(null)
+            setSendSending(false)
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Send campaign now?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {sendTarget ? `Campaign: “${sendTarget.name}”` : 'This will send the selected campaign.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2 text-sm text-slate-700">
+            {!sendPreview ? (
+              <p className="text-slate-600">Loading recipient preview…</p>
+            ) : (
+              <>
+                <p>
+                  Recipients: <span className="font-semibold text-slate-900">{sendPreview.count.toLocaleString()}</span>
+                  {sendPreview.count > 300 ? (
+                    <span className="text-slate-500"> (send is capped at 300 per campaign)</span>
+                  ) : null}
+                </p>
+                {sendPreview.sample?.length ? (
+                  <p className="text-xs text-slate-500">
+                    Sample: {sendPreview.sample.slice(0, 3).join(', ')}
+                    {sendPreview.sample.length > 3 ? '…' : ''}
+                  </p>
+                ) : null}
+              </>
+            )}
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={sendSending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={!sendTarget || !sendPreview || sendSending}
+              onClick={async () => {
+                if (!sendTarget) return
+                try {
+                  setSendSending(true)
+                  await sendCampaign(sendTarget.id)
+                  setSendOpen(false)
+                } catch (e: any) {
+                  toast({ title: 'Send failed', description: e?.message ?? 'Please try again.', variant: 'destructive' })
+                } finally {
+                  setSendSending(false)
+                }
+              }}
+            >
+              {sendSending ? 'Sending…' : 'Send now'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <Dialog
+        open={previewOpen}
+        onOpenChange={(open) => {
+          setPreviewOpen(open)
+          if (!open) setPreviewTarget(null)
+        }}
+      >
+        <DialogContent className="w-[95vw] max-w-5xl max-h-[calc(100vh-2rem)] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Email preview</DialogTitle>
+            <DialogDescription>
+              {previewTarget ? `${previewTarget.name} • ${previewTarget.subject}` : 'Preview the selected campaign.'}
+            </DialogDescription>
+          </DialogHeader>
+
+          {previewTarget ? (
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
+                <div className="min-w-0">
+                  <p className="truncate font-semibold text-slate-900">{previewTarget.subject}</p>
+                  <p className="truncate text-xs text-slate-500">
+                    Audience: {formatAudience(previewTarget.audience)}
+                    {previewTarget.preheader ? ` • Preheader: ${previewTarget.preheader}` : ''}
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(previewHtml)
+                        toast({ title: 'HTML copied', description: 'Email HTML copied to clipboard.', variant: 'success' })
+                      } catch {
+                        toast({ title: 'Copy failed', description: 'Could not copy HTML.', variant: 'destructive' })
+                      }
+                    }}
+                  >
+                    <Copy className="mr-2 h-4 w-4" />
+                    Copy HTML
+                  </Button>
+                </div>
+              </div>
+
+              <Tabs defaultValue="desktop">
+                <TabsList>
+                  <TabsTrigger value="desktop">Desktop</TabsTrigger>
+                  <TabsTrigger value="mobile">Mobile</TabsTrigger>
+                </TabsList>
+                <TabsContent value="desktop">
+                  <div className="rounded-xl border border-slate-200 bg-white p-3">
+                    <div className="mx-auto w-full max-w-[640px] overflow-hidden rounded-lg border border-slate-200">
+                      <iframe
+                        key={`${previewTarget.id || previewTarget.name}-desktop`}
+                        title="Email preview (desktop)"
+                        className="h-[620px] w-full bg-white"
+                        srcDoc={previewHtml}
+                      />
+                    </div>
+                  </div>
+                </TabsContent>
+                <TabsContent value="mobile">
+                  <div className="rounded-xl border border-slate-200 bg-white p-3">
+                    <div className="mx-auto w-full max-w-[380px] overflow-hidden rounded-lg border border-slate-200">
+                      <iframe
+                        key={`${previewTarget.id || previewTarget.name}-mobile`}
+                        title="Email preview (mobile)"
+                        className="h-[620px] w-full bg-white"
+                        srcDoc={previewHtml}
+                      />
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
+          ) : (
+            <p className="text-sm text-slate-600">No campaign selected.</p>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
@@ -632,7 +1003,9 @@ function CampaignComposer({
 
   const [rideId, setRideId] = React.useState<string>(initial?.audience?.rideId || 'all')
   const [status, setStatus] = React.useState<string>(initial?.audience?.status || 'all')
-  const [lastNDays, setLastNDays] = React.useState<string>(String(initial?.audience?.lastNDays ?? 90))
+  const [lastNDays, setLastNDays] = React.useState<string>(
+    initial?.audience?.lastNDays != null ? String(initial.audience.lastNDays) : '',
+  )
 
   async function handleSave() {
     setSaving(true)
@@ -862,7 +1235,7 @@ function buildThankYouCampaignDraft(): MarketingCampaign {
     ].join('\n'),
     ctaLabel: 'Book again',
     ctaUrl: 'https://www.jetskiandmore.com/Bookings',
-    audience: { rideId: null, status: null, lastNDays: 365 },
+    audience: { rideId: null, status: null, lastNDays: null },
     status: 'draft',
   }
 }

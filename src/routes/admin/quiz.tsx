@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useAdminContext } from '@/admin/context'
 import { SITE_ORIGIN } from '@/lib/site'
+import { toast } from '@/components/ui/use-toast'
 
 export const Route = createFileRoute('/admin/quiz')({
   component: AdminQuizPage,
@@ -48,8 +49,13 @@ function AdminQuizPage() {
       }
       setCopied(true)
       window.setTimeout(() => setCopied(false), 2000)
+      toast({ title: 'Link copied', description: 'Quiz link copied to clipboard.', variant: 'success' })
     } catch {
-      window.prompt('Copy this quiz link', quizLink)
+      toast({
+        title: 'Copy failed',
+        description: 'Clipboard was blocked. Copy the link from the field on this page.',
+        variant: 'destructive',
+      })
     }
   }
 

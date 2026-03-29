@@ -9,6 +9,7 @@ import { API_BASE } from '@/lib/api'
 import HolidayBanner from '@/components/HolidayBanner'
 import BookingPauseBanner from '@/components/BookingPauseBanner'
 import { BookingControlsProvider } from '@/lib/bookingControls'
+import { Toaster } from '@/components/ui/toaster'
 
 export const Route = createRootRoute({
   component: RootLayout,
@@ -21,7 +22,12 @@ function RootLayout() {
   useTrackPageView(pathname, isAdmin)
 
   if (isAdmin) {
-    return <Outlet />
+    return (
+      <>
+        <Outlet />
+        <Toaster />
+      </>
+    )
   }
 
   return (
@@ -39,6 +45,7 @@ function RootLayout() {
       <Outlet />
       <ContactFab />
       <Footer />
+      <Toaster />
     </BookingControlsProvider>
   )
 }

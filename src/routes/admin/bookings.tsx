@@ -2,6 +2,16 @@ import * as React from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { Filter, Mail, Phone, Trash2 } from 'lucide-react'
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -34,6 +44,7 @@ import {
   withBookingMeta,
   type BookingWithMeta,
 } from '@/admin/booking-utils'
+import { toast } from '@/components/ui/use-toast'
 
 export const Route = createFileRoute('/admin/bookings')({
   component: AdminBookingsPage,
@@ -53,6 +64,8 @@ function AdminBookingsPage() {
   const [statusMessage, setStatusMessage] = React.useState('')
   const [updatingId, setUpdatingId] = React.useState<string | null>(null)
   const [deletingId, setDeletingId] = React.useState<string | null>(null)
+  const [deleteTarget, setDeleteTarget] = React.useState<BookingWithMeta | null>(null)
+  const [deleteOpen, setDeleteOpen] = React.useState(false)
 
   const bookingsWithMeta = React.useMemo(() => withBookingMeta(bookings), [bookings])
   const startOfToday = React.useMemo(() => {
@@ -278,11 +291,8 @@ function AdminBookingsPage() {
                               variant="destructive"
                               size="sm"
                               onClick={async () => {
-                                const confirmed = window.confirm('Delete this booking? This cannot be undone.')
-                                if (!confirmed) return
-                                setDeletingId(b.id)
-                                await deleteBooking(b.id)
-                                setDeletingId(null)
+                                setDeleteTarget(b)
+                                setDeleteOpen(true)
                               }}
                               disabled={deletingId === b.id}
                               className="gap-1"
@@ -372,11 +382,8 @@ function AdminBookingsPage() {
                           size="sm"
                           className="flex-1"
                           onClick={async () => {
-                            const confirmed = window.confirm('Delete this booking? This cannot be undone.')
-                            if (!confirmed) return
-                            setDeletingId(b.id)
-                            await deleteBooking(b.id)
-                            setDeletingId(null)
+                            setDeleteTarget(b)
+                            setDeleteOpen(true)
                           }}
                           disabled={deletingId === b.id}
                         >
@@ -456,6 +463,46 @@ function AdminBookingsPage() {
           </DialogContent>
         </Dialog>
       )}
+
+      <AlertDialog
+        open={deleteOpen}
+        onOpenChange={(open) => {
+          setDeleteOpen(open)
+          if (!open) setDeleteTarget(null)
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete booking?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteTarget
+                ? `This will permanently delete the booking for ${deleteTarget.fullName}. This cannot be undone.`
+                : 'This will permanently delete the selected booking.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={!!deletingId}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 text-white hover:bg-red-700"
+              disabled={!deleteTarget || !!deletingId}
+              onClick={async () => {
+                if (!deleteTarget) return
+                try {
+                  setDeletingId(deleteTarget.id)
+                  await deleteBooking(deleteTarget.id)
+                  toast({ title: 'Booking deleted', variant: 'success' })
+                } finally {
+                  setDeletingId(null)
+                  setDeleteTarget(null)
+                  setDeleteOpen(false)
+                }
+              }}
+            >
+              {deletingId ? 'Deleting…' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
