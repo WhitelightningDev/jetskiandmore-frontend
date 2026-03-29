@@ -11,14 +11,20 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as WhyRideWithUsIndexRouteImport } from './routes/why-ride-with-us/index'
 import { Route as WeatherIndexRouteImport } from './routes/weather/index'
+import { Route as ThingsToDoGordonsBayOnTheWaterIndexRouteImport } from './routes/things-to-do-gordons-bay-on-the-water/index'
 import { Route as TermsIndexRouteImport } from './routes/terms/index'
 import { Route as SafetyIndexRouteImport } from './routes/safety/index'
+import { Route as SafetyRequirementsJetSkiRidesIndexRouteImport } from './routes/safety-requirements-jet-ski-rides/index'
 import { Route as RidesIndexRouteImport } from './routes/rides/index'
 import { Route as PrivacyIndexRouteImport } from './routes/privacy/index'
 import { Route as LocationsIndexRouteImport } from './routes/locations/index'
+import { Route as JetSkiRentalGordonsBayIndexRouteImport } from './routes/jet-ski-rental-gordons-bay/index'
+import { Route as JetSkiFaqsGordonsBayIndexRouteImport } from './routes/jet-ski-faqs-gordons-bay/index'
 import { Route as InterimSkipperQuizIndexRouteImport } from './routes/interim-skipper-quiz/index'
 import { Route as HomeIndexRouteImport } from './routes/home/index'
+import { Route as GuidedJetSkiRidesFalseBayIndexRouteImport } from './routes/guided-jet-ski-rides-false-bay/index'
 import { Route as FishingChartersIndexRouteImport } from './routes/fishing-charters/index'
 import { Route as ContactIndexRouteImport } from './routes/contact/index'
 import { Route as BoatRideIndexRouteImport } from './routes/boat-ride/index'
@@ -46,11 +52,22 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WhyRideWithUsIndexRoute = WhyRideWithUsIndexRouteImport.update({
+  id: '/why-ride-with-us/',
+  path: '/why-ride-with-us/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WeatherIndexRoute = WeatherIndexRouteImport.update({
   id: '/weather/',
   path: '/weather/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ThingsToDoGordonsBayOnTheWaterIndexRoute =
+  ThingsToDoGordonsBayOnTheWaterIndexRouteImport.update({
+    id: '/things-to-do-gordons-bay-on-the-water/',
+    path: '/things-to-do-gordons-bay-on-the-water/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const TermsIndexRoute = TermsIndexRouteImport.update({
   id: '/terms/',
   path: '/terms/',
@@ -61,6 +78,12 @@ const SafetyIndexRoute = SafetyIndexRouteImport.update({
   path: '/safety/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SafetyRequirementsJetSkiRidesIndexRoute =
+  SafetyRequirementsJetSkiRidesIndexRouteImport.update({
+    id: '/safety-requirements-jet-ski-rides/',
+    path: '/safety-requirements-jet-ski-rides/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const RidesIndexRoute = RidesIndexRouteImport.update({
   id: '/rides/',
   path: '/rides/',
@@ -76,6 +99,18 @@ const LocationsIndexRoute = LocationsIndexRouteImport.update({
   path: '/locations/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const JetSkiRentalGordonsBayIndexRoute =
+  JetSkiRentalGordonsBayIndexRouteImport.update({
+    id: '/jet-ski-rental-gordons-bay/',
+    path: '/jet-ski-rental-gordons-bay/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const JetSkiFaqsGordonsBayIndexRoute =
+  JetSkiFaqsGordonsBayIndexRouteImport.update({
+    id: '/jet-ski-faqs-gordons-bay/',
+    path: '/jet-ski-faqs-gordons-bay/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const InterimSkipperQuizIndexRoute = InterimSkipperQuizIndexRouteImport.update({
   id: '/interim-skipper-quiz/',
   path: '/interim-skipper-quiz/',
@@ -86,6 +121,12 @@ const HomeIndexRoute = HomeIndexRouteImport.update({
   path: '/home/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GuidedJetSkiRidesFalseBayIndexRoute =
+  GuidedJetSkiRidesFalseBayIndexRouteImport.update({
+    id: '/guided-jet-ski-rides-false-bay/',
+    path: '/guided-jet-ski-rides-false-bay/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const FishingChartersIndexRoute = FishingChartersIndexRouteImport.update({
   id: '/fishing-charters/',
   path: '/fishing-charters/',
@@ -185,14 +226,20 @@ export interface FileRoutesByFullPath {
   '/boat-ride': typeof BoatRideIndexRoute
   '/contact': typeof ContactIndexRoute
   '/fishing-charters': typeof FishingChartersIndexRoute
+  '/guided-jet-ski-rides-false-bay': typeof GuidedJetSkiRidesFalseBayIndexRoute
   '/home': typeof HomeIndexRoute
   '/interim-skipper-quiz': typeof InterimSkipperQuizIndexRoute
+  '/jet-ski-faqs-gordons-bay': typeof JetSkiFaqsGordonsBayIndexRoute
+  '/jet-ski-rental-gordons-bay': typeof JetSkiRentalGordonsBayIndexRoute
   '/locations': typeof LocationsIndexRoute
   '/privacy': typeof PrivacyIndexRoute
   '/rides': typeof RidesIndexRoute
+  '/safety-requirements-jet-ski-rides': typeof SafetyRequirementsJetSkiRidesIndexRoute
   '/safety': typeof SafetyIndexRoute
   '/terms': typeof TermsIndexRoute
+  '/things-to-do-gordons-bay-on-the-water': typeof ThingsToDoGordonsBayOnTheWaterIndexRoute
   '/weather': typeof WeatherIndexRoute
+  '/why-ride-with-us': typeof WhyRideWithUsIndexRoute
   '/weather/calm-slots': typeof WeatherCalmSlotsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -213,14 +260,20 @@ export interface FileRoutesByTo {
   '/boat-ride': typeof BoatRideIndexRoute
   '/contact': typeof ContactIndexRoute
   '/fishing-charters': typeof FishingChartersIndexRoute
+  '/guided-jet-ski-rides-false-bay': typeof GuidedJetSkiRidesFalseBayIndexRoute
   '/home': typeof HomeIndexRoute
   '/interim-skipper-quiz': typeof InterimSkipperQuizIndexRoute
+  '/jet-ski-faqs-gordons-bay': typeof JetSkiFaqsGordonsBayIndexRoute
+  '/jet-ski-rental-gordons-bay': typeof JetSkiRentalGordonsBayIndexRoute
   '/locations': typeof LocationsIndexRoute
   '/privacy': typeof PrivacyIndexRoute
   '/rides': typeof RidesIndexRoute
+  '/safety-requirements-jet-ski-rides': typeof SafetyRequirementsJetSkiRidesIndexRoute
   '/safety': typeof SafetyIndexRoute
   '/terms': typeof TermsIndexRoute
+  '/things-to-do-gordons-bay-on-the-water': typeof ThingsToDoGordonsBayOnTheWaterIndexRoute
   '/weather': typeof WeatherIndexRoute
+  '/why-ride-with-us': typeof WhyRideWithUsIndexRoute
   '/weather/calm-slots': typeof WeatherCalmSlotsIndexRoute
 }
 export interface FileRoutesById {
@@ -242,14 +295,20 @@ export interface FileRoutesById {
   '/boat-ride/': typeof BoatRideIndexRoute
   '/contact/': typeof ContactIndexRoute
   '/fishing-charters/': typeof FishingChartersIndexRoute
+  '/guided-jet-ski-rides-false-bay/': typeof GuidedJetSkiRidesFalseBayIndexRoute
   '/home/': typeof HomeIndexRoute
   '/interim-skipper-quiz/': typeof InterimSkipperQuizIndexRoute
+  '/jet-ski-faqs-gordons-bay/': typeof JetSkiFaqsGordonsBayIndexRoute
+  '/jet-ski-rental-gordons-bay/': typeof JetSkiRentalGordonsBayIndexRoute
   '/locations/': typeof LocationsIndexRoute
   '/privacy/': typeof PrivacyIndexRoute
   '/rides/': typeof RidesIndexRoute
+  '/safety-requirements-jet-ski-rides/': typeof SafetyRequirementsJetSkiRidesIndexRoute
   '/safety/': typeof SafetyIndexRoute
   '/terms/': typeof TermsIndexRoute
+  '/things-to-do-gordons-bay-on-the-water/': typeof ThingsToDoGordonsBayOnTheWaterIndexRoute
   '/weather/': typeof WeatherIndexRoute
+  '/why-ride-with-us/': typeof WhyRideWithUsIndexRoute
   '/weather/calm-slots/': typeof WeatherCalmSlotsIndexRoute
 }
 export interface FileRouteTypes {
@@ -272,14 +331,20 @@ export interface FileRouteTypes {
     | '/boat-ride'
     | '/contact'
     | '/fishing-charters'
+    | '/guided-jet-ski-rides-false-bay'
     | '/home'
     | '/interim-skipper-quiz'
+    | '/jet-ski-faqs-gordons-bay'
+    | '/jet-ski-rental-gordons-bay'
     | '/locations'
     | '/privacy'
     | '/rides'
+    | '/safety-requirements-jet-ski-rides'
     | '/safety'
     | '/terms'
+    | '/things-to-do-gordons-bay-on-the-water'
     | '/weather'
+    | '/why-ride-with-us'
     | '/weather/calm-slots'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -300,14 +365,20 @@ export interface FileRouteTypes {
     | '/boat-ride'
     | '/contact'
     | '/fishing-charters'
+    | '/guided-jet-ski-rides-false-bay'
     | '/home'
     | '/interim-skipper-quiz'
+    | '/jet-ski-faqs-gordons-bay'
+    | '/jet-ski-rental-gordons-bay'
     | '/locations'
     | '/privacy'
     | '/rides'
+    | '/safety-requirements-jet-ski-rides'
     | '/safety'
     | '/terms'
+    | '/things-to-do-gordons-bay-on-the-water'
     | '/weather'
+    | '/why-ride-with-us'
     | '/weather/calm-slots'
   id:
     | '__root__'
@@ -328,14 +399,20 @@ export interface FileRouteTypes {
     | '/boat-ride/'
     | '/contact/'
     | '/fishing-charters/'
+    | '/guided-jet-ski-rides-false-bay/'
     | '/home/'
     | '/interim-skipper-quiz/'
+    | '/jet-ski-faqs-gordons-bay/'
+    | '/jet-ski-rental-gordons-bay/'
     | '/locations/'
     | '/privacy/'
     | '/rides/'
+    | '/safety-requirements-jet-ski-rides/'
     | '/safety/'
     | '/terms/'
+    | '/things-to-do-gordons-bay-on-the-water/'
     | '/weather/'
+    | '/why-ride-with-us/'
     | '/weather/calm-slots/'
   fileRoutesById: FileRoutesById
 }
@@ -351,14 +428,20 @@ export interface RootRouteChildren {
   BoatRideIndexRoute: typeof BoatRideIndexRoute
   ContactIndexRoute: typeof ContactIndexRoute
   FishingChartersIndexRoute: typeof FishingChartersIndexRoute
+  GuidedJetSkiRidesFalseBayIndexRoute: typeof GuidedJetSkiRidesFalseBayIndexRoute
   HomeIndexRoute: typeof HomeIndexRoute
   InterimSkipperQuizIndexRoute: typeof InterimSkipperQuizIndexRoute
+  JetSkiFaqsGordonsBayIndexRoute: typeof JetSkiFaqsGordonsBayIndexRoute
+  JetSkiRentalGordonsBayIndexRoute: typeof JetSkiRentalGordonsBayIndexRoute
   LocationsIndexRoute: typeof LocationsIndexRoute
   PrivacyIndexRoute: typeof PrivacyIndexRoute
   RidesIndexRoute: typeof RidesIndexRoute
+  SafetyRequirementsJetSkiRidesIndexRoute: typeof SafetyRequirementsJetSkiRidesIndexRoute
   SafetyIndexRoute: typeof SafetyIndexRoute
   TermsIndexRoute: typeof TermsIndexRoute
+  ThingsToDoGordonsBayOnTheWaterIndexRoute: typeof ThingsToDoGordonsBayOnTheWaterIndexRoute
   WeatherIndexRoute: typeof WeatherIndexRoute
+  WhyRideWithUsIndexRoute: typeof WhyRideWithUsIndexRoute
   WeatherCalmSlotsIndexRoute: typeof WeatherCalmSlotsIndexRoute
 }
 
@@ -378,11 +461,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/why-ride-with-us/': {
+      id: '/why-ride-with-us/'
+      path: '/why-ride-with-us'
+      fullPath: '/why-ride-with-us'
+      preLoaderRoute: typeof WhyRideWithUsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/weather/': {
       id: '/weather/'
       path: '/weather'
       fullPath: '/weather'
       preLoaderRoute: typeof WeatherIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/things-to-do-gordons-bay-on-the-water/': {
+      id: '/things-to-do-gordons-bay-on-the-water/'
+      path: '/things-to-do-gordons-bay-on-the-water'
+      fullPath: '/things-to-do-gordons-bay-on-the-water'
+      preLoaderRoute: typeof ThingsToDoGordonsBayOnTheWaterIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/terms/': {
@@ -397,6 +494,13 @@ declare module '@tanstack/react-router' {
       path: '/safety'
       fullPath: '/safety'
       preLoaderRoute: typeof SafetyIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/safety-requirements-jet-ski-rides/': {
+      id: '/safety-requirements-jet-ski-rides/'
+      path: '/safety-requirements-jet-ski-rides'
+      fullPath: '/safety-requirements-jet-ski-rides'
+      preLoaderRoute: typeof SafetyRequirementsJetSkiRidesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/rides/': {
@@ -420,6 +524,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LocationsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/jet-ski-rental-gordons-bay/': {
+      id: '/jet-ski-rental-gordons-bay/'
+      path: '/jet-ski-rental-gordons-bay'
+      fullPath: '/jet-ski-rental-gordons-bay'
+      preLoaderRoute: typeof JetSkiRentalGordonsBayIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/jet-ski-faqs-gordons-bay/': {
+      id: '/jet-ski-faqs-gordons-bay/'
+      path: '/jet-ski-faqs-gordons-bay'
+      fullPath: '/jet-ski-faqs-gordons-bay'
+      preLoaderRoute: typeof JetSkiFaqsGordonsBayIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/interim-skipper-quiz/': {
       id: '/interim-skipper-quiz/'
       path: '/interim-skipper-quiz'
@@ -432,6 +550,13 @@ declare module '@tanstack/react-router' {
       path: '/home'
       fullPath: '/home'
       preLoaderRoute: typeof HomeIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/guided-jet-ski-rides-false-bay/': {
+      id: '/guided-jet-ski-rides-false-bay/'
+      path: '/guided-jet-ski-rides-false-bay'
+      fullPath: '/guided-jet-ski-rides-false-bay'
+      preLoaderRoute: typeof GuidedJetSkiRidesFalseBayIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/fishing-charters/': {
@@ -581,14 +706,22 @@ const rootRouteChildren: RootRouteChildren = {
   BoatRideIndexRoute: BoatRideIndexRoute,
   ContactIndexRoute: ContactIndexRoute,
   FishingChartersIndexRoute: FishingChartersIndexRoute,
+  GuidedJetSkiRidesFalseBayIndexRoute: GuidedJetSkiRidesFalseBayIndexRoute,
   HomeIndexRoute: HomeIndexRoute,
   InterimSkipperQuizIndexRoute: InterimSkipperQuizIndexRoute,
+  JetSkiFaqsGordonsBayIndexRoute: JetSkiFaqsGordonsBayIndexRoute,
+  JetSkiRentalGordonsBayIndexRoute: JetSkiRentalGordonsBayIndexRoute,
   LocationsIndexRoute: LocationsIndexRoute,
   PrivacyIndexRoute: PrivacyIndexRoute,
   RidesIndexRoute: RidesIndexRoute,
+  SafetyRequirementsJetSkiRidesIndexRoute:
+    SafetyRequirementsJetSkiRidesIndexRoute,
   SafetyIndexRoute: SafetyIndexRoute,
   TermsIndexRoute: TermsIndexRoute,
+  ThingsToDoGordonsBayOnTheWaterIndexRoute:
+    ThingsToDoGordonsBayOnTheWaterIndexRoute,
   WeatherIndexRoute: WeatherIndexRoute,
+  WhyRideWithUsIndexRoute: WhyRideWithUsIndexRoute,
   WeatherCalmSlotsIndexRoute: WeatherCalmSlotsIndexRoute,
 }
 export const routeTree = rootRouteImport

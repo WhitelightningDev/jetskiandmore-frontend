@@ -5,7 +5,6 @@ import { CalendarRange, Clock3, Mail, Phone, UserRound } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Calendar } from '@/components/ui/calendar'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { useAdminContext } from '@/admin/context'
 import {
   formatDateLabel,
@@ -139,7 +138,7 @@ function AdminCalendarPage() {
         </CardContent>
       </Card>
 
-      <div className="grid gap-4 lg:grid-cols-[360px,1fr]">
+      <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
         <Card className="border-slate-200 bg-white shadow-sm">
           <CardHeader className="flex flex-row items-start justify-between gap-3">
             <div>
@@ -163,18 +162,6 @@ function AdminCalendarPage() {
                   booked:
                     'bg-cyan-50 text-cyan-900 border border-cyan-200 data-[selected-single=true]:bg-cyan-600 data-[selected-single=true]:text-white',
                 }}
-                classNames={{
-                  caption_label: 'text-slate-900',
-                  dropdowns:
-                    'flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 shadow-inner',
-                  dropdown_root:
-                    'text-slate-900 border-slate-200 bg-white flex-1 rounded-lg px-2 py-1.5 min-w-[120px]',
-                  dropdown: 'text-slate-900',
-                  day: 'text-slate-900',
-                  day_button:
-                    'text-slate-900 hover:bg-slate-100 hover:text-slate-900 data-[selected-single=true]:bg-cyan-600 data-[selected-single=true]:text-white data-[outside=true]:text-slate-400',
-                }}
-                captionLayout="dropdown"
               />
             </div>
             <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600">
@@ -213,59 +200,57 @@ function AdminCalendarPage() {
                 {loadingBookings ? 'Loading bookings…' : 'No bookings for this date.'}
               </div>
             ) : (
-              <ScrollArea className="h-[520px]">
-                <div className="space-y-3 px-6 py-4">
-                  {bookingsForDay.map((b) => {
-                    const tone = statusTone(b.status)
-                    return (
-                      <div
-                        key={b.id}
-                        className="flex items-start justify-between gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:bg-slate-50"
-                      >
-                        <div className="flex flex-col gap-1">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className={`h-2.5 w-2.5 rounded-full border ${tone}`} />
-                            <Badge variant="outline" className="border-slate-200 bg-slate-50 text-xs font-semibold text-slate-800">
-                              {formatRideTime(b.time)}
-                            </Badge>
-                            <span className="text-sm font-semibold text-slate-900">{b.rideId}</span>
-                            <Badge variant="outline" className={tone + ' capitalize'}>
-                              {statusLabel(b.status)}
-                            </Badge>
-                          </div>
-                          <p className="text-sm font-medium text-slate-900">{b.fullName}</p>
-                          <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600">
-                            {b.email && (
-                              <span className="inline-flex items-center gap-1">
-                                <Mail className="h-3.5 w-3.5" />
-                                {b.email}
-                              </span>
-                            )}
-                            {b.phone && (
-                              <span className="inline-flex items-center gap-1">
-                                <Phone className="h-3.5 w-3.5" />
-                                {b.phone}
-                              </span>
-                            )}
-                            <span className="inline-flex items-center gap-1">
-                              <UserRound className="h-3.5 w-3.5" />
-                              {b.passengers?.length ? `${b.passengers.length} extra` : 'Solo/unspecified'}
-                            </span>
-                          </div>
+              <div className="space-y-3 px-6 py-4">
+                {bookingsForDay.map((b) => {
+                  const tone = statusTone(b.status)
+                  return (
+                    <div
+                      key={b.id}
+                      className="flex items-start justify-between gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:bg-slate-50"
+                    >
+                      <div className="flex flex-col gap-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className={`h-2.5 w-2.5 rounded-full border ${tone}`} />
+                          <Badge variant="outline" className="border-slate-200 bg-slate-50 text-xs font-semibold text-slate-800">
+                            {formatRideTime(b.time)}
+                          </Badge>
+                          <span className="text-sm font-semibold text-slate-900">{b.rideId}</span>
+                          <Badge variant="outline" className={tone + ' capitalize'}>
+                            {statusLabel(b.status)}
+                          </Badge>
                         </div>
-                        <div className="text-right text-sm text-slate-700">
-                          <div className="font-semibold text-slate-900">ZAR {(b.amountInCents / 100).toLocaleString('en-ZA')}</div>
-                          {b.parsedDate && (
-                            <p className="text-[11px] text-slate-500">
-                              {formatDateLabel(b.parsedDate)}
-                            </p>
+                        <p className="text-sm font-medium text-slate-900">{b.fullName}</p>
+                        <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600">
+                          {b.email && (
+                            <span className="inline-flex items-center gap-1">
+                              <Mail className="h-3.5 w-3.5" />
+                              {b.email}
+                            </span>
                           )}
+                          {b.phone && (
+                            <span className="inline-flex items-center gap-1">
+                              <Phone className="h-3.5 w-3.5" />
+                              {b.phone}
+                            </span>
+                          )}
+                          <span className="inline-flex items-center gap-1">
+                            <UserRound className="h-3.5 w-3.5" />
+                            {b.passengers?.length ? `${b.passengers.length} extra` : 'Solo/unspecified'}
+                          </span>
                         </div>
                       </div>
-                    )
-                  })}
-                </div>
-              </ScrollArea>
+                      <div className="text-right text-sm text-slate-700">
+                        <div className="font-semibold text-slate-900">ZAR {(b.amountInCents / 100).toLocaleString('en-ZA')}</div>
+                        {b.parsedDate && (
+                          <p className="text-[11px] text-slate-500">
+                            {formatDateLabel(b.parsedDate)}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
             )}
           </CardContent>
         </Card>

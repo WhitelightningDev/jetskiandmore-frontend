@@ -1,7 +1,9 @@
 import * as React from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from 'recharts'
+import { Eye, Receipt, Trophy } from 'lucide-react'
 
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Table,
@@ -12,13 +14,14 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type {
   Booking,
   CountStat,
-  PageViewAnalyticsItem,
   TimeOfDayStat,
 } from '@/admin/types'
 import { useAdminContext } from '@/admin/context'
+import { cn } from '@/lib/utils'
 
 export const Route = createFileRoute('/admin/analytics')({
   component: AdminAnalyticsPage,
@@ -27,11 +30,11 @@ export const Route = createFileRoute('/admin/analytics')({
 const bookingsChartConfig: ChartConfig = {
   bookings: {
     label: 'Bookings',
-    color: '#22d3ee',
+    color: '#a78bfa',
   },
   revenue: {
     label: 'Revenue (ZAR)',
-    color: '#f97316',
+    color: '#7c3aed',
   },
 }
 
@@ -48,8 +51,6 @@ function AdminAnalyticsPage() {
   const {
     publicPages,
     adminPages,
-    publicSummary,
-    adminSummary,
   } = React.useMemo(() => {
     const items = pageViews?.items || []
     const publicPages = items.filter((p) => !String(p.path || '').startsWith('/admin'))
@@ -57,11 +58,10 @@ function AdminAnalyticsPage() {
     return {
       publicPages,
       adminPages,
-      publicSummary: summarizePages(publicPages),
-      adminSummary: summarizePages(adminPages),
     }
   }, [pageViews])
   const topPages = React.useMemo(() => publicPages.slice(0, 8), [publicPages])
+  const topAdminPages = React.useMemo(() => adminPages.slice(0, 8), [adminPages])
   const breakdown = pageViews?.breakdowns
   const topCountries = React.useMemo(() => takeTop(breakdown?.countries), [breakdown])
   const topCities = React.useMemo(() => takeTop(breakdown?.cities), [breakdown])
@@ -71,74 +71,237 @@ function AdminAnalyticsPage() {
   const topLanguages = React.useMemo(() => takeTop(breakdown?.languages), [breakdown])
   const timeOfDay: TimeOfDayStat[] = breakdown?.timeOfDay || []
   const returning = breakdown?.returning
+  const allRevenueZar = analytics?.totalRevenueZar ?? bookings.reduce((acc, b) => acc + (b.amountInCents || 0) / 100, 0)
+  const totalBookings = analytics?.totalBookings ?? bookings.length
+  const pageViewsTotal = pageViews?.totalViews ?? analytics?.totalPageViews ?? 0
+  const uniqueSessions = pageViews?.totalUniqueSessions ?? 0
+  const uniqueVisitors = pageViews?.totalUniqueVisitors ?? 0
+
+  const customerSummary = React.useMemo(() => {
+    const byEmail = new Map<string, { email: string; name: string; bookings: number; revenueZar: number; last: Date | null }>()
+    for (const b of bookings) {
+      const email = String(b.email || '').trim().toLowerCase()
+      if (!email) continue
+      const name = String(b.fullName || '').trim() || email
+      const entry = byEmail.get(email) || { email, name, bookings: 0, revenueZar: 0, last: null }
+      entry.bookings += 1
+      entry.revenueZar += (b.amountInCents || 0) / 100
+      const dtRaw = b.createdAt || b.date
+      const dt = dtRaw ? new Date(dtRaw) : null
+      if (dt && !Number.isNaN(dt.getTime())) {
+        if (!entry.last || dt > entry.last) entry.last = dt
+      }
+      byEmail.set(email, entry)
+    }
+    const customers = Array.from(byEmail.values()).sort((a, b) => (b.revenueZar - a.revenueZar) || (b.bookings - a.bookings))
+    const repeatCustomers = customers.filter((c) => c.bookings > 1).length
+    return {
+      uniqueCustomers: customers.length,
+      repeatCustomers,
+      customersTop: customers.slice(0, 8),
+    }
+  }, [bookings])
+
+  const addonSummary = React.useMemo(() => {
+    const counts = {
+      gopro: 0,
+      drone: 0,
+      wetsuit: 0,
+      boat: 0,
+      extraPeople: 0,
+    }
+    let total = 0
+    for (const b of bookings) {
+      const addons = (b as any).addons || {}
+      if (!addons || typeof addons !== 'object') continue
+      total += 1
+      if (addons.gopro) counts.gopro += 1
+      if (addons.drone) counts.drone += 1
+      if (addons.wetsuit) counts.wetsuit += 1
+      if (addons.boat) counts.boat += 1
+      const extra = Number(addons.extraPeople || 0)
+      if (!Number.isNaN(extra) && extra > 0) counts.extraPeople += 1
+    }
+    return { total: Math.max(1, total), counts }
+  }, [bookings])
+
+  const marketingSnapshot = React.useMemo(() => {
+    const topCity = topCities[0]?.key || '—'
+    const topCountry = topCountries[0]?.key || '—'
+    const topDevice = topDevices[0]?.key || '—'
+    const peakHour = timeOfDay.reduce((best, cur) => (cur.views > (best?.views ?? -1) ? cur : best), null as any as TimeOfDayStat | null)
+    const peakHourLabel = peakHour ? `${formatHour(peakHour.hour)} (${peakHour.views})` : '—'
+
+    const mostEngaged = [...publicPages]
+      .filter((p) => (p.views || 0) >= 10 && (p.avgDurationSeconds || 0) > 0)
+      .sort((a, b) => (b.avgDurationSeconds || 0) - (a.avgDurationSeconds || 0))[0]
+
+    const bookingTrafficSessions = [...publicPages]
+      .filter((p) => /bookings/i.test(p.path || '') || /boat-ride/i.test(p.path || '') || /fishing/i.test(p.path || ''))
+      .reduce((sum, p) => sum + (p.uniqueSessions || 0), 0)
+
+    const estimatedConversion = bookingTrafficSessions > 0 ? (totalBookings / bookingTrafficSessions) * 100 : null
+
+    return {
+      topCity,
+      topCountry,
+      topDevice,
+      peakHourLabel,
+      topLandingPage: publicPages[0]?.path || '—',
+      topLandingViews: publicPages[0]?.views || 0,
+      mostEngagedPage: mostEngaged?.path || '—',
+      mostEngagedTime: mostEngaged ? formatDuration(mostEngaged.avgDurationSeconds) : '—',
+      estimatedConversion,
+    }
+  }, [publicPages, timeOfDay, topCities, topCountries, topDevices, totalBookings])
+
+  async function copyMarketingSummary() {
+    try {
+      const lines = [
+        'Jet Ski & More — marketing snapshot',
+        `Revenue: ZAR ${allRevenueZar.toFixed(0)} (${totalBookings} bookings, AOV ~ ZAR ${totalBookings ? (allRevenueZar / totalBookings).toFixed(0) : '0'})`,
+        `Audience: ${customerSummary.uniqueCustomers} unique customers (${customerSummary.repeatCustomers} repeat)`,
+        `Top demand: ${marketingSnapshot.topCity}, ${marketingSnapshot.topCountry}`,
+        `Top device: ${marketingSnapshot.topDevice}`,
+        `Peak browsing hour: ${marketingSnapshot.peakHourLabel}`,
+        `Top landing page: ${marketingSnapshot.topLandingPage} (${marketingSnapshot.topLandingViews} views)`,
+        `Most engaged page: ${marketingSnapshot.mostEngagedPage} (${marketingSnapshot.mostEngagedTime} avg)`,
+        marketingSnapshot.estimatedConversion == null
+          ? 'Estimated conversion: —'
+          : `Estimated conversion: ${marketingSnapshot.estimatedConversion.toFixed(1)}% (bookings / booking-intent sessions)`,
+        `Add-ons: GoPro ${Math.round((addonSummary.counts.gopro / addonSummary.total) * 100)}% • Wetsuit ${Math.round((addonSummary.counts.wetsuit / addonSummary.total) * 100)}% • Drone ${Math.round((addonSummary.counts.drone / addonSummary.total) * 100)}%`,
+      ]
+      await navigator.clipboard.writeText(lines.join('\n'))
+    } catch {
+      // ignore
+    }
+  }
 
   return (
     <div className="space-y-6">
-      <header className="space-y-1">
-        <p className="text-[11px] uppercase tracking-[0.22em] text-cyan-700">Analytics</p>
+      <header className="space-y-2">
         <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Analytics</h1>
-        <p className="text-sm text-slate-600">Daily breakdowns and ride-level revenue.</p>
+        <p className="text-sm text-slate-600">Bookings, revenue, and page-view breakdowns.</p>
       </header>
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr),minmax(0,2fr)]">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Card className="border-slate-200 bg-white shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-base">Total bookings</CardTitle>
-              <CardDescription className="text-slate-600">All time</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-semibold text-slate-900">
-                {loadingBookings ? '—' : analytics ? analytics.totalBookings : '—'}
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-slate-200 bg-white shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-base">Total revenue</CardTitle>
-              <CardDescription className="text-slate-600">All time</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-semibold text-slate-900">
-                {loadingMeta ? '—' : analytics ? `ZAR ${analytics.totalRevenueZar.toFixed(0)}` : '—'}
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-slate-200 bg-white shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-base">Top ride</CardTitle>
-              <CardDescription className="text-slate-600">By bookings</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-sm text-slate-700">
-                {analytics && analytics.rides.length > 0
-                  ? `${analytics.rides[0].rideId} (${analytics.rides[0].bookings} bookings)`
-                  : '—'}
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-slate-200 bg-white shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-base">Site visitors</CardTitle>
-              <CardDescription className="text-slate-600">All time</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-semibold text-slate-900">
-                {loadingMeta ? '—' : analytics ? analytics.totalPageViews.toLocaleString() : '—'}
-              </div>
-              <p className="text-xs text-slate-600">
-                {loadingPageViews
-                  ? 'Loading sessions…'
-                  : pageViews
-                  ? `${pageViews.totalUniqueSessions.toLocaleString()} unique sessions`
-                  : '—'}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+      <section className="grid gap-4 md:grid-cols-4">
+        <MetricCard
+          highlighted
+          icon={<Receipt className="h-4 w-4 text-slate-700" />}
+          label="All revenue"
+          value={loadingMeta ? '—' : `ZAR ${allRevenueZar.toFixed(0)}`}
+          sub={
+            loadingBookings
+              ? 'Loading bookings…'
+              : `${totalBookings.toLocaleString()} bookings • AOV ZAR ${totalBookings ? (allRevenueZar / totalBookings).toFixed(0) : '0'}`
+          }
+        />
+        <MetricCard
+          icon={<Trophy className="h-4 w-4 text-slate-700" />}
+          label="Customers"
+          value={loadingBookings ? '—' : customerSummary.uniqueCustomers.toLocaleString()}
+          sub={loadingBookings ? 'Loading customers…' : `${customerSummary.repeatCustomers.toLocaleString()} repeat customers`}
+        />
+        <MetricCard
+          icon={<Eye className="h-4 w-4 text-slate-700" />}
+          label="Page views"
+          value={loadingPageViews ? '—' : pageViewsTotal.toLocaleString()}
+          sub={loadingPageViews ? 'Loading sessions…' : `${uniqueSessions.toLocaleString()} sessions • ${uniqueVisitors.toLocaleString()} visitors`}
+        />
+        <MetricCard
+          icon={<Eye className="h-4 w-4 text-slate-700" />}
+          label="Top landing page"
+          value={loadingPageViews ? '—' : marketingSnapshot.topLandingPage}
+          sub={loadingPageViews ? 'Loading…' : `${(marketingSnapshot.topLandingViews || 0).toLocaleString()} views`}
+        />
+      </section>
 
-        {dailyData.length > 0 ? (
-          <div className="grid gap-4 md:grid-cols-2">
+      <section className="grid gap-4 lg:grid-cols-3">
+        <Card className="border-slate-200 bg-white shadow-sm">
+          <CardHeader className="flex flex-row items-start justify-between gap-3">
+            <div>
+              <CardTitle className="text-base text-slate-900">Marketing snapshot</CardTitle>
+              <CardDescription className="text-slate-600">Copy-ready stats for posts, partners, and ads.</CardDescription>
+            </div>
+            <Button variant="outline" size="sm" onClick={copyMarketingSummary} className="shrink-0">
+              Copy summary
+            </Button>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm text-slate-700">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-slate-600">Top demand</span>
+              <span className="font-semibold text-slate-900">{marketingSnapshot.topCity}, {marketingSnapshot.topCountry}</span>
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-slate-600">Peak browsing hour</span>
+              <span className="font-semibold text-slate-900">{marketingSnapshot.peakHourLabel}</span>
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-slate-600">Most engaged page</span>
+              <span className="font-semibold text-slate-900">{marketingSnapshot.mostEngagedPage}</span>
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-slate-600">Est. conversion</span>
+              <span className="font-semibold text-slate-900">
+                {marketingSnapshot.estimatedConversion == null ? '—' : `${marketingSnapshot.estimatedConversion.toFixed(1)}%`}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-slate-200 bg-white shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-base text-slate-900">Add-on popularity</CardTitle>
+            <CardDescription className="text-slate-600">What customers choose most (for bundles and upsells).</CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-2 gap-3 text-sm text-slate-700">
+            <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">GoPro</p>
+              <p className="text-lg font-semibold text-slate-900">{Math.round((addonSummary.counts.gopro / addonSummary.total) * 100)}%</p>
+            </div>
+            <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Wetsuit</p>
+              <p className="text-lg font-semibold text-slate-900">{Math.round((addonSummary.counts.wetsuit / addonSummary.total) * 100)}%</p>
+            </div>
+            <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Drone</p>
+              <p className="text-lg font-semibold text-slate-900">{Math.round((addonSummary.counts.drone / addonSummary.total) * 100)}%</p>
+            </div>
+            <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Boat</p>
+              <p className="text-lg font-semibold text-slate-900">{Math.round((addonSummary.counts.boat / addonSummary.total) * 100)}%</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-slate-200 bg-white shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-base text-slate-900">Top customers</CardTitle>
+            <CardDescription className="text-slate-600">High-value customers for testimonials and referrals.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm">
+            {customerSummary.customersTop.length === 0 ? (
+              <p className="text-slate-600">{loadingBookings ? 'Loading customers…' : 'No customer data yet.'}</p>
+            ) : (
+              customerSummary.customersTop.map((c) => (
+                <div key={c.email} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                  <div className="min-w-0">
+                    <p className="truncate font-medium text-slate-900">{c.name}</p>
+                    <p className="truncate text-xs text-slate-500">{c.email}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-slate-900">Z{Math.round(c.revenueZar).toLocaleString('en-ZA')}</p>
+                    <p className="text-xs text-slate-500">{c.bookings} booking{c.bookings === 1 ? '' : 's'}</p>
+                  </div>
+                </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
+      </section>
+
+      {dailyData.length > 0 ? (
+        <section className="grid gap-4 lg:grid-cols-2">
             <Card className="border-slate-200 bg-white shadow-sm">
               <CardHeader className="flex flex-col items-stretch border-b border-slate-200 !p-0 sm:flex-row">
                 <div className="flex flex-1 flex-col justify-center gap-1 px-6 pt-4 pb-3 sm:!py-0">
@@ -260,125 +423,99 @@ function AdminAnalyticsPage() {
                 </ChartContainer>
               </CardContent>
             </Card>
-          </div>
-        ) : (
-          <Card className="border-slate-200 bg-white shadow-sm">
-            <CardContent className="p-6 text-sm text-slate-600">
-              {loadingBookings ? 'Loading analytics…' : 'No booking data available yet.'}
-            </CardContent>
-          </Card>
-        )}
-      </div>
+        </section>
+      ) : (
+        <Card className="border-slate-200 bg-white shadow-sm">
+          <CardContent className="p-6 text-sm text-slate-600">
+            {loadingBookings ? 'Loading analytics…' : 'No booking data available yet.'}
+          </CardContent>
+        </Card>
+      )}
 
       <Card className="border-slate-200 bg-white shadow-sm">
-        <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <CardTitle className="text-base">Top pages & time on page</CardTitle>
-            <CardDescription className="text-slate-600">
-              Page views grouped by path with average time spent.
-            </CardDescription>
+            <CardTitle className="text-base">Top pages</CardTitle>
+            <CardDescription className="text-slate-600">Views, sessions, and engagement (public + admin).</CardDescription>
           </div>
           <div className="text-sm text-slate-700 sm:text-right">
-            <div>
-              {loadingPageViews
-                ? 'Loading…'
-                : publicSummary
-                ? `${publicSummary.views.toLocaleString()} total views`
-                : '—'}
-            </div>
+            <div>{loadingPageViews ? 'Loading…' : `${pageViewsTotal.toLocaleString()} total views`}</div>
             <div className="text-xs text-slate-500">
-              {publicSummary
-                ? `${publicSummary.uniqueSessions.toLocaleString()} unique sessions • ${pageViews?.totalUniqueVisitors.toLocaleString() ?? '—'} unique visitors`
-                : ''}
+              {loadingPageViews ? '' : `${uniqueSessions.toLocaleString()} sessions • ${uniqueVisitors.toLocaleString()} visitors`}
             </div>
           </div>
         </CardHeader>
-        <CardContent className="overflow-x-auto">
-          {loadingPageViews ? (
-            <div className="p-4 text-sm text-slate-600">Loading page analytics…</div>
-          ) : topPages.length === 0 ? (
-            <div className="p-4 text-sm text-slate-600">No page view data yet.</div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Page</TableHead>
-                  <TableHead>Views</TableHead>
-                  <TableHead>Sessions</TableHead>
-                  <TableHead>Avg time on page</TableHead>
-                  <TableHead className="text-right">Last seen</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {topPages.map((p, idx) => (
-                  <TableRow key={`${p.path || 'unknown'}-${idx}`}>
-                    <TableCell className="font-medium">{p.path || '/'}</TableCell>
-                    <TableCell>{p.views.toLocaleString()}</TableCell>
-                    <TableCell>{p.uniqueSessions.toLocaleString()}</TableCell>
-                    <TableCell>{formatDuration(p.avgDurationSeconds)}</TableCell>
-                    <TableCell className="text-right text-slate-500">
-                      {formatDateTime(p.lastSeen)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card className="border-slate-200 bg-white shadow-sm">
-        <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <CardTitle className="text-base">Admin pages</CardTitle>
-            <CardDescription className="text-slate-600">
-              Internal routes separated from public traffic.
-            </CardDescription>
-          </div>
-          <div className="text-sm text-slate-700 sm:text-right">
-            <div>
-              {loadingPageViews
-                ? 'Loading…'
-                : adminSummary
-                ? `${adminSummary.views.toLocaleString()} total views`
-                : '—'}
-            </div>
-            <div className="text-xs text-slate-500">
-              {adminSummary ? `${adminSummary.uniqueSessions.toLocaleString()} unique sessions (admin)` : ''}
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="overflow-x-auto">
-          {loadingPageViews ? (
-            <div className="p-4 text-sm text-slate-600">Loading admin page analytics…</div>
-          ) : adminPages.length === 0 ? (
-            <div className="p-4 text-sm text-slate-600">No admin page view data yet.</div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Page</TableHead>
-                  <TableHead>Views</TableHead>
-                  <TableHead>Sessions</TableHead>
-                  <TableHead>Avg time on page</TableHead>
-                  <TableHead className="text-right">Last seen</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {adminPages.map((p, idx) => (
-                  <TableRow key={`${p.path || 'admin'}-${idx}`}>
-                    <TableCell className="font-medium">{p.path || '/admin'}</TableCell>
-                    <TableCell>{p.views.toLocaleString()}</TableCell>
-                    <TableCell>{p.uniqueSessions.toLocaleString()}</TableCell>
-                    <TableCell>{formatDuration(p.avgDurationSeconds)}</TableCell>
-                    <TableCell className="text-right text-slate-500">
-                      {formatDateTime(p.lastSeen)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+        <CardContent>
+          <Tabs defaultValue="public">
+            <TabsList className="mb-3">
+              <TabsTrigger value="public">Public</TabsTrigger>
+              <TabsTrigger value="admin">Admin</TabsTrigger>
+            </TabsList>
+            <TabsContent value="public">
+              <div className="overflow-x-auto">
+                {loadingPageViews ? (
+                  <div className="p-4 text-sm text-slate-600">Loading page analytics…</div>
+                ) : topPages.length === 0 ? (
+                  <div className="p-4 text-sm text-slate-600">No page view data yet.</div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Page</TableHead>
+                        <TableHead>Views</TableHead>
+                        <TableHead>Sessions</TableHead>
+                        <TableHead>Avg time</TableHead>
+                        <TableHead className="text-right">Last seen</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {topPages.map((p, idx) => (
+                        <TableRow key={`${p.path || 'unknown'}-${idx}`}>
+                          <TableCell className="font-medium">{p.path || '/'}</TableCell>
+                          <TableCell>{p.views.toLocaleString()}</TableCell>
+                          <TableCell>{p.uniqueSessions.toLocaleString()}</TableCell>
+                          <TableCell>{formatDuration(p.avgDurationSeconds)}</TableCell>
+                          <TableCell className="text-right text-slate-500">{formatDateTime(p.lastSeen)}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </div>
+            </TabsContent>
+            <TabsContent value="admin">
+              <div className="overflow-x-auto">
+                {loadingPageViews ? (
+                  <div className="p-4 text-sm text-slate-600">Loading admin page analytics…</div>
+                ) : topAdminPages.length === 0 ? (
+                  <div className="p-4 text-sm text-slate-600">No admin page view data yet.</div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Page</TableHead>
+                        <TableHead>Views</TableHead>
+                        <TableHead>Sessions</TableHead>
+                        <TableHead>Avg time</TableHead>
+                        <TableHead className="text-right">Last seen</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {topAdminPages.map((p, idx) => (
+                        <TableRow key={`${p.path || 'admin'}-${idx}`}>
+                          <TableCell className="font-medium">{p.path || '/admin'}</TableCell>
+                          <TableCell>{p.views.toLocaleString()}</TableCell>
+                          <TableCell>{p.uniqueSessions.toLocaleString()}</TableCell>
+                          <TableCell>{formatDuration(p.avgDurationSeconds)}</TableCell>
+                          <TableCell className="text-right text-slate-500">{formatDateTime(p.lastSeen)}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
 
@@ -553,6 +690,37 @@ function AdminAnalyticsPage() {
   )
 }
 
+function MetricCard({
+  icon,
+  label,
+  value,
+  sub,
+  highlighted,
+}: {
+  icon: React.ReactNode
+  label: string
+  value: React.ReactNode
+  sub?: string
+  highlighted?: boolean
+}) {
+  return (
+    <Card className={cn('border-slate-200 bg-white shadow-sm', highlighted ? 'ring-1 ring-violet-500/60' : undefined)}>
+      <CardHeader className="flex flex-row items-start justify-between gap-3 pb-2">
+        <div className="space-y-1">
+          <CardDescription className="text-slate-600">{label}</CardDescription>
+          <CardTitle className={cn('tracking-tight text-slate-900', typeof value === 'string' && value.length > 12 ? 'text-lg' : 'text-2xl')}>
+            {value}
+          </CardTitle>
+        </div>
+        <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white">
+          {icon}
+        </span>
+      </CardHeader>
+      {sub ? <CardContent className="pt-0 text-xs text-slate-500">{sub}</CardContent> : <CardContent className="pt-0" />}
+    </Card>
+  )
+}
+
 function buildDailyData(bookings: Booking[]) {
   if (!bookings || bookings.length === 0) return { dailyData: [], monthLabel: '' }
 
@@ -646,13 +814,6 @@ function formatNumber(value: number) {
   if (value >= 1000000) return `${(value / 1000000).toFixed(1)}m`
   if (value >= 1000) return `${(value / 1000).toFixed(1)}k`
   return `${value}`
-}
-
-function summarizePages(items: PageViewAnalyticsItem[]) {
-  return {
-    views: items.reduce((sum, p) => sum + (p.views || 0), 0),
-    uniqueSessions: items.reduce((sum, p) => sum + (p.uniqueSessions || 0), 0),
-  }
 }
 
 function formatHour(hour: number) {

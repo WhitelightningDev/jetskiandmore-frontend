@@ -15,7 +15,6 @@ import {
   Fish,
   CloudSun,
   MoreHorizontal,
-  BadgeCheck,
 } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -61,7 +60,7 @@ export default function Header() {
 
             {/* Brand */}
             <Link to="/home" className="flex items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md">
-              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 border border-primary/30 ring-1 ring-border overflow-hidden">
+              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-white border border-primary/20 ring-1 ring-white/60 shadow-[0_12px_30px_-22px_rgba(0,0,0,0.45)] overflow-hidden">
                 <img
                   src={jetskilogo}
                   alt="JetSki & More"
@@ -129,10 +128,6 @@ export default function Header() {
 
             {/* Right actions */}
             <div className="ml-auto flex items-center gap-3">
-              <span className="hidden md:inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-2 text-xs font-semibold text-primary">
-                <BadgeCheck className="h-4 w-4" aria-hidden />
-                From ZAR 1,488 • SINCE 2020 • 5 Years
-              </span>
               <Link
                 to="/contact"
                 className={`${buttonVariants({

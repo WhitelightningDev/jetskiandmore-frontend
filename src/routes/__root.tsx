@@ -17,6 +17,7 @@ export const Route = createRootRoute({
 function RootLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const isAdmin = pathname.startsWith('/admin')
+  const isHome = pathname === '/' || pathname === '/home' || pathname === '/home/'
   useTrackPageView(pathname, isAdmin)
 
   if (isAdmin) {
@@ -27,7 +28,13 @@ function RootLayout() {
     <BookingControlsProvider>
       <BookingPauseBanner />
       <HolidayBanner />
-      <Header />
+      {isHome ? (
+        <div className="md:hidden">
+          <Header />
+        </div>
+      ) : (
+        <Header />
+      )}
       <Breadcrumbs />
       <Outlet />
       <ContactFab />

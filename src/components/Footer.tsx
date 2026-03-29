@@ -60,13 +60,18 @@ export default function Footer() {
 
           <div>
             <h4 className="text-sm font-semibold uppercase tracking-[0.18em] text-primary mb-3">Quick links</h4>
-            <div className="space-y-2">
+            <div className="grid grid-cols-2 gap-x-6 gap-y-2">
               {[
                 { to: '/home', label: 'Home' },
                 { to: '/rides', label: 'Rides' },
                 { to: '/safety', label: 'Safety' },
                 { to: '/weather', label: 'Weather' },
                 { to: '/contact', label: 'Contact' },
+                { to: '/why-ride-with-us', label: 'Why ride with us' },
+                { to: '/jet-ski-rental-gordons-bay', label: 'Jet ski rental guide' },
+                { to: '/jet-ski-faqs-gordons-bay', label: 'Jet ski FAQs' },
+                { to: '/things-to-do-gordons-bay-on-the-water', label: 'Things to do' },
+                { to: '/guided-jet-ski-rides-false-bay', label: 'Guided rides (False Bay)' },
                 { to: '/admin', label: 'Admin' },
               ].map((item) => (
                 <Link
