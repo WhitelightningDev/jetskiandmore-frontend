@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { createFileRoute } from '@tanstack/react-router'
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis } from 'recharts'
 import { Copy, Download, Eye, Mail, Plus, RefreshCw, Send, Trash2 } from 'lucide-react'
 
 import { API_BASE } from '@/lib/api'
@@ -17,6 +18,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -26,15 +28,25 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { useAdminContext } from '@/admin/context'
 import { toast } from '@/components/ui/use-toast'
+import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 
 export const Route = createFileRoute('/admin/marketing')({
   component: AdminMarketingPage,
 })
 
+const sendHoursChartConfig: ChartConfig = {
+  count: { label: 'Emails sent', color: '#a78bfa' },
+}
+
+const bookingHoursChartConfig: ChartConfig = {
+  count: { label: 'Bookings', color: '#22c55e' },
+}
+
 type CampaignAudience = {
   rideId?: string | null
   status?: string | null
   lastNDays?: number | null
+  includeManual?: boolean | null
 }
 
 type MarketingCampaign = {
@@ -62,6 +74,61 @@ type AudienceSummary = {
   topDomains: { key: string; count: number }[]
 }
 
+type MarketingEmailEvent = {
+  id: string
+  campaignId: string
+  email: string
+  kind: string
+  ok: boolean
+  error?: string | null
+  subject?: string | null
+  sentAt: string
+}
+
+type HourStat = { hour: number; count: number }
+type DayOfWeekStat = { day: number; count: number }
+
+type MarketingSendStats = {
+  totalAttempted: number
+  totalSent: number
+  totalFailed: number
+  byHour: HourStat[]
+  byDayOfWeek: DayOfWeekStat[]
+}
+
+type HolidayItem = { date: string; name: string }
+
+type CampaignIdea = {
+  title: string
+  subject: string
+  preheader?: string | null
+  content: string
+  ctaLabel?: string | null
+  ctaUrl?: string | null
+  audience?: CampaignAudience | null
+}
+
+type MarketingInsights = {
+  industry: string
+  location: string
+  upcomingHolidays: HolidayItem[]
+  recommendedSendHours: number[]
+  bookingByHour: HourStat[]
+  bookingByDayOfWeek: DayOfWeekStat[]
+  whatToSend: string[]
+  whatNotToSend: string[]
+  ideas: CampaignIdea[]
+}
+
+type MarketingAsset = {
+  id: string
+  filename: string
+  contentType: string
+  size: number
+  url: string
+  createdAt?: string | null
+}
+
 function AdminMarketingPage() {
   const { token, bookings, setError, handleLogout } = useAdminContext()
   const [campaigns, setCampaigns] = React.useState<MarketingCampaign[]>([])
@@ -71,6 +138,14 @@ function AdminMarketingPage() {
   const [loading, setLoading] = React.useState(false)
   const [loadingAudience, setLoadingAudience] = React.useState(false)
   const [loadingRecipients, setLoadingRecipients] = React.useState(false)
+  const [manualEmails, setManualEmails] = React.useState<string[]>([])
+  const [manualUpdatedAt, setManualUpdatedAt] = React.useState<Date | null>(null)
+  const [loadingManual, setLoadingManual] = React.useState(false)
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null)
+  const [loadingPerformance, setLoadingPerformance] = React.useState(false)
+  const [sendStats, setSendStats] = React.useState<MarketingSendStats | null>(null)
+  const [insights, setInsights] = React.useState<MarketingInsights | null>(null)
+  const [emailEvents, setEmailEvents] = React.useState<MarketingEmailEvent[]>([])
 
   const rideIds = React.useMemo(() => {
     const ids = Array.from(new Set(bookings.map((b) => b.rideId).filter(Boolean))).sort()
@@ -153,29 +228,60 @@ function AdminMarketingPage() {
     }
   }
 
-  async function refreshRecipients() {
-    if (!token) return
-    try {
-      setLoadingRecipients(true)
-      const lastNDaysNum = recipientLastNDays.trim() ? Number(recipientLastNDays) : null
-      const res = await fetchAdmin(`/api/admin/marketing/recipients/export`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          rideId: recipientRideId === 'all' ? null : recipientRideId,
-          status: recipientStatus === 'all' ? null : recipientStatus,
-          lastNDays: Number.isFinite(lastNDaysNum as any) && (lastNDaysNum as any) > 0 ? lastNDaysNum : null,
-        }),
-      })
+  async function loadBookingEmails(): Promise<string[]> {
+    const limit = 100
+    const maxPages = 50
+    const statusFilter = recipientStatus === 'all' ? '' : `&status_filter=${encodeURIComponent(recipientStatus)}`
+
+    const bookingsRaw: Array<{ email?: string; rideId?: string; createdAt?: string | null }> = []
+    for (let page = 0; page < maxPages; page += 1) {
+      const skip = page * limit
+      const res = await fetchAdmin(`/api/admin/bookings?limit=${limit}&skip=${skip}${statusFilter}`)
       if (!res.ok) {
         const data = await res.json().catch(() => null)
         throw new Error(data?.detail || data?.message || res.statusText)
       }
-      const data = (await res.json()) as { emails: string[] }
-      setRecipients((data.emails || []).filter(Boolean))
+      const items = (await res.json()) as Array<{ email?: string; rideId?: string; createdAt?: string | null }>
+      if (!items || items.length === 0) break
+      bookingsRaw.push(...items)
+      if (items.length < limit) break
+    }
+
+    const lastNDaysNum = recipientLastNDays.trim() ? Number(recipientLastNDays) : null
+    const cutoff =
+      Number.isFinite(lastNDaysNum as any) && (lastNDaysNum as any) > 0
+        ? Date.now() - Number(lastNDaysNum) * 86400000
+        : null
+    const rideFilter = recipientRideId === 'all' ? null : recipientRideId
+
+    const seen = new Set<string>()
+    const out: string[] = []
+    for (const b of bookingsRaw) {
+      if (rideFilter && String(b.rideId || '') !== rideFilter) continue
+      if (cutoff && b.createdAt) {
+        const dt = new Date(b.createdAt)
+        if (!Number.isNaN(dt.getTime()) && dt.getTime() < cutoff) continue
+      }
+      const email = String(b.email || '').trim().toLowerCase()
+      if (!email || !email.includes('@')) continue
+      if (seen.has(email)) continue
+      seen.add(email)
+      out.push(email)
+    }
+    return out
+  }
+
+  async function refreshRecipients() {
+    if (!token) return
+    try {
+      setLoadingRecipients(true)
+      const out = await loadBookingEmails()
+      setRecipients(out)
       setRecipientsUpdatedAt(new Date())
+      toast({ title: 'Emails updated', description: `${out.length.toLocaleString()} emails loaded from bookings.`, variant: 'success' })
     } catch (e: any) {
       setError(e?.message ?? 'Failed to load recipients')
+      toast({ title: 'Update failed', description: e?.message ?? 'Could not load booking emails.', variant: 'destructive' })
     } finally {
       setLoadingRecipients(false)
     }
@@ -185,10 +291,85 @@ function AdminMarketingPage() {
     await Promise.allSettled([refreshAudienceSummary(), refreshRecipients()])
   }
 
+  async function refreshManualEmails() {
+    if (!token) return
+    try {
+      setLoadingManual(true)
+      const res = await fetchAdmin(`/api/admin/marketing/manual-recipients?limit=50000`)
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        throw new Error(data?.detail || data?.message || res.statusText)
+      }
+      const data = (await res.json()) as { emails: string[]; total: number }
+      setManualEmails((data.emails || []).filter(Boolean))
+      setManualUpdatedAt(new Date())
+    } catch (e: any) {
+      setError(e?.message ?? 'Failed to load uploaded emails')
+      toast({ title: 'Load failed', description: e?.message ?? 'Could not load uploaded emails.', variant: 'destructive' })
+    } finally {
+      setLoadingManual(false)
+    }
+  }
+
+  async function uploadManualCsv(file: File) {
+    if (!token) return
+    const fd = new FormData()
+    fd.append('file', file)
+    const res = await fetchAdmin(`/api/admin/marketing/manual-recipients/upload`, {
+      method: 'POST',
+      body: fd,
+    })
+    if (!res.ok) {
+      const data = await res.json().catch(() => null)
+      throw new Error(data?.detail || data?.message || res.statusText)
+    }
+    return (await res.json()) as { added: number; total: number; invalid: number }
+  }
+
+  async function refreshPerformanceAll() {
+    if (!token) return
+    try {
+      setLoadingPerformance(true)
+      const [statsRes, insightsRes, eventsRes] = await Promise.all([
+        fetchAdmin(`/api/admin/marketing/send-stats?days=180`),
+        fetchAdmin(`/api/admin/marketing/insights?lookbackDays=365`),
+        fetchAdmin(`/api/admin/marketing/email-events?limit=50`),
+      ])
+
+      if (statsRes.ok) {
+        const data = (await statsRes.json()) as MarketingSendStats
+        setSendStats(data)
+      } else {
+        setSendStats(null)
+      }
+
+      if (insightsRes.ok) {
+        const data = (await insightsRes.json()) as MarketingInsights
+        setInsights(data)
+      } else {
+        setInsights(null)
+      }
+
+      if (eventsRes.ok) {
+        const data = (await eventsRes.json()) as { items: MarketingEmailEvent[] }
+        setEmailEvents(data.items || [])
+      } else {
+        setEmailEvents([])
+      }
+    } catch (e: any) {
+      setError(e?.message ?? 'Failed to load marketing performance')
+      toast({ title: 'Performance refresh failed', description: e?.message ?? 'Please try again.', variant: 'destructive' })
+    } finally {
+      setLoadingPerformance(false)
+    }
+  }
+
   React.useEffect(() => {
     if (!token) return
     refreshCampaigns()
     refreshAudienceAll()
+    refreshManualEmails()
+    refreshPerformanceAll()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token])
 
@@ -298,24 +479,10 @@ function AdminMarketingPage() {
 
   async function downloadRecipientsCsv() {
     if (!token) return
-    const lastNDaysNum = recipientLastNDays.trim() ? Number(recipientLastNDays) : null
-
-    const res = await fetchAdmin(`/api/admin/marketing/recipients/export`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        rideId: recipientRideId === 'all' ? null : recipientRideId,
-        status: recipientStatus === 'all' ? null : recipientStatus,
-        lastNDays: Number.isFinite(lastNDaysNum as any) && (lastNDaysNum as any) > 0 ? lastNDaysNum : null,
-      }),
-    })
-    if (!res.ok) {
-      const data = await res.json().catch(() => null)
-      throw new Error(data?.detail || data?.message || res.statusText)
-    }
-    const data = (await res.json()) as { emails: string[] }
-    const csv = ['email', ...(data.emails || [])].join('\n')
-    downloadTextFile(csv, `jetskiandmore-recipients-${new Date().toISOString().slice(0, 10)}.csv`)
+    const emails = await loadBookingEmails()
+    setRecipients(emails)
+    setRecipientsUpdatedAt(new Date())
+    downloadCsvFromEmails(emails, `jetskiandmore-recipients-${new Date().toISOString().slice(0, 10)}.csv`)
     toast({ title: 'CSV exported', description: 'Downloaded recipients list.', variant: 'success' })
   }
 
@@ -370,6 +537,7 @@ function AdminMarketingPage() {
         <TabsList>
           <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
           <TabsTrigger value="audience">Audience</TabsTrigger>
+          <TabsTrigger value="performance">Performance</TabsTrigger>
           <TabsTrigger value="assets">Assets</TabsTrigger>
         </TabsList>
 
@@ -420,13 +588,14 @@ function AdminMarketingPage() {
 	                    <DialogTitle>{editing ? 'Edit campaign' : 'New campaign'}</DialogTitle>
 	                    <DialogDescription>Build a clean email (HTML is generated automatically).</DialogDescription>
 	                  </DialogHeader>
-	                  <CampaignComposer
-	                    rideIds={rideIds}
-	                    initial={editing}
-	                    onCancel={() => {
-	                      setEditing(null)
-	                      setComposerOpen(false)
-	                    }}
+                  <CampaignComposer
+                    rideIds={rideIds}
+                    initial={editing}
+                    fetchAdmin={fetchAdmin}
+                    onCancel={() => {
+                      setEditing(null)
+                      setComposerOpen(false)
+                    }}
 	                    onSave={async (draft) => {
 	                      const saved = await upsertCampaign({ ...editing, ...draft })
 	                      setEditing(null)
@@ -576,6 +745,15 @@ function AdminMarketingPage() {
 	                  </CardDescription>
 	                </div>
 	                <div className="flex flex-wrap items-center justify-end gap-2">
+	                  <Button
+	                    variant="outline"
+	                    size="sm"
+	                    onClick={() => downloadRecipientsCsv().catch(() => {})}
+	                    disabled={loadingRecipients}
+	                  >
+	                    <Download className="mr-2 h-4 w-4" />
+	                    Export CSV
+	                  </Button>
 	                  <Button variant="outline" size="sm" onClick={refreshRecipients} disabled={loadingRecipients}>
 	                    <RefreshCw className="mr-2 h-4 w-4" />
 	                    Update list
@@ -658,6 +836,82 @@ function AdminMarketingPage() {
 	            </Card>
 
 	            <Card className="border-slate-200 bg-white shadow-sm">
+	              <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+	                <div>
+	                  <CardTitle className="text-base text-slate-900">Uploaded emails (CSV)</CardTitle>
+	                  <CardDescription className="text-slate-600">
+	                    Upload a CSV and save extra recipients to the system.
+	                  </CardDescription>
+	                </div>
+	                <div className="flex flex-wrap items-center justify-end gap-2">
+	                  <input
+	                    ref={fileInputRef}
+	                    type="file"
+	                    accept=".csv,text/csv"
+	                    className="hidden"
+	                    onChange={async (e) => {
+	                      const file = e.target.files?.[0]
+	                      if (!file) return
+	                      try {
+	                        const result = await uploadManualCsv(file)
+	                        toast({
+	                          title: 'CSV uploaded',
+	                          description: `Added ${result?.added ?? 0} • Invalid ${result?.invalid ?? 0} • Total ${result?.total ?? 0}`,
+	                          variant: 'success',
+	                        })
+	                        await refreshManualEmails()
+	                      } catch (err: any) {
+	                        toast({ title: 'Upload failed', description: err?.message ?? 'Please try again.', variant: 'destructive' })
+	                      } finally {
+	                        if (fileInputRef.current) fileInputRef.current.value = ''
+	                      }
+	                    }}
+	                  />
+	                  <Button
+	                    variant="outline"
+	                    size="sm"
+	                    onClick={() => fileInputRef.current?.click()}
+	                  >
+	                    Upload CSV
+	                  </Button>
+	                  <Button
+	                    variant="outline"
+	                    size="sm"
+	                    onClick={() => {
+	                      downloadCsvFromEmails(manualEmails, `jetskiandmore-uploaded-emails-${new Date().toISOString().slice(0, 10)}.csv`)
+	                    }}
+	                    disabled={manualEmails.length === 0}
+	                  >
+	                    <Download className="mr-2 h-4 w-4" />
+	                    Download
+	                  </Button>
+	                  <Button variant="outline" size="sm" onClick={refreshManualEmails} disabled={loadingManual}>
+	                    <RefreshCw className="mr-2 h-4 w-4" />
+	                    Refresh
+	                  </Button>
+	                </div>
+	              </CardHeader>
+	              <CardContent className="space-y-3">
+	                <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-slate-700">
+	                  <span className="font-semibold text-slate-900">
+	                    {loadingManual ? 'Loading…' : `${manualEmails.length.toLocaleString()} emails`}
+	                  </span>
+	                  <span className="text-xs text-slate-500">
+	                    {manualUpdatedAt ? `Updated ${formatUpdatedAt(manualUpdatedAt)}` : ''}
+	                  </span>
+	                </div>
+	                <Textarea
+	                  readOnly
+	                  value={loadingManual ? 'Loading…' : manualEmails.length === 0 ? 'No uploaded emails yet.' : manualEmails.join('\n')}
+	                  className="min-h-[240px] font-mono text-xs"
+	                />
+	                <p className="text-xs text-slate-500">
+	                  CSV formats supported: one email per line, or a column header named “email”.
+	                </p>
+	              </CardContent>
+	            </Card>
+
+	            <Card className="border-slate-200 bg-white shadow-sm">
 	              <CardHeader>
 	                <CardTitle className="text-base text-slate-900">How to use this</CardTitle>
 	                <CardDescription className="text-slate-600">Practical marketing workflows.</CardDescription>
@@ -675,7 +929,258 @@ function AdminMarketingPage() {
           </div>
         </TabsContent>
 
-	        <TabsContent value="assets">
+        <TabsContent value="performance">
+          <div className="space-y-4">
+            <Card className="border-slate-200 bg-white shadow-sm">
+              <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <CardTitle className="text-base text-slate-900">Email performance</CardTitle>
+                  <CardDescription className="text-slate-600">
+                    Send history, best send windows, and next-campaign ideas.
+                  </CardDescription>
+                </div>
+                <div className="flex flex-wrap items-center justify-end gap-2">
+                  <Button variant="outline" size="sm" onClick={refreshPerformanceAll} disabled={loadingPerformance}>
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Refresh
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {loadingPerformance ? (
+                  <p className="text-sm text-slate-600">Loading performance…</p>
+                ) : (
+                  <>
+                    <div className="grid gap-3 md:grid-cols-4">
+                      <MiniStat label="Attempted" value={sendStats?.totalAttempted ?? 0} />
+                      <MiniStat label="Sent" value={sendStats?.totalSent ?? 0} />
+                      <MiniStat label="Failed" value={sendStats?.totalFailed ?? 0} />
+                      <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                        <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Failure rate</p>
+                        <p className="text-2xl font-semibold tracking-tight text-slate-900">
+                          {sendStats && sendStats.totalAttempted > 0
+                            ? `${Math.round((sendStats.totalFailed / sendStats.totalAttempted) * 100)}%`
+                            : '0%'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-4 lg:grid-cols-2">
+                      <Card className="border-slate-200 bg-white shadow-sm">
+                        <CardHeader>
+                          <CardTitle className="text-base text-slate-900">Send activity (hour of day)</CardTitle>
+                          <CardDescription className="text-slate-600">Counts based on emails sent in the admin.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="h-[260px]">
+                          <ChartContainer config={sendHoursChartConfig} className="h-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <BarChart
+                                data={(sendStats?.byHour || []).map((h) => ({
+                                  hour: formatHourLabel(h.hour),
+                                  count: h.count,
+                                }))}
+                              >
+                                <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                                <XAxis dataKey="hour" tickLine={false} axisLine={false} interval={2} />
+                                <YAxis tickLine={false} axisLine={false} width={34} />
+                                <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+                                <Bar dataKey="count" fill="var(--color-count)" radius={[6, 6, 0, 0]} />
+                              </BarChart>
+                            </ResponsiveContainer>
+                          </ChartContainer>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="border-slate-200 bg-white shadow-sm">
+                        <CardHeader>
+                          <CardTitle className="text-base text-slate-900">Booking activity (hour of day)</CardTitle>
+                          <CardDescription className="text-slate-600">Proxy for when customers are most likely to book.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="h-[260px]">
+                          <ChartContainer config={bookingHoursChartConfig} className="h-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <BarChart
+                                data={(insights?.bookingByHour || []).map((h) => ({
+                                  hour: formatHourLabel(h.hour),
+                                  count: h.count,
+                                }))}
+                              >
+                                <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                                <XAxis dataKey="hour" tickLine={false} axisLine={false} interval={2} />
+                                <YAxis tickLine={false} axisLine={false} width={34} />
+                                <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+                                <Bar dataKey="count" fill="var(--color-count)" radius={[6, 6, 0, 0]} />
+                              </BarChart>
+                            </ResponsiveContainer>
+                          </ChartContainer>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    <div className="grid gap-4 lg:grid-cols-3">
+                      <Card className="border-slate-200 bg-white shadow-sm lg:col-span-2">
+                        <CardHeader>
+                          <CardTitle className="text-base text-slate-900">AI-style guidance (no repeats)</CardTitle>
+                          <CardDescription className="text-slate-600">
+                            Recommendations are based on your booking patterns + upcoming South African public holidays.
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="space-y-2">
+                            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Recommended send hours</p>
+                            <div className="flex flex-wrap gap-2">
+                              {(insights?.recommendedSendHours || []).length === 0 ? (
+                                <Badge variant="secondary">—</Badge>
+                              ) : (
+                                (insights?.recommendedSendHours || []).map((h) => (
+                                  <Badge key={h} variant="secondary">
+                                    {formatHourLabel(h)}
+                                  </Badge>
+                                ))
+                              )}
+                            </div>
+                            <p className="text-xs text-slate-500">
+                              Tip: run promos 1–2 hours before your peak booking hours, and avoid late-night sends.
+                            </p>
+                          </div>
+
+                          <Separator />
+
+                          <div className="grid gap-4 md:grid-cols-2">
+                            <div>
+                              <p className="text-xs uppercase tracking-[0.2em] text-slate-500">What to send</p>
+                              <ul className="mt-2 space-y-2 text-sm text-slate-700">
+                                {(insights?.whatToSend || []).slice(0, 6).map((t) => (
+                                  <li key={t} className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
+                                    {t}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                            <div>
+                              <p className="text-xs uppercase tracking-[0.2em] text-slate-500">What not to send</p>
+                              <ul className="mt-2 space-y-2 text-sm text-slate-700">
+                                {(insights?.whatNotToSend || []).slice(0, 6).map((t) => (
+                                  <li key={t} className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
+                                    {t}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="border-slate-200 bg-white shadow-sm">
+                        <CardHeader>
+                          <CardTitle className="text-base text-slate-900">Upcoming holidays</CardTitle>
+                          <CardDescription className="text-slate-600">Good anchors for “limited slots” campaigns.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-2 text-sm">
+                          {(insights?.upcomingHolidays || []).length === 0 ? (
+                            <p className="text-slate-600">—</p>
+                          ) : (
+                            (insights?.upcomingHolidays || []).map((h) => (
+                              <div key={`${h.date}-${h.name}`} className="flex items-center justify-between rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
+                                <span className="text-slate-700">{h.name}</span>
+                                <span className="font-mono text-xs text-slate-500">{h.date}</span>
+                              </div>
+                            ))
+                          )}
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    <Card className="border-slate-200 bg-white shadow-sm">
+                      <CardHeader>
+                        <CardTitle className="text-base text-slate-900">Next campaign ideas</CardTitle>
+                        <CardDescription className="text-slate-600">Turn any idea into a draft and adjust copy.</CardDescription>
+                      </CardHeader>
+                      <CardContent className="grid gap-3 lg:grid-cols-2">
+                        {(insights?.ideas || []).length === 0 ? (
+                          <p className="text-sm text-slate-600">No ideas yet.</p>
+                        ) : (
+                          (insights?.ideas || []).slice(0, 6).map((idea) => (
+                            <div key={idea.title} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0">
+                                  <p className="truncate font-semibold text-slate-900">{idea.title}</p>
+                                  <p className="mt-1 truncate text-xs text-slate-500">{idea.subject}</p>
+                                </div>
+                                <Button
+                                  size="sm"
+                                  onClick={() => {
+                                    setEditing({
+                                      id: '',
+                                      name: idea.title,
+                                      subject: idea.subject,
+                                      preheader: idea.preheader ?? null,
+                                      content: idea.content,
+                                      ctaLabel: idea.ctaLabel ?? 'Book now',
+                                      ctaUrl: idea.ctaUrl ?? 'https://www.jetskiandmore.com/Bookings',
+                                      audience: (idea.audience as any) ?? null,
+                                      html: null,
+                                      status: 'draft',
+                                    })
+                                    setComposerOpen(true)
+                                  }}
+                                >
+                                  Use template
+                                </Button>
+                              </div>
+                              <p className="mt-3 whitespace-pre-wrap text-sm text-slate-700">{idea.preheader || idea.content.slice(0, 180) + (idea.content.length > 180 ? '…' : '')}</p>
+                            </div>
+                          ))
+                        )}
+                      </CardContent>
+                    </Card>
+
+                    <Card className="border-slate-200 bg-white shadow-sm">
+                      <CardHeader>
+                        <CardTitle className="text-base text-slate-900">Send log</CardTitle>
+                        <CardDescription className="text-slate-600">Latest test/bulk sends (for proof and debugging).</CardDescription>
+                      </CardHeader>
+                      <CardContent className="overflow-x-auto">
+                        {emailEvents.length === 0 ? (
+                          <p className="text-sm text-slate-600">No sends logged yet.</p>
+                        ) : (
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Sent at</TableHead>
+                                <TableHead>Email</TableHead>
+                                <TableHead>Kind</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead>Error</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {emailEvents.map((ev) => (
+                                <TableRow key={ev.id}>
+                                  <TableCell className="whitespace-nowrap text-slate-700">{formatDateTime(ev.sentAt)}</TableCell>
+                                  <TableCell className="max-w-[360px] truncate font-mono text-xs text-slate-700">{ev.email}</TableCell>
+                                  <TableCell>
+                                    <Badge variant="secondary">{ev.kind}</Badge>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Badge variant={ev.ok ? 'default' : 'destructive'}>{ev.ok ? 'Sent' : 'Failed'}</Badge>
+                                  </TableCell>
+                                  <TableCell className="max-w-[380px] truncate text-xs text-slate-500">{ev.error || '—'}</TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="assets">
           <Card className="border-slate-200 bg-white shadow-sm">
             <CardHeader>
               <CardTitle className="text-base text-slate-900">Marketing assets</CardTitle>
@@ -896,6 +1401,19 @@ function AdminMarketingPage() {
                     <Copy className="mr-2 h-4 w-4" />
                     Copy HTML
                   </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      try {
+                        openHtmlPreview(previewHtml)
+                      } catch {
+                        toast({ title: 'Preview failed', description: 'Could not open preview.', variant: 'destructive' })
+                      }
+                    }}
+                  >
+                    Open preview
+                  </Button>
                 </div>
               </div>
 
@@ -985,11 +1503,13 @@ function CopyBlock({ title, text }: { title: string; text: string }) {
 function CampaignComposer({
   initial,
   rideIds,
+  fetchAdmin,
   onCancel,
   onSave,
 }: {
   initial: MarketingCampaign | null
   rideIds: string[]
+  fetchAdmin: (path: string, init?: RequestInit) => Promise<Response>
   onCancel: () => void
   onSave: (draft: Partial<MarketingCampaign>) => Promise<MarketingCampaign>
 }) {
@@ -1003,9 +1523,70 @@ function CampaignComposer({
 
   const [rideId, setRideId] = React.useState<string>(initial?.audience?.rideId || 'all')
   const [status, setStatus] = React.useState<string>(initial?.audience?.status || 'all')
+  const [includeManual, setIncludeManual] = React.useState<boolean>(initial?.audience?.includeManual ?? true)
   const [lastNDays, setLastNDays] = React.useState<string>(
     initial?.audience?.lastNDays != null ? String(initial.audience.lastNDays) : '',
   )
+  const contentRef = React.useRef<HTMLTextAreaElement | null>(null)
+  const [assets, setAssets] = React.useState<MarketingAsset[]>([])
+  const [assetsLoading, setAssetsLoading] = React.useState(false)
+  const [imageUrl, setImageUrl] = React.useState('')
+  const [imageAlt, setImageAlt] = React.useState('')
+
+  async function refreshAssets() {
+    try {
+      setAssetsLoading(true)
+      const res = await fetchAdmin(`/api/admin/marketing/assets?limit=50`)
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        throw new Error(data?.detail || data?.message || res.statusText)
+      }
+      const data = (await res.json()) as { items: MarketingAsset[] }
+      setAssets(data.items || [])
+    } catch (e: any) {
+      toast({ title: 'Could not load images', description: e?.message ?? 'Please try again.', variant: 'destructive' })
+      setAssets([])
+    } finally {
+      setAssetsLoading(false)
+    }
+  }
+
+  async function uploadAsset(file: File) {
+    const fd = new FormData()
+    fd.append('file', file)
+    const res = await fetchAdmin(`/api/admin/marketing/assets/upload`, { method: 'POST', body: fd })
+    if (!res.ok) {
+      const data = await res.json().catch(() => null)
+      throw new Error(data?.detail || data?.message || res.statusText)
+    }
+    return (await res.json()) as MarketingAsset
+  }
+
+  function insertImageToken(url: string, alt?: string) {
+    const token = `[[IMAGE:${url}${alt ? `|${alt}` : ''}]]`
+    const el = contentRef.current
+    if (!el) {
+      setContent((prev) => `${(prev || '').trim()}\n\n${token}\n`.trim())
+      return
+    }
+    const start = el.selectionStart ?? el.value.length
+    const end = el.selectionEnd ?? el.value.length
+    const before = el.value.slice(0, start)
+    const after = el.value.slice(end)
+    const insert = `${before && !before.endsWith('\n') ? '\n' : ''}${token}${after && !after.startsWith('\n') ? '\n' : ''}`
+    const next = `${before}${insert}${after}`
+    setContent(next)
+    window.setTimeout(() => {
+      try {
+        el.focus()
+      } catch {}
+    }, 0)
+  }
+
+  React.useEffect(() => {
+    refreshAssets()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   async function handleSave() {
     setSaving(true)
@@ -1020,6 +1601,7 @@ function CampaignComposer({
         audience: {
           rideId: rideId === 'all' ? null : rideId,
           status: status === 'all' ? null : status,
+          includeManual,
           lastNDays: Number(lastNDays) > 0 ? Number(lastNDays) : null,
         },
       })
@@ -1082,9 +1664,21 @@ function CampaignComposer({
         </div>
       </div>
 
+      <div className="flex items-center gap-2">
+        <Checkbox
+          id="camp-include-manual"
+          checked={includeManual}
+          onCheckedChange={(v) => setIncludeManual(Boolean(v))}
+        />
+        <Label htmlFor="camp-include-manual" className="text-sm text-slate-700">
+          Include uploaded emails
+        </Label>
+      </div>
+
       <div className="space-y-2">
         <Label htmlFor="camp-content">Email content</Label>
         <Textarea
+          ref={contentRef}
           id="camp-content"
           value={content}
           onChange={(e) => setContent(e.target.value)}
@@ -1099,7 +1693,119 @@ function CampaignComposer({
           ].join('\n')}
           className="min-h-[180px]"
         />
+        <p className="text-xs text-slate-500">
+          Tip: Use images anywhere by inserting a line like <span className="font-mono">[[IMAGE:https://...|Alt text]]</span>.
+        </p>
       </div>
+
+      <Card className="border-slate-200 bg-white shadow-sm">
+        <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <CardTitle className="text-base text-slate-900">Images</CardTitle>
+            <CardDescription className="text-slate-600">Upload an image and insert it into the email content.</CardDescription>
+          </div>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              id="camp-image-upload"
+              onChange={async (e) => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                try {
+                  const asset = await uploadAsset(file)
+                  toast({ title: 'Image uploaded', description: asset.filename, variant: 'success' })
+                  await refreshAssets()
+                } catch (err: any) {
+                  toast({ title: 'Upload failed', description: err?.message ?? 'Please try again.', variant: 'destructive' })
+                } finally {
+                  ;(e.target as HTMLInputElement).value = ''
+                }
+              }}
+            />
+            <Button variant="outline" size="sm" onClick={() => document.getElementById('camp-image-upload')?.click()}>
+              Upload image
+            </Button>
+            <Button variant="outline" size="sm" onClick={refreshAssets} disabled={assetsLoading}>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Refresh
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="camp-image-url">Image URL (optional)</Label>
+              <Input
+                id="camp-image-url"
+                placeholder="https://..."
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="camp-image-alt">Alt text (optional)</Label>
+              <Input
+                id="camp-image-alt"
+                placeholder="Jet ski ride in Gordon’s Bay"
+                value={imageAlt}
+                onChange={(e) => setImageAlt(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                const url = imageUrl.trim()
+                if (!url) {
+                  toast({ title: 'Image URL required', description: 'Paste an image URL or upload an image.', variant: 'destructive' })
+                  return
+                }
+                insertImageToken(url, imageAlt.trim() || undefined)
+                setImageUrl('')
+                setImageAlt('')
+              }}
+            >
+              Insert image URL
+            </Button>
+          </div>
+
+          {assetsLoading ? (
+            <p className="text-sm text-slate-600">Loading images…</p>
+          ) : assets.length === 0 ? (
+            <p className="text-sm text-slate-600">No uploaded images yet.</p>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {assets.map((a) => {
+                const absolute = `${API_BASE}${a.url}`
+                return (
+                  <div key={a.id} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    <div className="aspect-video overflow-hidden rounded-lg border border-slate-200 bg-white">
+                      <img src={absolute} alt={a.filename} className="h-full w-full object-cover" />
+                    </div>
+                    <div className="mt-2 flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-slate-900">{a.filename}</p>
+                        <p className="truncate font-mono text-[11px] text-slate-500">{a.url}</p>
+                      </div>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          insertImageToken(absolute, a.filename)
+                        }}
+                      >
+                        Insert
+                      </Button>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
@@ -1148,11 +1854,25 @@ function renderEmailHtml({
 }) {
   const safeTitle = escapeHtml(title || 'Jet Ski & More')
   const safePreheader = escapeHtml(preheader || '')
-  const paragraphs = String(content || '')
+  const blocks = String(content || '')
     .split('\n')
     .map((line) => line.trim())
     .filter(Boolean)
-    .map((line) => `<p style="margin:0 0 12px 0;line-height:1.55;">${escapeHtml(line)}</p>`)
+    .map((line) => {
+      const m = line.match(/^\[\[IMAGE:(.+?)(?:\|(.+?))?\]\]$/i)
+      if (m) {
+        const url = (m[1] || '').trim()
+        const alt = (m[2] || '').trim()
+        if (!url) return ''
+        return [
+          '<div style="margin:0 0 12px 0;">',
+          `<img src="${escapeAttr(url)}" alt="${escapeAttr(alt)}" style="display:block;max-width:100%;height:auto;border-radius:12px;border:1px solid #e2e8f0;" />`,
+          '</div>',
+        ].join('')
+      }
+      return `<p style="margin:0 0 12px 0;line-height:1.55;">${escapeHtml(line)}</p>`
+    })
+    .filter(Boolean)
     .join('')
 
   const buttonHtml =
@@ -1174,7 +1894,7 @@ function renderEmailHtml({
     '<tr><td style="padding:18px 20px;border:1px solid #e2e8f0;border-radius:16px;background:#ffffff;">',
     '<div style="font-size:12px;letter-spacing:0.24em;text-transform:uppercase;color:#64748b;margin-bottom:8px;">Jet Ski &amp; More</div>',
     `<h1 style="font-size:20px;margin:0 0 10px 0;color:#0f172a;">${safeTitle}</h1>`,
-    `<div style="font-size:14px;color:#334155;">${paragraphs || '<p style="margin:0;color:#64748b;">(No content)</p>'}</div>`,
+    `<div style="font-size:14px;color:#334155;">${blocks || '<p style="margin:0;color:#64748b;">(No content)</p>'}</div>`,
     buttonHtml ? `<div style="margin-top:14px;">${buttonHtml}</div>` : '',
     '<div style="margin-top:18px;padding-top:14px;border-top:1px solid #e2e8f0;font-size:12px;color:#64748b;">',
     'Gordon’s Bay Harbour • False Bay',
@@ -1208,6 +1928,22 @@ function downloadTextFile(text: string, filename: string) {
   a.click()
   a.remove()
   URL.revokeObjectURL(url)
+}
+
+function downloadCsvFromEmails(emails: string[], filename: string) {
+  const csv = ['email', ...(emails || [])].join('\n')
+  downloadTextFile(csv, filename)
+}
+
+function openHtmlPreview(html: string) {
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  window.open(url, '_blank', 'noopener,noreferrer')
+  window.setTimeout(() => {
+    try {
+      URL.revokeObjectURL(url)
+    } catch {}
+  }, 60_000)
 }
 
 function buildThankYouCampaignDraft(): MarketingCampaign {
@@ -1245,5 +1981,26 @@ function formatUpdatedAt(date: Date) {
     return date.toLocaleString('en-ZA', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
   } catch {
     return String(date)
+  }
+}
+
+function formatHourLabel(hour: number) {
+  const h = Math.max(0, Math.min(23, Math.floor(Number(hour))))
+  return `${String(h).padStart(2, '0')}:00`
+}
+
+function formatDateTime(value: string) {
+  try {
+    const dt = new Date(value)
+    if (Number.isNaN(dt.getTime())) return value
+    return dt.toLocaleString('en-ZA', {
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  } catch {
+    return value
   }
 }

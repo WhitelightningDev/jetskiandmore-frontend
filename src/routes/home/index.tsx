@@ -333,73 +333,69 @@ function App() {
         <Reveal offset={4} duration={900}>
           <div
             id="why-ride-with-us"
-            className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_30px_80px_-60px_rgba(15,23,42,0.35)]"
+            className="relative"
           >
-            <div className="grid gap-8 p-6 md:p-10 lg:grid-cols-12 lg:gap-10">
-              <div className="lg:col-span-4 space-y-4">
-                <Badge className="w-fit bg-slate-900 text-white hover:bg-slate-900">Why ride with us</Badge>
-                <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900">
-                  Proof-led, safety-first experiences in Gordon&apos;s Bay.
-                </h2>
-                <p className="text-sm md:text-base text-slate-600">
-                  Search results already mention our launch point, safety briefings, and media add-ons — here&apos;s the
-                  structure behind it. We&apos;ve been operating since 2020 with a guided format and repeatable onboarding.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <Link to="/why-ride-with-us" className={buttonVariants({ size: 'sm' })}>
-                    See the full breakdown
-                  </Link>
-                  <Link to="/safety" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
-                    Read safety requirements
-                  </Link>
-                </div>
-              </div>
+            <div className="py-2 md:py-4">
+              <p className="text-xs font-semibold tracking-[0.2em] text-sky-900">WHY RIDE WITH US</p>
+              <h2 className="mt-3 max-w-3xl text-4xl md:text-5xl font-semibold font-serif tracking-tight text-slate-900">
+                Proof-led, safety-first experiences in Gordon&apos;s Bay.
+              </h2>
+              <p className="mt-4 max-w-3xl text-sm md:text-base text-slate-600">
+                We&apos;ve been operating since 2020 with a guided format, repeatable onboarding, and structured safety briefings.
+              </p>
 
-              <div className="lg:col-span-8 grid gap-4 sm:grid-cols-2">
+              <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {(
                   [
                     {
-                      icon: <BadgeCheck className="h-5 w-5 text-primary" aria-hidden />,
+                      icon: <BadgeCheck className="h-5 w-5" aria-hidden />,
                       title: 'Operating since 2020',
                       desc: 'A long-running, professional operation with documented procedures and trained staff.',
                     },
                     {
-                      icon: <MapPin className="h-5 w-5 text-primary" aria-hidden />,
-                      title: 'Gordon’s Bay Harbour',
+                      icon: <MapPin className="h-5 w-5" aria-hidden />,
+                      title: "Gordon's Bay Harbour",
                       desc: 'One reliable launch point with clear meeting instructions and predictable logistics.',
                     },
                     {
-                      icon: <ShieldCheck className="h-5 w-5 text-primary" aria-hidden />,
+                      icon: <ShieldCheck className="h-5 w-5" aria-hidden />,
                       title: 'Structured onboarding',
                       desc: 'Controls demo, riding zone rules, and a safety briefing before every session.',
                     },
                     {
-                      icon: <Waves className="h-5 w-5 text-primary" aria-hidden />,
+                      icon: <Waves className="h-5 w-5" aria-hidden />,
                       title: 'Guided ride format',
                       desc: 'Safety-led sessions with clear boundaries and support — ideal for first-timers.',
                     },
                     {
-                      icon: <Camera className="h-5 w-5 text-primary" aria-hidden />,
+                      icon: <Camera className="h-5 w-5" aria-hidden />,
                       title: 'Optional drone / GoPro',
                       desc: 'Add media extras to capture your ride (subject to conditions and availability).',
                     },
                     {
-                      icon: <Users className="h-5 w-5 text-primary" aria-hidden />,
+                      icon: <Users className="h-5 w-5" aria-hidden />,
                       title: 'Family & tourist friendly',
                       desc: 'Simple process, clear guidance, and options for spectators via boat rides.',
                     },
                   ] as const
                 ).map((p) => (
-                  <div key={p.title} className="flex gap-3 rounded-2xl border border-slate-200 bg-slate-50/40 p-5">
-                    <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/15">
-                      {p.icon}
+                  <div key={p.title} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 ring-1 ring-slate-200">
+                      <span className="text-sky-800">{p.icon}</span>
                     </div>
-                    <div className="min-w-0">
-                      <p className="font-semibold text-slate-900">{p.title}</p>
-                      <p className="mt-1 text-sm text-slate-600">{p.desc}</p>
-                    </div>
+                    <p className="text-base font-semibold text-slate-900">{p.title}</p>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-600">{p.desc}</p>
                   </div>
                 ))}
+              </div>
+
+              <div className="mt-10 flex flex-wrap items-center gap-3">
+                <Link to="/safety" className={buttonVariants({ variant: 'outline', size: 'sm', className: 'rounded-full bg-white' })}>
+                  Read Safety Requirements
+                </Link>
+                <Link to="/why-ride-with-us" className={buttonVariants({ variant: 'ghost', size: 'sm', className: 'rounded-full text-sky-900' })}>
+                  See the full breakdown
+                </Link>
               </div>
             </div>
           </div>

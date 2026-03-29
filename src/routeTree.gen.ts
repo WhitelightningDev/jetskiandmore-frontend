@@ -34,6 +34,7 @@ import { Route as PaymentsSuccessRouteImport } from './routes/payments/success'
 import { Route as PaymentsResultRouteImport } from './routes/payments/result'
 import { Route as PaymentsFailedRouteImport } from './routes/payments/failed'
 import { Route as PaymentsCancelledRouteImport } from './routes/payments/cancelled'
+import { Route as AdminSupportRouteImport } from './routes/admin/support'
 import { Route as AdminQuizRouteImport } from './routes/admin/quiz'
 import { Route as AdminOverviewRouteImport } from './routes/admin/overview'
 import { Route as AdminMarketingRouteImport } from './routes/admin/marketing'
@@ -173,6 +174,11 @@ const PaymentsCancelledRoute = PaymentsCancelledRouteImport.update({
   path: '/payments/cancelled',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminSupportRoute = AdminSupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminQuizRoute = AdminQuizRouteImport.update({
   id: '/quiz',
   path: '/quiz',
@@ -224,6 +230,7 @@ export interface FileRoutesByFullPath {
   '/admin/marketing': typeof AdminMarketingRoute
   '/admin/overview': typeof AdminOverviewRoute
   '/admin/quiz': typeof AdminQuizRoute
+  '/admin/support': typeof AdminSupportRoute
   '/payments/cancelled': typeof PaymentsCancelledRoute
   '/payments/failed': typeof PaymentsFailedRoute
   '/payments/result': typeof PaymentsResultRoute
@@ -259,6 +266,7 @@ export interface FileRoutesByTo {
   '/admin/marketing': typeof AdminMarketingRoute
   '/admin/overview': typeof AdminOverviewRoute
   '/admin/quiz': typeof AdminQuizRoute
+  '/admin/support': typeof AdminSupportRoute
   '/payments/cancelled': typeof PaymentsCancelledRoute
   '/payments/failed': typeof PaymentsFailedRoute
   '/payments/result': typeof PaymentsResultRoute
@@ -295,6 +303,7 @@ export interface FileRoutesById {
   '/admin/marketing': typeof AdminMarketingRoute
   '/admin/overview': typeof AdminOverviewRoute
   '/admin/quiz': typeof AdminQuizRoute
+  '/admin/support': typeof AdminSupportRoute
   '/payments/cancelled': typeof PaymentsCancelledRoute
   '/payments/failed': typeof PaymentsFailedRoute
   '/payments/result': typeof PaymentsResultRoute
@@ -332,6 +341,7 @@ export interface FileRouteTypes {
     | '/admin/marketing'
     | '/admin/overview'
     | '/admin/quiz'
+    | '/admin/support'
     | '/payments/cancelled'
     | '/payments/failed'
     | '/payments/result'
@@ -367,6 +377,7 @@ export interface FileRouteTypes {
     | '/admin/marketing'
     | '/admin/overview'
     | '/admin/quiz'
+    | '/admin/support'
     | '/payments/cancelled'
     | '/payments/failed'
     | '/payments/result'
@@ -402,6 +413,7 @@ export interface FileRouteTypes {
     | '/admin/marketing'
     | '/admin/overview'
     | '/admin/quiz'
+    | '/admin/support'
     | '/payments/cancelled'
     | '/payments/failed'
     | '/payments/result'
@@ -634,6 +646,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PaymentsCancelledRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/support': {
+      id: '/admin/support'
+      path: '/support'
+      fullPath: '/admin/support'
+      preLoaderRoute: typeof AdminSupportRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/quiz': {
       id: '/admin/quiz'
       path: '/quiz'
@@ -701,6 +720,7 @@ interface AdminRouteChildren {
   AdminMarketingRoute: typeof AdminMarketingRoute
   AdminOverviewRoute: typeof AdminOverviewRoute
   AdminQuizRoute: typeof AdminQuizRoute
+  AdminSupportRoute: typeof AdminSupportRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
@@ -711,6 +731,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminMarketingRoute: AdminMarketingRoute,
   AdminOverviewRoute: AdminOverviewRoute,
   AdminQuizRoute: AdminQuizRoute,
+  AdminSupportRoute: AdminSupportRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)

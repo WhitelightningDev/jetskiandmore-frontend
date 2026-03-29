@@ -219,6 +219,7 @@ function AdminLayout() {
 
   const activeNav = React.useMemo(() => {
     if (pathname.startsWith('/admin/booking-controls')) return 'Settings'
+    if (pathname.startsWith('/admin/support')) return 'Support'
     const found = navItems.find((i) => pathname.startsWith(i.to))
     return found?.label ?? 'Dashboard'
   }, [pathname])
@@ -429,18 +430,16 @@ function AdminLayout() {
                   </span>
                   <ChevronRight className="h-4 w-4 text-slate-400" aria-hidden />
                 </Link>
-                <a
-                  href="/contact"
+                <Link
+                  to={'/admin/support' as any}
                   className="flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                  target="_blank"
-                  rel="noreferrer"
                 >
                   <span className="flex items-center gap-2">
                     <Settings className="h-4 w-4 text-slate-500" />
                     Support
                   </span>
-                  <ExternalLink className="h-4 w-4 text-slate-400" aria-hidden />
-                </a>
+                  <ChevronRight className="h-4 w-4 text-slate-400" aria-hidden />
+                </Link>
               </div>
             </nav>
 
