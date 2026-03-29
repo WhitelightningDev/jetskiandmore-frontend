@@ -8,6 +8,7 @@ import Footer from '../components/Footer'
 import { API_BASE } from '@/lib/api'
 import HolidayBanner from '@/components/HolidayBanner'
 import BookingPauseBanner from '@/components/BookingPauseBanner'
+import { BookingControlsProvider } from '@/lib/bookingControls'
 
 export const Route = createRootRoute({
   component: RootLayout,
@@ -16,6 +17,7 @@ export const Route = createRootRoute({
 function RootLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const isAdmin = pathname.startsWith('/admin')
+  const isHome = pathname === '/' || pathname === '/home' || pathname === '/home/'
   useTrackPageView(pathname, isAdmin)
 
   if (isAdmin) {
@@ -23,15 +25,21 @@ function RootLayout() {
   }
 
   return (
-    <>
+    <BookingControlsProvider>
       <BookingPauseBanner />
       <HolidayBanner />
-      <Header />
+      {isHome ? (
+        <div className="md:hidden">
+          <Header />
+        </div>
+      ) : (
+        <Header />
+      )}
       <Breadcrumbs />
       <Outlet />
       <ContactFab />
       <Footer />
-    </>
+    </BookingControlsProvider>
   )
 }
 

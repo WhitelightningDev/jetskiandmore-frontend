@@ -1,15 +1,37 @@
 import * as React from 'react'
 import { Link, Outlet, createFileRoute, useRouter, useRouterState } from '@tanstack/react-router'
-import { BarChart3, CalendarClock, CalendarRange, LayoutDashboard, LogOut, ShieldCheck } from 'lucide-react'
+import {
+  BarChart3,
+  CalendarClock,
+  CalendarRange,
+  ChevronRight,
+  Copy,
+  ExternalLink,
+  Home,
+  LayoutDashboard,
+  LogOut,
+  Mail,
+  RefreshCw,
+  Search,
+  Settings,
+  ShieldCheck,
+  SlidersHorizontal,
+  Sparkles,
+} from 'lucide-react'
 
 import { API_BASE } from '@/lib/api'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Dialog, DialogContent, DialogDescription as DialogDesc, DialogHeader as DialogHeaderUI, DialogTitle as DialogTitleUI, DialogTrigger } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Separator } from '@/components/ui/separator'
 import { AdminContext } from '@/admin/context'
 import type { AnalyticsSummary, Booking, PageViewAnalytics, QuizSubmission } from '@/admin/types'
+import { cn } from '@/lib/utils'
 
 export { useAdminContext } from '@/admin/context'
 export type {
@@ -32,10 +54,12 @@ function getStoredToken(): string | null {
 }
 
 const navItems = [
-  { id: 'overview', label: 'Overview', to: '/admin/overview', icon: LayoutDashboard, description: 'Pulse & alerts' },
+  { id: 'home', label: 'Home', to: '/home', icon: Home, description: 'Public site' },
+  { id: 'overview', label: 'Dashboard', to: '/admin/overview', icon: LayoutDashboard, description: 'Pulse & alerts' },
   { id: 'analytics', label: 'Analytics', to: '/admin/analytics', icon: BarChart3, description: 'Bookings & revenue' },
   { id: 'bookings', label: 'Bookings', to: '/admin/bookings', icon: CalendarClock, description: 'Manage customers' },
   { id: 'calendar', label: 'Calendar', to: '/admin/calendar', icon: CalendarRange, description: 'Date & time grid' },
+  { id: 'marketing', label: 'Marketing', to: '/admin/marketing', icon: Mail, description: 'Email campaigns' },
   { id: 'quiz', label: 'Safety & quiz', to: '/admin/quiz', icon: ShieldCheck, description: 'Compliance review' },
 ]
 
@@ -52,6 +76,8 @@ function AdminLayout() {
   const [loadingMeta, setLoadingMeta] = React.useState(false)
   const [loadingPageViews, setLoadingPageViews] = React.useState(false)
   const [statusFilter, setStatusFilter] = React.useState<string | 'all'>('all')
+  const [refreshNonce, setRefreshNonce] = React.useState(0)
+  const [whatsNewOpen, setWhatsNewOpen] = React.useState(false)
 
   const router = useRouter()
   const pathname = useRouterState({ select: (s) => s.location.pathname })
@@ -85,7 +111,7 @@ function AdminLayout() {
         setLoadingBookings(false)
       }
     })()
-  }, [statusFilter, token])
+  }, [refreshNonce, statusFilter, token])
 
   React.useEffect(() => {
     if (!token) return
@@ -117,7 +143,7 @@ function AdminLayout() {
         setLoadingMeta(false)
       }
     })()
-  }, [token])
+  }, [refreshNonce, token])
 
   React.useEffect(() => {
     if (!token) return
@@ -140,7 +166,7 @@ function AdminLayout() {
         setLoadingPageViews(false)
       }
     })()
-  }, [token])
+  }, [refreshNonce, token])
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
@@ -188,6 +214,26 @@ function AdminLayout() {
   function handleSessionExpired() {
     setError('Session expired. Please sign in again.')
     handleLogout()
+  }
+
+  const activeNav = React.useMemo(() => {
+    if (pathname.startsWith('/admin/booking-controls')) return 'Settings'
+    const found = navItems.find((i) => pathname.startsWith(i.to))
+    return found?.label ?? 'Dashboard'
+  }, [pathname])
+
+  function handleRefresh() {
+    setRefreshNonce((n) => n + 1)
+  }
+
+  async function handleCopyLink() {
+    try {
+      const href = typeof window !== 'undefined' ? window.location.href : ''
+      if (!href) return
+      await navigator.clipboard.writeText(href)
+    } catch {
+      // ignore clipboard errors
+    }
   }
 
   async function updateBookingStatus(id: string, status: string, message: string) {
@@ -297,82 +343,204 @@ function AdminLayout() {
   }
 
   return (
-    <div className="relative min-h-screen bg-slate-50 text-slate-900">
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_10%,rgba(34,211,238,0.14),transparent_38%),radial-gradient(circle_at_90%_20%,rgba(59,130,246,0.10),transparent_35%),radial-gradient(circle_at_30%_80%,rgba(99,102,241,0.07),transparent_35%)]" />
-      </div>
+    <div className="h-screen overflow-hidden bg-white text-slate-900">
+      <div className="grid h-screen grid-cols-1 md:grid-cols-[280px_1fr]">
+        <aside className="hidden h-screen overflow-y-auto border-r border-slate-200 bg-white md:block">
+          <div className="flex h-full flex-col">
+            <div className="flex items-center justify-between px-4 py-4">
+              <div className="flex items-center gap-2">
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-sm font-semibold">
+                  JM
+                </span>
+                <div className="leading-tight">
+                  <p className="text-sm font-semibold">Jet Ski &amp; More</p>
+                  <p className="text-xs text-slate-500">Admin</p>
+                </div>
+              </div>
+              <Badge variant="outline" className="border-slate-200 bg-white text-slate-600">
+                Online
+              </Badge>
+            </div>
 
-      <div className="relative mx-auto max-w-7xl px-3 py-6 lg:py-10">
-        <div className="flex flex-col gap-4 md:flex-row md:items-start">
-          <aside className="w-full shrink-0 self-start rounded-2xl border border-slate-200 bg-white shadow-xl shadow-cyan-500/10 md:sticky md:top-4 lg:top-6 md:w-60 lg:w-64 md:max-h-[calc(100vh-2rem)] md:overflow-y-auto">
-            <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
-              <div>
-                <p className="text-[11px] uppercase tracking-[0.2em] text-cyan-700">Control</p>
-                <p className="text-lg font-semibold text-slate-900">Admin console</p>
+            <div className="px-4 pb-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" aria-hidden />
+                <Input
+                  placeholder="Search"
+                  className="h-9 pl-9 pr-10"
+                  disabled
+                />
+                <kbd className="pointer-events-none absolute right-2 top-2 rounded border border-slate-200 bg-slate-50 px-1.5 text-[10px] text-slate-500">
+                  ⌘K
+                </kbd>
+              </div>
+            </div>
+
+            <nav className="flex-1 px-2 pb-4">
+              <div className="space-y-1">
+                {navItems.map((item) => {
+                  const active = pathname.startsWith(item.to)
+                  const count =
+                    item.id === 'bookings'
+                      ? bookings.length
+                      : item.id === 'quiz'
+                        ? quizSubs.length
+                        : null
+                  return (
+                    <Link
+                      key={item.id}
+                      to={item.to as any}
+                      preload="intent"
+                      className={cn(
+                        'group flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm transition',
+                        active ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900',
+                      )}
+                    >
+                      <span className="flex items-center gap-2">
+                        <item.icon className={cn('h-4 w-4', active ? 'text-slate-900' : 'text-slate-500')} />
+                        <span className="font-medium">{item.label}</span>
+                        {typeof count === 'number' && count > 0 ? (
+                          <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-slate-100 px-1.5 text-[11px] font-semibold text-slate-700">
+                            {count > 99 ? '99+' : count}
+                          </span>
+                        ) : null}
+                      </span>
+                      <ChevronRight className="h-4 w-4 text-slate-400 opacity-0 transition group-hover:opacity-100" aria-hidden />
+                    </Link>
+                  )
+                })}
+              </div>
+
+              <Separator className="my-4" />
+
+              <div className="space-y-1">
+                <Link
+                  to="/admin/booking-controls"
+                  className="flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                >
+                  <span className="flex items-center gap-2">
+                    <SlidersHorizontal className="h-4 w-4 text-slate-500" />
+                    Settings
+                  </span>
+                  <ChevronRight className="h-4 w-4 text-slate-400" aria-hidden />
+                </Link>
+                <a
+                  href="/contact"
+                  className="flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <span className="flex items-center gap-2">
+                    <Settings className="h-4 w-4 text-slate-500" />
+                    Support
+                  </span>
+                  <ExternalLink className="h-4 w-4 text-slate-400" aria-hidden />
+                </a>
+              </div>
+            </nav>
+
+            <div className="border-t border-slate-200 p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback className="text-xs">A</AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 leading-tight">
+                    <p className="truncate text-sm font-medium">{email || 'Admin'}</p>
+                    <p className="text-xs text-slate-500">Signed in</p>
+                  </div>
+                </div>
+                <Button variant="ghost" size="icon" onClick={handleLogout} aria-label="Logout">
+                  <LogOut className="h-4 w-4" />
+                </Button>
               </div>
               <Button
                 variant="outline"
-                size="sm"
-                className="border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-                onClick={handleLogout}
+                className="w-full justify-between"
+                onClick={() => window.open('/home', '_blank', 'noopener,noreferrer')}
               >
-                <LogOut className="mr-2 h-4 w-4" />
-                Logout
+                Visit site
+                <ExternalLink className="h-4 w-4 text-slate-500" />
               </Button>
             </div>
-            <div className="space-y-1 px-2 py-3">
-              {navItems.map((item) => {
-                const active = pathname.startsWith(item.to)
-                return (
-                  <Link
-                    key={item.id}
-                    to={item.to as '/admin/overview' | '/admin/analytics' | '/admin/bookings' | '/admin/calendar' | '/admin/quiz'}
-                    preload="intent"
-                    className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left transition ${
-                      active
-                        ? 'border border-cyan-200 bg-cyan-50 text-slate-900 shadow-sm'
-                        : 'border border-transparent text-slate-700 hover:border-slate-200 hover:bg-slate-50 hover:text-slate-900'
-                    }`}
-                  >
-                    <span
-                      className={`inline-flex h-9 w-9 items-center justify-center rounded-lg border ${
-                        active ? 'border-cyan-200 bg-cyan-100 text-cyan-800' : 'border-slate-200 bg-white text-slate-700'
-                      }`}
-                    >
-                      <item.icon className="h-4 w-4" />
-                    </span>
-                    <div className="flex flex-1 flex-col leading-tight">
-                      <span className="text-sm font-semibold">{item.label}</span>
-                      <span className="text-xs text-slate-500">{item.description}</span>
-                    </div>
-                  </Link>
-                )
-              })}
-            </div>
-            <div className="rounded-b-2xl border-t border-slate-200 bg-slate-50 px-5 py-4 text-xs text-slate-600">
-              {analytics ? (
-                <div className="space-y-1">
-                  <p className="text-[11px] uppercase tracking-[0.12em] text-cyan-700">
-                    Snapshot
-                  </p>
-                  <p className="flex items-center justify-between font-semibold text-slate-900">
-                    ZAR {analytics.totalRevenueZar.toFixed(0)}
-                  </p>
-                  <p className="text-slate-500">Total revenue to date</p>
-                </div>
-              ) : (
-                <p className="text-slate-500">Load analytics to see the quick snapshot.</p>
-              )}
-            </div>
-          </aside>
+          </div>
+        </aside>
 
-          <main className="flex-1 space-y-6">
-            {error && (
+        <div className="flex min-w-0 flex-col overflow-hidden">
+          <header className="border-b border-slate-200 bg-white">
+            <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3">
+              <div className="flex min-w-0 items-center gap-2 text-sm text-slate-500">
+                <span className="font-medium text-slate-700">Jet Ski &amp; More</span>
+                <ChevronRight className="h-4 w-4" aria-hidden />
+                <span className="truncate">{activeNav}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Dialog open={whatsNewOpen} onOpenChange={setWhatsNewOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      What&apos;s new?
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeaderUI>
+                      <DialogTitleUI>What&apos;s new</DialogTitleUI>
+                      <DialogDesc>
+                        Recent improvements for Jet Ski &amp; More.
+                      </DialogDesc>
+                    </DialogHeaderUI>
+                    <div className="space-y-3 text-sm text-slate-700">
+                      <div>
+                        <p className="font-semibold">Booking controls</p>
+                        <p className="text-slate-600">
+                          Turn jet ski bookings, boat ride requests, and fishing charter enquiries on/off from Admin.
+                        </p>
+                      </div>
+                      <div>
+                        <p className="font-semibold">Safety &amp; Compliance page</p>
+                        <p className="text-slate-600">
+                          A dedicated credibility page for customers, partners, and authorities.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button asChild size="sm">
+                        <Link to="/admin/booking-controls">Open booking controls</Link>
+                      </Button>
+                      <Button asChild size="sm" variant="outline">
+                        <Link to="/safety">Open safety page</Link>
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+                <Button variant="outline" size="sm" onClick={handleRefresh}>
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Refresh
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleCopyLink}>
+                  <Copy className="mr-2 h-4 w-4" />
+                  Copy link
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.open('/home', '_blank', 'noopener,noreferrer')}
+                >
+                  Visit site
+                  <ExternalLink className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </header>
+
+          <main className="mx-auto w-full max-w-7xl flex-1 space-y-6 overflow-y-auto px-4 py-6">
+            {error ? (
               <Alert variant="destructive">
                 <AlertTitle>Error</AlertTitle>
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
-            )}
+            ) : null}
+
             <AdminContext.Provider
               value={{
                 token,

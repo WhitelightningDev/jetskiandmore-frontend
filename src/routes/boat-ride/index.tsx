@@ -20,6 +20,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar'
 import boatImg from '@/lib/images/Spectatorboatride.png'
 import { sendBoatRideRequest } from '@/lib/api'
+import { pickPrimaryBookingAction, useBookingControls } from '@/lib/bookingControls'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
 export const Route = createFileRoute('/boat-ride/')({
   component: RouteComponent,
@@ -28,6 +30,10 @@ export const Route = createFileRoute('/boat-ride/')({
 const maxPeople = 12
 
 function RouteComponent() {
+  const { controls } = useBookingControls()
+  const primary = pickPrimaryBookingAction(controls)
+  const boatRideClosed = !controls.boatRideBookingsEnabled
+
   const [dialogOpen, setDialogOpen] = React.useState(false)
   const [successOpen, setSuccessOpen] = React.useState(false)
   const [submitting, setSubmitting] = React.useState(false)
@@ -44,6 +50,10 @@ function RouteComponent() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
+    if (boatRideClosed) {
+      setError('Boat ride requests are currently closed.')
+      return
+    }
 
     if (!selectedDate) {
       setError('Please choose a date for your boat ride.')
@@ -75,7 +85,7 @@ function RouteComponent() {
     <div className="bg-gradient-to-b from-sky-50 via-white to-white">
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-sky-100 via-white to-emerald-50" />
-        <div className="relative mx-auto max-w-6xl px-4 py-10 md:py-14">
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 md:py-14">
           <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] items-center">
             <div className="space-y-5">
               <Badge className="bg-white/70 text-sky-800 border-sky-200 flex items-center gap-2 w-fit">
@@ -88,6 +98,14 @@ function RouteComponent() {
               <p className="text-slate-700 max-w-2xl">
                 Enjoy a skippered boat ride around Gordon&apos;s Bay and False Bay—perfect as its own outing, or added alongside jet ski bookings. We handle the skipper, safety and route so you can relax and take in the views.
               </p>
+              {boatRideClosed ? (
+                <Alert variant="destructive">
+                  <AlertTitle>Boat ride requests closed</AlertTitle>
+                  <AlertDescription>
+                    Boat ride requests are currently turned off. Please contact us, or choose another available experience.
+                  </AlertDescription>
+                </Alert>
+              ) : null}
 
               <div className="flex flex-wrap gap-3 text-sm text-slate-700">
                 <Badge variant="secondary" className="flex items-center gap-2 rounded-full">
@@ -105,131 +123,144 @@ function RouteComponent() {
               </div>
 
               <div className="flex flex-wrap gap-3">
-                <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); setError(null) }}>
-                  <DialogTrigger asChild>
-                    <Button size="lg">
-                      <CalendarDays className="mr-2 h-5 w-5" />
-                      Request a boat ride
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Request a boat ride</DialogTitle>
-                      <DialogDescription>
-                        Share your details and preferred date. We&apos;ll confirm availability and email {`heinrichkaiser007@gmail.com`}.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div className="space-y-2">
-                          <Label htmlFor="firstName">Name</Label>
-                          <Input
-                            id="firstName"
-                            value={form.firstName}
-                            onChange={(e) => setForm((f) => ({ ...f, firstName: e.target.value }))}
-                            required
-                          />
+                {boatRideClosed ? (
+                  <Button size="lg" disabled>
+                    <CalendarDays className="mr-2 h-5 w-5" />
+                    Boat ride requests closed
+                  </Button>
+                ) : (
+                  <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); setError(null) }}>
+                    <DialogTrigger asChild>
+                      <Button size="lg">
+                        <CalendarDays className="mr-2 h-5 w-5" />
+                        Request a boat ride
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Request a boat ride</DialogTitle>
+                        <DialogDescription>
+                          Share your details and preferred date. We&apos;ll confirm availability and email {`heinrichkaiser007@gmail.com`}.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <form onSubmit={handleSubmit} className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div className="space-y-2">
+                            <Label htmlFor="firstName">Name</Label>
+                            <Input
+                              id="firstName"
+                              value={form.firstName}
+                              onChange={(e) => setForm((f) => ({ ...f, firstName: e.target.value }))}
+                              required
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="lastName">Surname</Label>
+                            <Input
+                              id="lastName"
+                              value={form.lastName}
+                              onChange={(e) => setForm((f) => ({ ...f, lastName: e.target.value }))}
+                              required
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="phone">Cell number</Label>
+                            <Input
+                              id="phone"
+                              inputMode="tel"
+                              value={form.phone}
+                              onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                              placeholder="+27"
+                              required
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="email">Email address</Label>
+                            <Input
+                              id="email"
+                              type="email"
+                              value={form.email}
+                              onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                              placeholder="you@example.com"
+                              required
+                            />
+                          </div>
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="lastName">Surname</Label>
-                          <Input
-                            id="lastName"
-                            value={form.lastName}
-                            onChange={(e) => setForm((f) => ({ ...f, lastName: e.target.value }))}
-                            required
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="phone">Cell number</Label>
-                          <Input
-                            id="phone"
-                            inputMode="tel"
-                            value={form.phone}
-                            onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-                            placeholder="+27"
-                            required
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="email">Email address</Label>
-                          <Input
-                            id="email"
-                            type="email"
-                            value={form.email}
-                            onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                            placeholder="you@example.com"
-                            required
-                          />
-                        </div>
-                      </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div className="space-y-2">
-                          <Label htmlFor="people">How many people? (max {maxPeople})</Label>
-                          <Input
-                            id="people"
-                            type="number"
-                            min={1}
-                            max={maxPeople}
-                            value={form.people}
-                            onChange={(e) =>
-                              setForm((f) => ({
-                                ...f,
-                                people: Math.min(maxPeople, Math.max(1, Number(e.target.value) || 1)),
-                              }))
-                            }
-                            required
-                          />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div className="space-y-2">
+                            <Label htmlFor="people">How many people? (max {maxPeople})</Label>
+                            <Input
+                              id="people"
+                              type="number"
+                              min={1}
+                              max={maxPeople}
+                              value={form.people}
+                              onChange={(e) =>
+                                setForm((f) => ({
+                                  ...f,
+                                  people: Math.min(maxPeople, Math.max(1, Number(e.target.value) || 1)),
+                                }))
+                              }
+                              required
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="boat-date">Choose a date</Label>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button id="boat-date" variant="outline" className="w-full justify-start font-normal">
+                                  <CalendarDays className="mr-2 h-4 w-4" />
+                                  {selectedDate
+                                    ? selectedDate.toLocaleDateString('en-ZA', {
+                                        weekday: 'short',
+                                        year: 'numeric',
+                                        month: 'short',
+                                        day: 'numeric',
+                                      })
+                                    : 'Pick a date'}
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="p-0" align="start">
+                                <Calendar
+                                  mode="single"
+                                  selected={selectedDate}
+                                  onSelect={setSelectedDate}
+                                  disabled={(d) => d < new Date(new Date().setHours(0, 0, 0, 0))}
+                                  initialFocus
+                                />
+                              </PopoverContent>
+                            </Popover>
+                            <p className="text-xs text-muted-foreground">We&apos;ll match times to weather and harbour slots.</p>
+                          </div>
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="boat-date">Choose a date</Label>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button id="boat-date" variant="outline" className="w-full justify-start font-normal">
-                                <CalendarDays className="mr-2 h-4 w-4" />
-                                {selectedDate
-                                  ? selectedDate.toLocaleDateString('en-ZA', {
-                                      weekday: 'short',
-                                      year: 'numeric',
-                                      month: 'short',
-                                      day: 'numeric',
-                                    })
-                                  : 'Pick a date'}
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="p-0" align="start">
-                              <Calendar
-                                mode="single"
-                                selected={selectedDate}
-                                onSelect={setSelectedDate}
-                                disabled={(d) => d < new Date(new Date().setHours(0, 0, 0, 0))}
-                                initialFocus
-                              />
-                            </PopoverContent>
-                          </Popover>
-                          <p className="text-xs text-muted-foreground">We&apos;ll match times to weather and harbour slots.</p>
-                        </div>
-                      </div>
 
-                      {error ? <p className="text-sm text-red-600">{error}</p> : null}
+                        {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
-                      <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                        <p className="text-xs text-muted-foreground flex items-center gap-2">
-                          <Info className="h-3.5 w-3.5" />
-                          Subject to skipper availability and sea conditions.
-                        </p>
-                        <div className="flex gap-2">
-                          <Button type="button" variant="ghost" onClick={() => setDialogOpen(false)}>
-                            Cancel
-                          </Button>
-                          <Button type="submit" disabled={submitting}>
-                            {submitting ? 'Sending...' : 'Send request'}
-                          </Button>
-                        </div>
-                      </DialogFooter>
-                    </form>
-                  </DialogContent>
-                </Dialog>
+                        <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                          <p className="text-xs text-muted-foreground flex items-center gap-2">
+                            <Info className="h-3.5 w-3.5" />
+                            Subject to skipper availability and sea conditions.
+                          </p>
+                          <div className="flex gap-2">
+                            <Button type="button" variant="ghost" onClick={() => setDialogOpen(false)}>
+                              Cancel
+                            </Button>
+                            <Button type="submit" disabled={submitting}>
+                              {submitting ? 'Sending...' : 'Send request'}
+                            </Button>
+                          </div>
+                        </DialogFooter>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
+                )}
+
+                {primary.enabled && primary.to !== '/boat-ride' ? (
+                  <Link to={primary.to} className={buttonVariants({ variant: 'outline', size: 'lg' })}>
+                    See available bookings
+                  </Link>
+                ) : null}
 
                 <Link to="/contact" className={buttonVariants({ variant: 'outline', size: 'lg' })}>
                   <Phone className="mr-2 h-5 w-5" />
@@ -341,9 +372,9 @@ function RouteComponent() {
                 <Info className="h-4 w-4" />
                 If seas look rough, we may shift your slot to a calmer window.
               </p>
-              <Button variant="outline" onClick={() => setDialogOpen(true)}>
+              <Button variant="outline" onClick={() => setDialogOpen(true)} disabled={boatRideClosed}>
                 <CalendarDays className="mr-2 h-4 w-4" />
-                Request a boat ride
+                {boatRideClosed ? 'Boat ride requests closed' : 'Request a boat ride'}
               </Button>
             </CardFooter>
           </Card>

@@ -4,12 +4,18 @@ import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Anchor, Fish, Waves, Ship, Compass, CalendarDays, LifeBuoy } from 'lucide-react'
+import { pickPrimaryBookingAction, useBookingControls } from '@/lib/bookingControls'
+import { cn } from '@/lib/utils'
 
 export const Route = createFileRoute('/fishing-charters/')({
   component: RouteComponent,
 })
 
 function RouteComponent() {
+  const { controls } = useBookingControls()
+  const primary = pickPrimaryBookingAction(controls)
+  const fishingClosed = !controls.fishingChartersBookingsEnabled
+
   const highlights = [
     { icon: <Anchor className="h-4 w-4" />, label: 'Skippered' },
     { icon: <Fish className="h-4 w-4" />, label: 'Tackle on board' },
@@ -42,7 +48,7 @@ function RouteComponent() {
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white">
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(14,165,233,0.12),transparent_30%),radial-gradient(circle_at_80%_0%,rgba(16,185,129,0.12),transparent_30%)]" />
-        <div className="relative mx-auto max-w-6xl px-4 py-14 md:py-18">
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-14 md:py-18">
           <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
             <div className="space-y-5">
               <Badge className="bg-white/10 text-white border-white/20 w-fit">Fishing charters</Badge>
@@ -61,13 +67,34 @@ function RouteComponent() {
                 ))}
               </div>
               <div className="flex flex-wrap gap-3">
-                <Link
-                  to="/contact"
-                  className={buttonVariants({ size: 'lg', className: 'bg-white text-slate-900 hover:bg-slate-100' })}
-                >
-                  <CalendarDays className="mr-2 h-5 w-5" />
-                  Enquire &amp; book
-                </Link>
+                {fishingClosed ? (
+                  <span
+                    className={cn(
+                      buttonVariants({ size: 'lg', className: 'bg-white/80 text-slate-900' }),
+                      'cursor-not-allowed select-none opacity-80',
+                    )}
+                    aria-disabled="true"
+                  >
+                    <CalendarDays className="mr-2 h-5 w-5" />
+                    Fishing enquiries closed
+                  </span>
+                ) : (
+                  <Link
+                    to="/contact"
+                    className={buttonVariants({ size: 'lg', className: 'bg-white text-slate-900 hover:bg-slate-100' })}
+                  >
+                    <CalendarDays className="mr-2 h-5 w-5" />
+                    Enquire &amp; book
+                  </Link>
+                )}
+                {fishingClosed && primary.enabled && primary.to !== '/fishing-charters' ? (
+                  <Link
+                    to={primary.to}
+                    className={buttonVariants({ variant: 'outline', size: 'lg', className: 'border-white/40 text-white hover:bg-white/10' })}
+                  >
+                    See available bookings
+                  </Link>
+                ) : null}
                 <Link
                   to="/boat-ride"
                   className={buttonVariants({ variant: 'outline', size: 'lg', className: 'border-white/40 text-white hover:bg-white/10' })}
@@ -115,7 +142,7 @@ function RouteComponent() {
       </section>
 
       <section className="bg-gradient-to-b from-sky-50 via-white to-white text-slate-900">
-        <div className="mx-auto max-w-6xl px-4 py-12 md:py-16 space-y-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 md:py-16 space-y-8">
           <div className="flex flex-col gap-3">
             <Badge variant="outline" className="w-fit border-sky-200 bg-sky-50 text-sky-800">Trips</Badge>
             <h2 className="text-2xl md:text-3xl font-semibold">Choose your charter</h2>
@@ -139,9 +166,18 @@ function RouteComponent() {
                   <Badge className="bg-emerald-600 text-white">{trip.price}</Badge>
                 </CardContent>
                 <CardFooter>
-                  <Link to="/contact" className={buttonVariants({ size: 'sm', className: 'w-full' })}>
-                    Enquire now
-                  </Link>
+                  {fishingClosed ? (
+                    <span
+                      className={cn(buttonVariants({ size: 'sm', className: 'w-full' }), 'cursor-not-allowed select-none opacity-80')}
+                      aria-disabled="true"
+                    >
+                      Enquiries closed
+                    </span>
+                  ) : (
+                    <Link to="/contact" className={buttonVariants({ size: 'sm', className: 'w-full' })}>
+                      Enquire now
+                    </Link>
+                  )}
                 </CardFooter>
               </Card>
             ))}
