@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PartnerPackRouteImport } from './routes/partner-pack'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WhyRideWithUsIndexRouteImport } from './routes/why-ride-with-us/index'
@@ -45,6 +46,11 @@ import { Route as AdminBookingControlsRouteImport } from './routes/admin/booking
 import { Route as AdminAnalyticsRouteImport } from './routes/admin/analytics'
 import { Route as WeatherCalmSlotsIndexRouteImport } from './routes/weather/calm-slots/index'
 
+const PartnerPackRoute = PartnerPackRouteImport.update({
+  id: '/partner-pack',
+  path: '/partner-pack',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -229,6 +235,7 @@ const WeatherCalmSlotsIndexRoute = WeatherCalmSlotsIndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/partner-pack': typeof PartnerPackRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/booking-controls': typeof AdminBookingControlsRoute
   '/admin/bookings': typeof AdminBookingsRoute
@@ -266,6 +273,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/partner-pack': typeof PartnerPackRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/booking-controls': typeof AdminBookingControlsRoute
   '/admin/bookings': typeof AdminBookingsRoute
@@ -304,6 +312,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/partner-pack': typeof PartnerPackRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/booking-controls': typeof AdminBookingControlsRoute
   '/admin/bookings': typeof AdminBookingsRoute
@@ -343,6 +352,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/partner-pack'
     | '/admin/analytics'
     | '/admin/booking-controls'
     | '/admin/bookings'
@@ -380,6 +390,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/partner-pack'
     | '/admin/analytics'
     | '/admin/booking-controls'
     | '/admin/bookings'
@@ -417,6 +428,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/partner-pack'
     | '/admin/analytics'
     | '/admin/booking-controls'
     | '/admin/bookings'
@@ -455,6 +467,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
+  PartnerPackRoute: typeof PartnerPackRoute
   PaymentsCancelledRoute: typeof PaymentsCancelledRoute
   PaymentsFailedRoute: typeof PaymentsFailedRoute
   PaymentsResultRoute: typeof PaymentsResultRoute
@@ -483,6 +496,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/partner-pack': {
+      id: '/partner-pack'
+      path: '/partner-pack'
+      fullPath: '/partner-pack'
+      preLoaderRoute: typeof PartnerPackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -760,6 +780,7 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
+  PartnerPackRoute: PartnerPackRoute,
   PaymentsCancelledRoute: PaymentsCancelledRoute,
   PaymentsFailedRoute: PaymentsFailedRoute,
   PaymentsResultRoute: PaymentsResultRoute,

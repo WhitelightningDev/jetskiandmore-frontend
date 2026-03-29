@@ -7,6 +7,7 @@ import {
   ChevronRight,
   Copy,
   ExternalLink,
+  FileText,
   Home,
   Kanban,
   LayoutDashboard,
@@ -439,6 +440,16 @@ function AdminLayout() {
                   <span className="flex items-center gap-2">
                     <Settings className="h-4 w-4 text-slate-500" />
                     Support
+                  </span>
+                  <ChevronRight className="h-4 w-4 text-slate-400" aria-hidden />
+                </Link>
+                <Link
+                  to={'/partner-pack' as any}
+                  className="flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                >
+                  <span className="flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-slate-500" />
+                    Partner pack (PDF)
                   </span>
                   <ChevronRight className="h-4 w-4 text-slate-400" aria-hidden />
                 </Link>

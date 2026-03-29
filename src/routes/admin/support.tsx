@@ -81,6 +81,7 @@ function AdminSupportPage() {
             <QuickLink to="/admin/bookings" label="Manage bookings" />
             <QuickLink to="/admin/booking-controls" label="Booking controls" />
             <QuickLink to="/admin/marketing" label="Email marketing" />
+            <QuickLink to="/partner-pack" label="Partner pack (PDF)" />
             <QuickLink to="/admin/quiz" label="Safety & quiz review" />
           </CardContent>
         </Card>

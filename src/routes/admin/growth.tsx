@@ -98,7 +98,7 @@ function seedTasks(): GrowthTask[] {
     mk({
       title: 'End-of-season relationship: thank-you + service recovery email',
       description:
-        'Send a factual thank-you and apology (weather/technical), with a clear promise: safety-first + improving.\n\nDeliverables:\n- 1 email campaign\n- Optional follow-up review request 7 days later',
+        'Goal:\nSend a factual thank-you + service recovery message to protect reputation and keep your list warm through winter.\n\nWhy it matters:\nCustomers, partners, and authorities compare operators. This positions Jet Ski & More as professional, safety-led, and accountable.\n\nSteps:\n1) Segment audience: completed rides vs cancelled/rescheduled.\n2) Write 2 variations (same tone, different apology line).\n3) Use 1 CTA (early access / stay in touch).\n\nDeliverables:\n- Campaign v1 (completed riders)\n- Campaign v2 (cancelled/rescheduled riders)\n- Follow-up (7 days later): review request + media consent\n\nKPIs:\n- Low complaints/unsubscribes\n- Replies + early-access signups\n- Review volume increase',
       status: 'planned',
       priority: 'high',
       season: 'winter',
@@ -108,7 +108,7 @@ function seedTasks(): GrowthTask[] {
     mk({
       title: 'Winter ramp: early-access list + voucher enquiries',
       description:
-        'Create a single CTA people can take during winter: join early-access, request voucher, or partner enquiry.\n\nDeliverables:\n- “Early access” capture form\n- Segment: past riders vs leads',
+        'Goal:\nKeep marketing active in winter with a single conversion action that makes sense when bookings are closed.\n\nWhat to build:\n- Early-access signup (email + optional phone)\n- Voucher enquiry (date, recipient, message)\n- Partner enquiry (hotels/tour desks/corporate)\n\nDeliverables:\n- Landing CTA: “Join early access”\n- Admin view/export list + tags (lead / past rider / partner)\n- Auto-reply email: confirmation + expectations\n\nKPIs:\n- New contacts/week\n- Voucher enquiries/month\n- Partner leads/month',
       status: 'in_progress',
       priority: 'urgent',
       season: 'winter',
@@ -118,7 +118,7 @@ function seedTasks(): GrowthTask[] {
     mk({
       title: 'Partner planning: tourism desks + hotels partner pack',
       description:
-        'Build a corporate partner pack for hotels/Airbnbs/tour desks.\n\nDeliverables:\n- 1-page PDF brochure\n- Safety & compliance blurb\n- Commission/booking process + QR code',
+        'Goal:\nGet listed and recommended while the season is closed, so summer opens with distribution already in place.\n\nPack contents:\n- 1-page brochure (what you offer + durations + location)\n- Safety & compliance credibility section\n- Booking process (QR + contact)\n- Commission/referral process (optional)\n\nDeliverables:\n- PDF partner pack (print + email versions)\n- 1 partner blurb paragraph for listings\n- Short FAQ (age rules, swim competency, weather rules)\n\nKPIs:\n- Partners onboarded\n- Referrals at season opening',
       status: 'planned',
       priority: 'high',
       season: 'winter',
@@ -128,7 +128,7 @@ function seedTasks(): GrowthTask[] {
     mk({
       title: 'Credibility assets: Safety & Compliance positioning everywhere',
       description:
-        'Make safety/compliance visible to Google, partners, and authorities.\n\nDeliverables:\n- Safety & Compliance page (site)\n- Safety checklist snippet for partner pack\n- SOP: weather go/no-go rule summary',
+        'Goal:\nLook like the most credible operator in the harbour (not an informal operator).\n\nWhat to publish:\n- Safety & Compliance page (briefing, onboarding, swim competency, operator requirements, equipment, weather rules)\n- Short version for brochures/partners\n- Internal SOP summary for staff consistency\n\nDeliverables:\n- Public page + link from footer/header\n- Partner pack snippet\n- Standard line: “Operating procedures designed around commercial safety requirements”\n\nKPIs:\n- Partner trust\n- Higher conversion vs competitors\n- Fewer pre-ride questions',
       status: 'planned',
       priority: 'high',
       season: 'any',
@@ -138,7 +138,7 @@ function seedTasks(): GrowthTask[] {
     mk({
       title: 'Google Business Profile refresh (winter visibility)',
       description:
-        'Keep the brand present even when seasonal bookings are closed.\n\nDeliverables:\n- New photos (harbour + gear)\n- 2 weekly posts (winter updates)\n- Q&A updates (age rules, swim competency, safety)',
+        'Goal:\nOwn local discovery in Gordon’s Bay even in winter.\n\nActions:\n- Upload new winter assets (harbour + gear + fleet)\n- Post cadence: 2/week (winter updates, safety-led operations, improvements)\n- Update Q&A: age rules, swim competency, safety equipment, weather go/no-go\n\nDeliverables:\n- 20 new photos\n- 8 posts/month\n- Updated services + categories\n\nKPIs:\n- Calls/website clicks\n- Direction requests\n- Review velocity',
       status: 'backlog',
       priority: 'medium',
       season: 'winter',
@@ -148,7 +148,7 @@ function seedTasks(): GrowthTask[] {
     mk({
       title: 'Harbour presence: branded A-frame + QR code to “Join early access”',
       description:
-        'Add a physical conversion point at the harbour (even off-season).\n\nDeliverables:\n- A-frame sign\n- QR code to early-access/contact\n- “Safety-led operator” line',
+        'Goal:\nConvert foot traffic into early-access signups and partner leads during winter.\n\nDesign notes:\n- Simple message: “Jet Ski & More — guided rides (seasonal)”\n- Credibility line: “Safety-led procedures”\n- QR → early access / contact\n\nDeliverables:\n- A-frame artwork (print-ready)\n- QR landing page\n- Placement plan (high visibility spots)\n\nKPIs:\n- QR scans/week\n- Email signups/week',
       status: 'planned',
       priority: 'high',
       season: 'winter',
@@ -158,7 +158,7 @@ function seedTasks(): GrowthTask[] {
     mk({
       title: 'Jet skis: visual refresh (decals, numbering, consistent look)',
       description:
-        'Make the fleet instantly recognisable in photos and at the harbour.\n\nDeliverables:\n- Decal set\n- Consistent numbering\n- Clean, photo-ready finish',
+        'Goal:\nMake the fleet instantly recognisable and “premium” in the harbour and on camera.\n\nActions:\n- Standardise decals + numbering\n- Refresh faded parts\n- Implement a “photo-ready clean” checklist\n\nDeliverables:\n- Decal design + print order\n- Numbering scheme\n- Cleaning/maintenance checklist\n\nKPIs:\n- Better ad performance\n- Better partner confidence',
       status: 'backlog',
       priority: 'medium',
       season: 'winter',
@@ -168,7 +168,7 @@ function seedTasks(): GrowthTask[] {
     mk({
       title: 'Apparel: staff winter layer (jackets/beanies) + branded PFD details',
       description:
-        'Corporate look + better photos.\n\nDeliverables:\n- 1 winter jacket option\n- Branded beanie\n- PFD covers/branding (where safe)',
+        'Goal:\nCorporate, consistent look at the harbour (improves trust + content quality).\n\nActions:\n- Choose brand colour system (purple/black/white)\n- Staff kit: jacket + beanie + optional rash-vest for summer\n- PFD branding only if it does not affect safety/compliance\n\nDeliverables:\n- Jacket option (supplier + price)\n- Beanie option\n- Simple uniform guide (what staff wear when)\n\nKPIs:\n- Better photos\n- Higher “professional operator” perception',
       status: 'backlog',
       priority: 'medium',
       season: 'winter',
@@ -178,7 +178,7 @@ function seedTasks(): GrowthTask[] {
     mk({
       title: 'UGC pipeline: reviews + photo/video consent',
       description:
-        'Collect social proof you can reuse in spring/summer.\n\nDeliverables:\n- Review request email\n- Consent wording\n- Folder of approved photos/videos',
+        'Goal:\nBuild a reusable library of social proof to fuel spring/summer marketing.\n\nProcess:\n- Review request + Google link\n- Consent wording for marketing use\n- Asset organisation by month + ride type\n\nDeliverables:\n- Review email template\n- Consent snippet\n- “Approved assets” folder structure\n\nKPIs:\n- Reviews/month\n- Reusable clips/month',
       status: 'planned',
       priority: 'high',
       season: 'winter',
@@ -188,7 +188,7 @@ function seedTasks(): GrowthTask[] {
     mk({
       title: 'Spring ramp: opening-weekend early access campaign',
       description:
-        'As spring approaches, convert the list into bookings.\n\nDeliverables:\n- Email: “slots opening soon”\n- Weekend scarcity messaging\n- Booking-ready FAQ',
+        'Goal:\nConvert the winter list into bookings as spring approaches.\n\nActions:\n- “Early access” email to the list first\n- Weekend scarcity messaging (limited slots)\n- Booking-ready FAQ (swim competency, age rules, arrival time, weather)\n\nDeliverables:\n- 2-email sequence\n- Booking page checklist\n\nKPIs:\n- Bookings from list\n- Reply rate for group enquiries',
       status: 'backlog',
       priority: 'high',
       season: 'spring',
@@ -198,7 +198,7 @@ function seedTasks(): GrowthTask[] {
     mk({
       title: 'Summer peak: holiday urgency + group packages',
       description:
-        'Build campaigns that scale during peak demand.\n\nDeliverables:\n- Holiday availability email\n- Group booking pack (birthday/corporate)\n- Referral offer (bring-a-friend)',
+        'Goal:\nMaximise revenue during peak demand without damaging premium positioning.\n\nBuild:\n- Holiday urgency email (availability)\n- Group packages (birthday/corporate)\n- Referral offer (bring-a-friend)\n\nDeliverables:\n- 3 campaign templates\n- 1 group booking one-pager\n\nKPIs:\n- Group booking count\n- Peak-week revenue',
       status: 'backlog',
       priority: 'high',
       season: 'summer',
@@ -208,7 +208,7 @@ function seedTasks(): GrowthTask[] {
     mk({
       title: 'Harbour photoshoot day (brand + compliance)',
       description:
-        'Capture assets that make you look like the most credible operator.\n\nDeliverables:\n- 30 photos (fleet, briefing, gear)\n- 10 short clips for reels\n- 1 “Safety & Compliance” hero photo',
+        'Goal:\nCreate a content library that screams “commercial-grade operator”.\n\nShot list:\n- Fleet hero shots + decals\n- Briefing/onboarding in action\n- Safety gear close-ups\n- Harbour presence (A-frame, staff uniform)\n\nDeliverables:\n- 30 photos\n- 10 short clips (reels)\n- 1 hero image for Safety & Compliance page\n\nKPIs:\n- Higher ad CTR\n- Better partner conversion',
       status: 'backlog',
       priority: 'medium',
       season: 'winter',
@@ -448,7 +448,7 @@ function AdminGrowthBoardPage() {
         <DialogTrigger asChild>
           <span className="hidden" />
         </DialogTrigger>
-        <DialogContent className="sm:max-w-3xl">
+        <DialogContent className="sm:max-w-xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{tasks.some((t) => t.id === editing?.id) ? 'Edit task' : 'Create task'}</DialogTitle>
           </DialogHeader>
@@ -483,20 +483,20 @@ function TaskCard({
   onMoveRight: () => void
 }) {
   return (
-    <Card className="border-slate-200 bg-white shadow-sm">
+    <Card className="overflow-hidden border-slate-200 bg-white shadow-sm">
       <CardHeader className="space-y-2 p-4 pb-0">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 space-y-1">
             <p className="truncate text-sm font-semibold text-slate-900">{task.title}</p>
             <div className="flex flex-wrap gap-1.5">
-              <Badge className={cn('max-w-full min-w-0 truncate rounded-full border', categoryClass(task.category))} variant="outline">
-                {task.category}
+              <Badge className={cn('max-w-full min-w-0 shrink truncate rounded-full border', categoryClass(task.category))} variant="outline">
+                <span className="min-w-0 truncate">{task.category}</span>
               </Badge>
-              <Badge className={cn('max-w-full min-w-0 truncate rounded-full border', seasonClass(task.season))} variant="outline">
-                {labelSeason(task.season)}
+              <Badge className={cn('max-w-full min-w-0 shrink truncate rounded-full border', seasonClass(task.season))} variant="outline">
+                <span className="min-w-0 truncate">{labelSeason(task.season)}</span>
               </Badge>
-              <Badge className={cn('max-w-full min-w-0 truncate rounded-full border', priorityClass(task.priority))} variant="outline">
-                {labelPriority(task.priority)}
+              <Badge className={cn('max-w-full min-w-0 shrink truncate rounded-full border', priorityClass(task.priority))} variant="outline">
+                <span className="min-w-0 truncate">{labelPriority(task.priority)}</span>
               </Badge>
             </div>
           </div>
@@ -511,16 +511,18 @@ function TaskCard({
         </div>
       </CardHeader>
       <CardContent className="space-y-3 p-4 pt-3">
-        <p className="line-clamp-3 whitespace-pre-line text-xs text-slate-600">{task.description}</p>
+        <p className="line-clamp-3 max-w-full break-words whitespace-pre-line text-xs text-slate-600 [overflow-wrap:anywhere]">
+          {task.description}
+        </p>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex flex-wrap gap-1.5">
             {task.tags.slice(0, 3).map((tag) => (
               <Badge
                 key={tag}
                 variant="secondary"
-                className="max-w-[220px] truncate rounded-full bg-slate-100 text-slate-700"
+                className="max-w-full min-w-0 shrink truncate rounded-full bg-slate-100 text-slate-700"
               >
-                {tag}
+                <span className="min-w-0 truncate">{tag}</span>
               </Badge>
             ))}
             {task.tags.length > 3 ? (
