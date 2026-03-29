@@ -38,6 +38,7 @@ import { Route as AdminSupportRouteImport } from './routes/admin/support'
 import { Route as AdminQuizRouteImport } from './routes/admin/quiz'
 import { Route as AdminOverviewRouteImport } from './routes/admin/overview'
 import { Route as AdminMarketingRouteImport } from './routes/admin/marketing'
+import { Route as AdminGrowthRouteImport } from './routes/admin/growth'
 import { Route as AdminCalendarRouteImport } from './routes/admin/calendar'
 import { Route as AdminBookingsRouteImport } from './routes/admin/bookings'
 import { Route as AdminBookingControlsRouteImport } from './routes/admin/booking-controls'
@@ -194,6 +195,11 @@ const AdminMarketingRoute = AdminMarketingRouteImport.update({
   path: '/marketing',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminGrowthRoute = AdminGrowthRouteImport.update({
+  id: '/growth',
+  path: '/growth',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminCalendarRoute = AdminCalendarRouteImport.update({
   id: '/calendar',
   path: '/calendar',
@@ -227,6 +233,7 @@ export interface FileRoutesByFullPath {
   '/admin/booking-controls': typeof AdminBookingControlsRoute
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/calendar': typeof AdminCalendarRoute
+  '/admin/growth': typeof AdminGrowthRoute
   '/admin/marketing': typeof AdminMarketingRoute
   '/admin/overview': typeof AdminOverviewRoute
   '/admin/quiz': typeof AdminQuizRoute
@@ -263,6 +270,7 @@ export interface FileRoutesByTo {
   '/admin/booking-controls': typeof AdminBookingControlsRoute
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/calendar': typeof AdminCalendarRoute
+  '/admin/growth': typeof AdminGrowthRoute
   '/admin/marketing': typeof AdminMarketingRoute
   '/admin/overview': typeof AdminOverviewRoute
   '/admin/quiz': typeof AdminQuizRoute
@@ -300,6 +308,7 @@ export interface FileRoutesById {
   '/admin/booking-controls': typeof AdminBookingControlsRoute
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/calendar': typeof AdminCalendarRoute
+  '/admin/growth': typeof AdminGrowthRoute
   '/admin/marketing': typeof AdminMarketingRoute
   '/admin/overview': typeof AdminOverviewRoute
   '/admin/quiz': typeof AdminQuizRoute
@@ -338,6 +347,7 @@ export interface FileRouteTypes {
     | '/admin/booking-controls'
     | '/admin/bookings'
     | '/admin/calendar'
+    | '/admin/growth'
     | '/admin/marketing'
     | '/admin/overview'
     | '/admin/quiz'
@@ -374,6 +384,7 @@ export interface FileRouteTypes {
     | '/admin/booking-controls'
     | '/admin/bookings'
     | '/admin/calendar'
+    | '/admin/growth'
     | '/admin/marketing'
     | '/admin/overview'
     | '/admin/quiz'
@@ -410,6 +421,7 @@ export interface FileRouteTypes {
     | '/admin/booking-controls'
     | '/admin/bookings'
     | '/admin/calendar'
+    | '/admin/growth'
     | '/admin/marketing'
     | '/admin/overview'
     | '/admin/quiz'
@@ -674,6 +686,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminMarketingRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/growth': {
+      id: '/admin/growth'
+      path: '/growth'
+      fullPath: '/admin/growth'
+      preLoaderRoute: typeof AdminGrowthRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/calendar': {
       id: '/admin/calendar'
       path: '/calendar'
@@ -717,6 +736,7 @@ interface AdminRouteChildren {
   AdminBookingControlsRoute: typeof AdminBookingControlsRoute
   AdminBookingsRoute: typeof AdminBookingsRoute
   AdminCalendarRoute: typeof AdminCalendarRoute
+  AdminGrowthRoute: typeof AdminGrowthRoute
   AdminMarketingRoute: typeof AdminMarketingRoute
   AdminOverviewRoute: typeof AdminOverviewRoute
   AdminQuizRoute: typeof AdminQuizRoute
@@ -728,6 +748,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminBookingControlsRoute: AdminBookingControlsRoute,
   AdminBookingsRoute: AdminBookingsRoute,
   AdminCalendarRoute: AdminCalendarRoute,
+  AdminGrowthRoute: AdminGrowthRoute,
   AdminMarketingRoute: AdminMarketingRoute,
   AdminOverviewRoute: AdminOverviewRoute,
   AdminQuizRoute: AdminQuizRoute,

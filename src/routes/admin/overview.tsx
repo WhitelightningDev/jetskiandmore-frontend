@@ -329,7 +329,7 @@ function RangePills({ value, onChange }: { value: RangeKey; onChange: (v: RangeK
     { key: '24h', label: '24 hours' },
   ]
   return (
-    <div className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white p-1">
+    <div className="flex max-w-full flex-wrap items-center gap-1 rounded-md border border-slate-200 bg-white p-1">
       {items.map((it) => {
         const active = it.key === value
         return (
@@ -338,7 +338,7 @@ function RangePills({ value, onChange }: { value: RangeKey; onChange: (v: RangeK
             type="button"
             onClick={() => onChange(it.key)}
             className={cn(
-              'rounded-md px-2.5 py-1 text-xs font-medium transition',
+              'whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-medium transition',
               active ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50',
             )}
           >

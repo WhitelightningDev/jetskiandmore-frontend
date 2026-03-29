@@ -8,6 +8,7 @@ import {
   Copy,
   ExternalLink,
   Home,
+  Kanban,
   LayoutDashboard,
   LogOut,
   Mail,
@@ -61,6 +62,7 @@ const navItems = [
   { id: 'bookings', label: 'Bookings', to: '/admin/bookings', icon: CalendarClock, description: 'Manage customers' },
   { id: 'calendar', label: 'Calendar', to: '/admin/calendar', icon: CalendarRange, description: 'Date & time grid' },
   { id: 'marketing', label: 'Marketing', to: '/admin/marketing', icon: Mail, description: 'Email campaigns' },
+  { id: 'growth', label: 'Growth board', to: '/admin/growth', icon: Kanban, description: 'Winter → summer plan' },
   { id: 'quiz', label: 'Safety & quiz', to: '/admin/quiz', icon: ShieldCheck, description: 'Compliance review' },
 ]
 
@@ -472,13 +474,13 @@ function AdminLayout() {
 
         <div className="flex min-w-0 flex-col overflow-hidden">
           <header className="border-b border-slate-200 bg-white">
-            <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3">
+            <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex min-w-0 items-center gap-2 text-sm text-slate-500">
                 <span className="font-medium text-slate-700">Jet Ski &amp; More</span>
                 <ChevronRight className="h-4 w-4" aria-hidden />
                 <span className="truncate">{activeNav}</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                 <Dialog open={whatsNewOpen} onOpenChange={setWhatsNewOpen}>
                   <DialogTrigger asChild>
                     <Button variant="outline" size="sm">
