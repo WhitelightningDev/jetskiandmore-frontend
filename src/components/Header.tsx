@@ -45,7 +45,7 @@ export default function Header() {
   return (
     <>
       <header className="sticky top-0 z-50 bg-gradient-to-r from-background/95 via-background/90 to-background/95 text-foreground border-b border-primary/10 shadow-[0_20px_45px_-35px_rgba(14,116,144,0.55)] backdrop-blur-xl">
-        <div className="mx-auto max-w-7xl w-full px-4">
+        <div className="w-full px-4">
           <div className="h-16 w-full flex items-center gap-3 rounded-full px-4 bg-foreground/[0.03] border border-border/60 shadow-[0_8px_30px_-20px_rgba(15,23,42,0.6)] backdrop-blur">
             {/* Mobile menu button */}
             <button

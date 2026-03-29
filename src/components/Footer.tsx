@@ -10,7 +10,7 @@ export default function Footer() {
 
   return (
     <footer className="mt-16 bg-gradient-to-b from-background via-background to-primary/10 border-t border-primary/10 text-foreground">
-      <div className="mx-auto max-w-7xl px-4 py-12">
+      <div className="w-full px-4 py-12">
         <div className="grid gap-10 md:grid-cols-4">
           <div className="md:col-span-2 space-y-4">
             <div className="flex items-center gap-3">
