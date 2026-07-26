@@ -21,7 +21,7 @@ import { AddOnsSection } from '@/features/bookings/AddOnsSection'
 import type { AddonsState } from '@/features/bookings/AddOnsSection'
 import { WeatherSnapshot } from '@/features/weather/WeatherSnapshot'
 import { BOOKINGS_WHATSAPP_URL } from '@/lib/bookingStatus'
-import { useBookingControls } from '@/lib/bookingControls'
+import { formatJetSkiOpenDate, useBookingControls } from '@/lib/bookingControls'
 
 export const Route = createFileRoute('/Bookings/')({
   component: RouteComponent,
@@ -244,6 +244,7 @@ function SeasonClosedToast() {
 
 function RouteComponent() {
   const { controls } = useBookingControls()
+  const openingLabel = formatJetSkiOpenDate(controls.jetSkiBookingsOpenAt)
 
   if (!controls.jetSkiBookingsEnabled) {
     return (
@@ -253,7 +254,8 @@ function RouteComponent() {
           <div className="space-y-2">
             <h1 className="text-3xl md:text-4xl font-bold">Bookings</h1>
             <p className="text-base text-muted-foreground">
-              Jet ski online bookings are currently closed.
+              Jet ski online bookings are currently closed
+              {openingLabel ? ` and open ${openingLabel}` : ''}.
               {controls.boatRideBookingsEnabled ? ' Boat rides are still available.' : null}
               {controls.fishingChartersBookingsEnabled ? ' Fishing charters are available on enquiry.' : null}
               {' '}

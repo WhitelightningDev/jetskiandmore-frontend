@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Link, useRouterState } from '@tanstack/react-router'
 
 import { cn } from '@/lib/utils'
-import { useBookingControls } from '@/lib/bookingControls'
+import { formatJetSkiOpenDate, useBookingControls } from '@/lib/bookingControls'
 import { CONTACT, MOBILE_NAV_ITEMS, NAV_ITEMS, ROUTES, logoBadge } from '@/lib/brand-content'
 
 /** True when `to` is the active route (treating /home as /). */
@@ -19,13 +19,16 @@ function useIsActive() {
 export function StatusBar() {
   const { controls } = useBookingControls()
   const open = controls.jetSkiBookingsEnabled
+  const openingLabel = formatJetSkiOpenDate(controls.jetSkiBookingsOpenAt)
 
   const headline = open
     ? 'Jet ski bookings are open'
     : 'Winter season: boat rides & charters running daily'
   const detail = open
     ? 'Launching daily from Gordon’s Bay Harbour, weather permitting'
-    : 'Jet ski bookings reopen 1 November — join the waitlist'
+    : openingLabel
+      ? `Jet ski bookings open ${openingLabel} — join the waitlist`
+      : 'Join the waitlist for the next jet ski opening'
 
   return (
     <div className="w-full bg-brand-deep py-2.5 text-[12px] sm:text-[13px] tracking-[0.01em] text-[#BFD6E2]">

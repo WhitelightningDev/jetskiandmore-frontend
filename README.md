@@ -46,6 +46,11 @@ The frontend never calculates the final payable amount on its own. Display price
 exist in the UI, but the backend recalculates the authoritative quote before
 creating or capturing a payment.
 
+Production:
+
+- Website: <https://www.jetskiandmore.com>
+- API: <https://jetskiandmore-backend-1071528856282.africa-south1.run.app>
+
 ## Technology
 
 - React 19 and TypeScript
@@ -105,7 +110,7 @@ passwords, OAuth client secrets, or SMTP credentials in a `VITE_*` variable.
 
 | Variable               | Required    | Default                                      | Purpose                               |
 | ---------------------- | ----------- | -------------------------------------------- | ------------------------------------- |
-| `VITE_API_BASE`        | Recommended | `https://jetskiandmore-backend.onrender.com` | FastAPI origin with no trailing `/`   |
+| `VITE_API_BASE`        | Recommended | `https://jetskiandmore-backend-1071528856282.africa-south1.run.app` | FastAPI origin with no trailing `/` |
 | `VITE_YOCO_PUBLIC_KEY` | No          | Loaded from `GET /api/payments/config`       | Optional browser-safe Yoco public key |
 
 Use separate values per environment:
@@ -117,7 +122,7 @@ VITE_API_BASE=http://localhost:8000
 
 ```dotenv
 # Vercel production environment
-VITE_API_BASE=https://your-api.example.com
+VITE_API_BASE=https://jetskiandmore-backend-1071528856282.africa-south1.run.app
 ```
 
 Restart the Vite development server after changing an environment file.
@@ -146,6 +151,11 @@ npm run lint
 npm run test
 npm run build
 ```
+
+Current baseline note: `npm run build` passes, but the repository-wide ESLint
+run still reports legacy style/type-lint violations and Vitest currently finds
+no test files. Treat those as visible cleanup debt; do not report the full gate
+as green until both are resolved.
 
 ## Application routes
 
@@ -197,7 +207,7 @@ generated and must not be edited by hand.
 | `/admin/bookings`         | Search, inspect, update, and delete bookings                 |
 | `/admin/calendar`         | Booking calendar                                             |
 | `/admin/analytics`        | Revenue, booking, and page-view analysis                     |
-| `/admin/booking-controls` | Enable or disable booking categories                         |
+| `/admin/booking-controls` | Enable, disable, or schedule booking categories               |
 | `/admin/marketing`        | Campaigns, audiences, uploads, assets, sending, and insights |
 | `/admin/quiz`             | Review interim skipper quiz submissions                      |
 | `/admin/growth`           | Browser-local growth planning board                          |
@@ -245,6 +255,12 @@ Public booking controls come from MongoDB through
 - Fishing-charter bookings enabled
 
 Only an authenticated admin can change the persisted controls.
+
+Jet-ski controls also include `jetSkiBookingsOpenAt`. When a future date is
+saved, the backend keeps bookings closed until midnight in
+`Africa/Johannesburg`, then converts the elapsed schedule into the normal
+enabled flag. Customer-facing reopening copy is rendered from that API value;
+do not hard-code seasonal dates in individual pages.
 
 ### Weather
 
@@ -394,11 +410,48 @@ Recommended project settings:
 
 | Setting          | Value                                        |
 | ---------------- | -------------------------------------------- |
+| Vercel project   | `jetskiandmore-frontend`                     |
 | Framework preset | Vite                                         |
 | Install command  | `npm ci`                                     |
 | Build command    | `npm run build`                              |
 | Output directory | `dist`                                       |
-| Environment      | `VITE_API_BASE=https://your-api.example.com` |
+| Environment      | `VITE_API_BASE=https://jetskiandmore-backend-1071528856282.africa-south1.run.app` |
+
+Link a local checkout to the existing production project before changing
+environment variables or deploying:
+
+```bash
+vercel link \
+  --yes \
+  --scope whitelightningdevs-projects \
+  --project jetskiandmore-frontend
+```
+
+Set the public API origin for production builds:
+
+```bash
+vercel env update VITE_API_BASE production \
+  --value "https://jetskiandmore-backend-1071528856282.africa-south1.run.app" \
+  --yes \
+  --scope whitelightningdevs-projects
+```
+
+Use `vercel env add` with the same name and environment only when the variable
+does not exist yet.
+
+For a guarded release, create a production-target deployment without moving the
+custom domain, inspect it, and promote it after smoke testing:
+
+```bash
+vercel deploy --prod --skip-domain --yes \
+  --scope whitelightningdevs-projects
+
+vercel inspect <deployment-url> \
+  --scope whitelightningdevs-projects
+
+vercel promote <deployment-url> --yes \
+  --scope whitelightningdevs-projects
+```
 
 After deployment:
 

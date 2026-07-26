@@ -1,7 +1,8 @@
 const envBase = (import.meta.env.VITE_API_BASE || '').trim()
 
-// Always default to the hosted backend unless explicitly overridden
-export const API_BASE = envBase || 'https://jetskiandmore-backend.onrender.com'
+// Always default to the production Cloud Run backend unless explicitly overridden
+export const API_BASE =
+  envBase || 'https://jetskiandmore-backend-1071528856282.africa-south1.run.app'
 
 export async function postJSON<T>(path: string, body: unknown, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {

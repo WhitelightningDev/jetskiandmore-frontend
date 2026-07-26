@@ -1,6 +1,6 @@
 export const BOOKINGS_PAUSED_TITLE = 'Closed for the season'
 export const BOOKINGS_PAUSED_MESSAGE =
-  'Jet ski online bookings are closed for the season. Boat rides are still available. We reopen on 1 November.'
+  'Jet ski online bookings are closed for the season. Boat rides are still available. Jet ski bookings open 1 August 2026.'
 export const BOOKINGS_PAUSED_FOLLOWUP =
   'If you’ve already made a booking and payment, please contact us and we will assist.'
 

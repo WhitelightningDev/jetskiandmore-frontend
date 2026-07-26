@@ -7,7 +7,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator'
 import { buttonVariants } from '@/components/ui/button'
 import { SITE_ORIGIN } from '@/lib/site'
-import { pickPrimaryBookingAction, useBookingControls } from '@/lib/bookingControls'
+import {
+  formatJetSkiOpenDate,
+  pickPrimaryBookingAction,
+  useBookingControls,
+} from '@/lib/bookingControls'
 import rideImg from '@/lib/images/IMG_3203.jpg'
 
 export const Route = createFileRoute('/jet-ski-rental-gordons-bay/')({
@@ -40,6 +44,7 @@ export const Route = createFileRoute('/jet-ski-rental-gordons-bay/')({
 function RouteComponent() {
   const { controls } = useBookingControls()
   const primary = React.useMemo(() => pickPrimaryBookingAction(controls), [controls])
+  const openingLabel = formatJetSkiOpenDate(controls.jetSkiBookingsOpenAt)
 
   return (
     <div className="bg-background">
@@ -77,7 +82,8 @@ function RouteComponent() {
               <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
                 <p className="font-semibold">Jet ski bookings are currently closed for the season.</p>
                 <p className="mt-1 text-amber-900/80">
-                  Boat rides are still available. We reopen on 1 November.
+                  Boat rides are still available.
+                  {openingLabel ? ` Jet ski bookings open ${openingLabel}.` : ''}
                 </p>
                 {controls.boatRideBookingsEnabled ? (
                   <Link to="/boat-ride" className={`${buttonVariants({ size: 'sm' })} mt-3 inline-flex`}>

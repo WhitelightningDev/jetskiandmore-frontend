@@ -4,6 +4,7 @@ import { API_BASE } from '@/lib/api'
 
 export type BookingControls = {
   jetSkiBookingsEnabled: boolean
+  jetSkiBookingsOpenAt?: string | null
   boatRideBookingsEnabled: boolean
   fishingChartersBookingsEnabled: boolean
   updatedAt?: string | null
@@ -12,6 +13,7 @@ export type BookingControls = {
 export const DEFAULT_BOOKING_CONTROLS: BookingControls = {
   // Match backend defaults (and the site's current "closed season" posture).
   jetSkiBookingsEnabled: false,
+  jetSkiBookingsOpenAt: null,
   boatRideBookingsEnabled: true,
   fishingChartersBookingsEnabled: true,
   updatedAt: null,
@@ -35,6 +37,7 @@ function readStoredControls(): BookingControls | null {
     if (!parsed || typeof parsed !== 'object') return null
     return {
       jetSkiBookingsEnabled: Boolean((parsed as any).jetSkiBookingsEnabled),
+      jetSkiBookingsOpenAt: (parsed as any).jetSkiBookingsOpenAt ?? null,
       boatRideBookingsEnabled: Boolean((parsed as any).boatRideBookingsEnabled),
       fishingChartersBookingsEnabled: Boolean((parsed as any).fishingChartersBookingsEnabled),
       updatedAt: (parsed as any).updatedAt ?? null,
@@ -91,6 +94,22 @@ export function useBookingControls() {
   const ctx = React.useContext(BookingControlsContext)
   if (!ctx) throw new Error('BookingControlsProvider missing')
   return ctx
+}
+
+export function formatJetSkiOpenDate(value?: string | null, now = new Date()): string | null {
+  if (!value) return null
+  const opening = new Date(value)
+  if (Number.isNaN(opening.getTime())) return null
+
+  const timeZone = 'Africa/Johannesburg'
+  const year = new Intl.DateTimeFormat('en-ZA', { year: 'numeric', timeZone }).format(opening)
+  const currentYear = new Intl.DateTimeFormat('en-ZA', { year: 'numeric', timeZone }).format(now)
+  return new Intl.DateTimeFormat('en-ZA', {
+    day: 'numeric',
+    month: 'long',
+    ...(year === currentYear ? {} : { year: 'numeric' }),
+    timeZone,
+  }).format(opening)
 }
 
 export function pickPrimaryBookingAction(controls: BookingControls): { enabled: boolean; to: string; label: string } {

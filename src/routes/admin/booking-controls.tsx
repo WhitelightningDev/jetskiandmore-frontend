@@ -15,6 +15,7 @@ export const Route = createFileRoute('/admin/booking-controls')({
 
 type BookingControls = {
   jetSkiBookingsEnabled: boolean
+  jetSkiBookingsOpenAt?: string | null
   boatRideBookingsEnabled: boolean
   fishingChartersBookingsEnabled: boolean
   updatedAt?: string | null
@@ -22,6 +23,7 @@ type BookingControls = {
 
 const DEFAULT_CONTROLS: BookingControls = {
   jetSkiBookingsEnabled: false,
+  jetSkiBookingsOpenAt: null,
   boatRideBookingsEnabled: true,
   fishingChartersBookingsEnabled: true,
   updatedAt: null,
@@ -32,6 +34,7 @@ function BookingControlsAdminPage() {
   const [loading, setLoading] = React.useState(true)
   const [saving, setSaving] = React.useState(false)
   const [controls, setControls] = React.useState<BookingControls>(DEFAULT_CONTROLS)
+  const [jetSkiOpenDate, setJetSkiOpenDate] = React.useState('')
   const [savedAt, setSavedAt] = React.useState<string | null>(null)
 
   React.useEffect(() => {
@@ -51,6 +54,7 @@ function BookingControlsAdminPage() {
         }
         const data = (await res.json()) as BookingControls
         setControls((prev) => ({ ...prev, ...data }))
+        setJetSkiOpenDate(toJohannesburgDate(data.jetSkiBookingsOpenAt))
       } catch (e: any) {
         setError(e?.message ?? 'Failed to load booking controls')
       } finally {
@@ -69,6 +73,7 @@ function BookingControlsAdminPage() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           jetSkiBookingsEnabled: controls.jetSkiBookingsEnabled,
+          jetSkiBookingsOpenAt: jetSkiOpenDate ? `${jetSkiOpenDate}T00:00:00+02:00` : null,
           boatRideBookingsEnabled: controls.boatRideBookingsEnabled,
           fishingChartersBookingsEnabled: controls.fishingChartersBookingsEnabled,
         }),
@@ -81,6 +86,7 @@ function BookingControlsAdminPage() {
       }
       const data = (await res.json()) as BookingControls
       setControls((prev) => ({ ...prev, ...data }))
+      setJetSkiOpenDate(toJohannesburgDate(data.jetSkiBookingsOpenAt))
       setSavedAt(new Date().toLocaleString('en-ZA'))
     } catch (e: any) {
       setError(e?.message ?? 'Failed to save booking controls')
@@ -144,10 +150,53 @@ function BookingControlsAdminPage() {
             disabled={loading}
             onCheckedChange={(v) => setControls((c) => ({ ...c, fishingChartersBookingsEnabled: v }))}
           />
+          <div className="rounded-2xl border border-slate-200 bg-slate-50/40 p-4 md:col-span-3">
+            <label htmlFor="jet-ski-open-date" className="text-sm font-semibold text-slate-900">
+              Scheduled jet ski opening
+            </label>
+            <p className="mt-1 text-xs text-slate-600">
+              The public API automatically enables jet ski bookings at midnight in Johannesburg on this date.
+            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <input
+                id="jet-ski-open-date"
+                type="date"
+                value={jetSkiOpenDate}
+                disabled={loading}
+                onChange={(event) => {
+                  setJetSkiOpenDate(event.target.value)
+                  if (event.target.value) {
+                    setControls((current) => ({ ...current, jetSkiBookingsEnabled: false }))
+                  }
+                }}
+                className="h-10 rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-900"
+              />
+              {jetSkiOpenDate ? (
+                <Button type="button" variant="outline" onClick={() => setJetSkiOpenDate('')}>
+                  Clear schedule
+                </Button>
+              ) : null}
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>
   )
+}
+
+function toJohannesburgDate(value?: string | null): string {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  const parts = new Intl.DateTimeFormat('en-ZA', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    timeZone: 'Africa/Johannesburg',
+  }).formatToParts(date)
+  const part = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((item) => item.type === type)?.value ?? ''
+  return `${part('year')}-${part('month')}-${part('day')}`
 }
 
 function ToggleCard({
@@ -190,4 +239,3 @@ function ToggleCard({
     </div>
   )
 }
-
