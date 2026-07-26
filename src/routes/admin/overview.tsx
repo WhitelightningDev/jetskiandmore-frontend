@@ -59,7 +59,7 @@ const dashboardChartConfig: ChartConfig = {
 const paidStatuses = new Set(['approved', 'paid', 'captured'])
 
 function AdminOverviewPage() {
-  const { analytics, pageViews, bookings, loadingBookings, loadingMeta } = useAdminContext()
+  const { analytics, pageViews, bookings, error, loadingBookings, loadingMeta } = useAdminContext()
   const [range, setRange] = React.useState<TrendRange>('12m')
   const [customerSearch, setCustomerSearch] = React.useState('')
 
@@ -159,9 +159,21 @@ function AdminOverviewPage() {
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <Badge className="border border-emerald-400/30 bg-emerald-400/10 text-emerald-200">
-                <span className="mr-2 h-1.5 w-1.5 rounded-full bg-emerald-300" />
-                Systems online
+              <Badge
+                className={cn(
+                  'border',
+                  error
+                    ? 'border-amber-400/30 bg-amber-400/10 text-amber-200'
+                    : 'border-emerald-400/30 bg-emerald-400/10 text-emerald-200',
+                )}
+              >
+                <span
+                  className={cn(
+                    'mr-2 h-1.5 w-1.5 rounded-full',
+                    error ? 'bg-amber-300' : 'bg-emerald-300',
+                  )}
+                />
+                {error ? 'Data needs attention' : loadingMeta ? 'Syncing live data' : 'Live production data'}
               </Badge>
               <Link
                 to="/admin/bookings"
@@ -485,7 +497,6 @@ function AdminOverviewPage() {
               <TableBody>
                 {recentRows.length ? (
                   recentRows.map((booking) => {
-                    const bookingDate = parseBookingTimestamp(booking)
                     return (
                       <TableRow key={booking.id}>
                         <TableCell>
@@ -507,13 +518,7 @@ function AdminOverviewPage() {
                           {rideLabel(booking.rideId)}
                         </TableCell>
                         <TableCell className="hidden lg:table-cell text-slate-600">
-                          {bookingDate
-                            ? bookingDate.toLocaleDateString('en-ZA', {
-                                day: 'numeric',
-                                month: 'short',
-                                year: 'numeric',
-                              })
-                            : booking.date || '—'}
+                          {formatRideDate(booking.date)}
                         </TableCell>
                         <TableCell>{statusBadge(booking.status)}</TableCell>
                         <TableCell className="text-right font-semibold text-slate-900">
@@ -759,6 +764,17 @@ function parseBookingTimestamp(booking: Booking): Date | null {
   const combined = booking.time ? `${booking.date}T${String(booking.time).trim()}` : booking.date
   const parsed = new Date(combined)
   return Number.isNaN(parsed.getTime()) ? null : parsed
+}
+
+function formatRideDate(value?: string | null) {
+  if (!value) return '—'
+  const parsed = new Date(`${value}T12:00:00`)
+  if (Number.isNaN(parsed.getTime())) return value
+  return parsed.toLocaleDateString('en-ZA', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
 }
 
 function formatZar(value: number) {
