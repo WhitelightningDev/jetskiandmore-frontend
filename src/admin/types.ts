@@ -14,6 +14,14 @@ export type Booking = {
   status: string
   amountInCents: number
   createdAt?: string | null
+  bookingReference?: string | null
+  numberOfJetSkis?: number | null
+  riders?: { name?: string; email?: string }[] | null
+  // Indemnity progress across active (non-removed) participants
+  indemnitySignedCount?: number
+  indemnityTotalCount?: number
+  indemnityRemovedCount?: number
+  refundedAmountInCents?: number
 }
 
 export type RideStat = {

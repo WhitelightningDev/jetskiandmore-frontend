@@ -24,6 +24,7 @@ import { Route as LocationsIndexRouteImport } from './routes/locations/index'
 import { Route as JetSkiRentalGordonsBayIndexRouteImport } from './routes/jet-ski-rental-gordons-bay/index'
 import { Route as JetSkiFaqsGordonsBayIndexRouteImport } from './routes/jet-ski-faqs-gordons-bay/index'
 import { Route as InterimSkipperQuizIndexRouteImport } from './routes/interim-skipper-quiz/index'
+import { Route as IndemnityIndexRouteImport } from './routes/indemnity/index'
 import { Route as HomeIndexRouteImport } from './routes/home/index'
 import { Route as GuidedJetSkiRidesFalseBayIndexRouteImport } from './routes/guided-jet-ski-rides-false-bay/index'
 import { Route as FishingChartersIndexRouteImport } from './routes/fishing-charters/index'
@@ -123,6 +124,11 @@ const JetSkiFaqsGordonsBayIndexRoute =
 const InterimSkipperQuizIndexRoute = InterimSkipperQuizIndexRouteImport.update({
   id: '/interim-skipper-quiz/',
   path: '/interim-skipper-quiz/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndemnityIndexRoute = IndemnityIndexRouteImport.update({
+  id: '/indemnity/',
+  path: '/indemnity/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HomeIndexRoute = HomeIndexRouteImport.update({
@@ -256,6 +262,7 @@ export interface FileRoutesByFullPath {
   '/fishing-charters': typeof FishingChartersIndexRoute
   '/guided-jet-ski-rides-false-bay': typeof GuidedJetSkiRidesFalseBayIndexRoute
   '/home': typeof HomeIndexRoute
+  '/indemnity': typeof IndemnityIndexRoute
   '/interim-skipper-quiz': typeof InterimSkipperQuizIndexRoute
   '/jet-ski-faqs-gordons-bay': typeof JetSkiFaqsGordonsBayIndexRoute
   '/jet-ski-rental-gordons-bay': typeof JetSkiRentalGordonsBayIndexRoute
@@ -294,6 +301,7 @@ export interface FileRoutesByTo {
   '/fishing-charters': typeof FishingChartersIndexRoute
   '/guided-jet-ski-rides-false-bay': typeof GuidedJetSkiRidesFalseBayIndexRoute
   '/home': typeof HomeIndexRoute
+  '/indemnity': typeof IndemnityIndexRoute
   '/interim-skipper-quiz': typeof InterimSkipperQuizIndexRoute
   '/jet-ski-faqs-gordons-bay': typeof JetSkiFaqsGordonsBayIndexRoute
   '/jet-ski-rental-gordons-bay': typeof JetSkiRentalGordonsBayIndexRoute
@@ -333,6 +341,7 @@ export interface FileRoutesById {
   '/fishing-charters/': typeof FishingChartersIndexRoute
   '/guided-jet-ski-rides-false-bay/': typeof GuidedJetSkiRidesFalseBayIndexRoute
   '/home/': typeof HomeIndexRoute
+  '/indemnity/': typeof IndemnityIndexRoute
   '/interim-skipper-quiz/': typeof InterimSkipperQuizIndexRoute
   '/jet-ski-faqs-gordons-bay/': typeof JetSkiFaqsGordonsBayIndexRoute
   '/jet-ski-rental-gordons-bay/': typeof JetSkiRentalGordonsBayIndexRoute
@@ -373,6 +382,7 @@ export interface FileRouteTypes {
     | '/fishing-charters'
     | '/guided-jet-ski-rides-false-bay'
     | '/home'
+    | '/indemnity'
     | '/interim-skipper-quiz'
     | '/jet-ski-faqs-gordons-bay'
     | '/jet-ski-rental-gordons-bay'
@@ -411,6 +421,7 @@ export interface FileRouteTypes {
     | '/fishing-charters'
     | '/guided-jet-ski-rides-false-bay'
     | '/home'
+    | '/indemnity'
     | '/interim-skipper-quiz'
     | '/jet-ski-faqs-gordons-bay'
     | '/jet-ski-rental-gordons-bay'
@@ -449,6 +460,7 @@ export interface FileRouteTypes {
     | '/fishing-charters/'
     | '/guided-jet-ski-rides-false-bay/'
     | '/home/'
+    | '/indemnity/'
     | '/interim-skipper-quiz/'
     | '/jet-ski-faqs-gordons-bay/'
     | '/jet-ski-rental-gordons-bay/'
@@ -479,6 +491,7 @@ export interface RootRouteChildren {
   FishingChartersIndexRoute: typeof FishingChartersIndexRoute
   GuidedJetSkiRidesFalseBayIndexRoute: typeof GuidedJetSkiRidesFalseBayIndexRoute
   HomeIndexRoute: typeof HomeIndexRoute
+  IndemnityIndexRoute: typeof IndemnityIndexRoute
   InterimSkipperQuizIndexRoute: typeof InterimSkipperQuizIndexRoute
   JetSkiFaqsGordonsBayIndexRoute: typeof JetSkiFaqsGordonsBayIndexRoute
   JetSkiRentalGordonsBayIndexRoute: typeof JetSkiRentalGordonsBayIndexRoute
@@ -599,6 +612,13 @@ declare module '@tanstack/react-router' {
       path: '/interim-skipper-quiz'
       fullPath: '/interim-skipper-quiz'
       preLoaderRoute: typeof InterimSkipperQuizIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/indemnity/': {
+      id: '/indemnity/'
+      path: '/indemnity'
+      fullPath: '/indemnity'
+      preLoaderRoute: typeof IndemnityIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/home/': {
@@ -792,6 +812,7 @@ const rootRouteChildren: RootRouteChildren = {
   FishingChartersIndexRoute: FishingChartersIndexRoute,
   GuidedJetSkiRidesFalseBayIndexRoute: GuidedJetSkiRidesFalseBayIndexRoute,
   HomeIndexRoute: HomeIndexRoute,
+  IndemnityIndexRoute: IndemnityIndexRoute,
   InterimSkipperQuizIndexRoute: InterimSkipperQuizIndexRoute,
   JetSkiFaqsGordonsBayIndexRoute: JetSkiFaqsGordonsBayIndexRoute,
   JetSkiRentalGordonsBayIndexRoute: JetSkiRentalGordonsBayIndexRoute,

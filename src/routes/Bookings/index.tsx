@@ -669,6 +669,9 @@ function classifySeverity(speed?: number | null, gust?: number | null, direction
   // Terms modal control
   const [confirmOpen, setConfirmOpen] = React.useState(false)
   const [ack, setAck] = React.useState(false)
+  // Swim competency is a hard requirement for everyone on the water. The booker
+  // declares it here; each participant re-confirms on their own indemnity form.
+  const [swimAck, setSwimAck] = React.useState(false)
 
   return (
     <div className="bg-white">
@@ -1310,15 +1313,29 @@ function classifySeverity(speed?: number | null, gust?: number | null, direction
       </section>
 
       {/* Terms & confirmation dialog */}
-      <Dialog open={confirmOpen} onOpenChange={(o) => { setConfirmOpen(o); if (!o) setAck(false) }}>
+      <Dialog open={confirmOpen} onOpenChange={(o) => { setConfirmOpen(o); if (!o) { setAck(false); setSwimAck(false) } }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Weather policy & terms</DialogTitle>
+            <DialogTitle>Safety requirement & terms</DialogTitle>
             <DialogDescription>
               We do not refund due to bad weather. If conditions are unsafe or poor, we will reschedule your booking to a better day. If you cannot attend because you do not live in Cape Town, you will receive a voucher valid for 2 years.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-3">
+          <div className="space-y-4">
+            <div className="rounded-lg border border-sky-200 bg-sky-50 p-3">
+              <p className="text-sm font-semibold text-sky-900">Swim competency is required</p>
+              <p className="mt-1 text-xs text-sky-900/80">
+                Everyone on the water must be able to swim — riders and passengers alike. Life jackets are mandatory
+                but are not a substitute for being comfortable in water. Each person confirms this again on their own
+                indemnity form before the ride, and anyone who cannot swim is removed and refunded.
+              </p>
+              <label className="mt-3 flex items-start gap-2 text-sm">
+                <Checkbox checked={swimAck} onCheckedChange={(v: any) => setSwimAck(Boolean(v))} />
+                <span>
+                  I confirm that every person on this booking, including passengers, is able to swim.
+                </span>
+              </label>
+            </div>
             <label className="flex items-center gap-2 text-sm">
               <Checkbox checked={ack} onCheckedChange={(v: any) => setAck(Boolean(v))} />
               <span>I acknowledge and accept these terms</span>
@@ -1327,7 +1344,7 @@ function classifySeverity(speed?: number | null, gust?: number | null, direction
           </div>
               <DialogFooter>
             <Button variant="outline" onClick={() => setConfirmOpen(false)}>Cancel</Button>
-            <Button onClick={() => { if (!ack) return; setConfirmOpen(false); setPayOpen(true) }} disabled={!ack}>Proceed</Button>
+            <Button onClick={() => { if (!ack || !swimAck) return; setConfirmOpen(false); setPayOpen(true) }} disabled={!ack || !swimAck}>Proceed</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1355,7 +1372,7 @@ function classifySeverity(speed?: number | null, gust?: number | null, direction
               }
               setPaying(true)
                   const formattedDate = date ? formatLocalDateKey(date) : null
-                  const booking = { rideId, date: formattedDate, time, fullName, email, phone, notes, addons, passengers, riders, jetSkiQty: requiredJetSkis }
+                  const booking = { rideId, date: formattedDate, time, fullName, email, phone, notes, addons, passengers, riders, jetSkiQty: requiredJetSkis, allParticipantsCanSwim: swimAck }
               try {
                 // Preferred: Checkout API (Bearer token)
                 const co = await createCheckout(booking)

@@ -50,6 +50,38 @@ export const Route = createFileRoute('/admin/bookings')({
   component: AdminBookingsPage,
 })
 
+/** Check-in readiness: how many participants have signed their indemnity. */
+function IndemnityCell({ booking }: { booking: Booking }) {
+  const total = booking.indemnityTotalCount ?? 0
+  const signed = booking.indemnitySignedCount ?? 0
+  const removed = booking.indemnityRemovedCount ?? 0
+
+  if (total === 0) {
+    return <span className="text-xs text-slate-400">—</span>
+  }
+
+  const complete = signed >= total
+  return (
+    <div className="flex flex-col gap-1">
+      <Badge
+        variant="outline"
+        className={
+          complete
+            ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+            : 'border-amber-200 bg-amber-50 text-amber-700'
+        }
+      >
+        {signed}/{total} signed
+      </Badge>
+      {removed > 0 ? (
+        <span className="text-[11px] font-medium text-rose-600">
+          {removed} removed (cannot swim)
+        </span>
+      ) : null}
+    </div>
+  )
+}
+
 function AdminBookingsPage() {
   const {
     bookings,
@@ -209,6 +241,7 @@ function AdminBookingsPage() {
                       <TableHead>Ride</TableHead>
                       <TableHead>Customer</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>Indemnity</TableHead>
                       <TableHead className="text-right">Amount</TableHead>
                       <TableHead className="pr-6 text-right">Actions</TableHead>
                     </TableRow>
@@ -283,8 +316,16 @@ function AdminBookingsPage() {
                               </Select>
                             </div>
                           </TableCell>
+                          <TableCell>
+                            <IndemnityCell booking={b} />
+                          </TableCell>
                           <TableCell className="text-right">
                             ZAR {(b.amountInCents / 100).toLocaleString('en-ZA')}
+                            {(b.refundedAmountInCents ?? 0) > 0 ? (
+                              <div className="text-[11px] font-medium text-amber-700">
+                                −ZAR {((b.refundedAmountInCents ?? 0) / 100).toLocaleString('en-ZA')} refunded
+                              </div>
+                            ) : null}
                           </TableCell>
                           <TableCell className="pr-6 text-right">
                             <Button
@@ -356,6 +397,9 @@ function AdminBookingsPage() {
                               {b.phone}
                             </span>
                           )}
+                        </div>
+                        <div className="mt-2">
+                          <IndemnityCell booking={b} />
                         </div>
                       </div>
                       <div className="mt-4 flex flex-wrap items-center gap-3">

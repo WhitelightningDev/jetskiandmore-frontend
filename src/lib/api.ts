@@ -102,6 +102,80 @@ export async function verifyCheckout(checkoutId: string, booking: any) {
   )
 }
 
+// Indemnity (per-participant, resolved from the token emailed after booking)
+export type IndemnityParticipantContext = {
+  participantId: string
+  fullName: string
+  email?: string | null
+  role: string
+  roleLabel: string
+  isRider: boolean
+  positionNumber: number
+  indemnityStatus: 'PENDING' | 'SIGNED' | 'REMOVED'
+  signedAt?: string | null
+}
+
+export type IndemnityContext = {
+  participant: IndemnityParticipantContext
+  bookingId: string
+  bookingGroupId: string
+  bookingReference?: string | null
+  bookingStatus?: string | null
+  rideId?: string | null
+  rideLabel?: string | null
+  date?: string | null
+  time?: string | null
+  numberOfJetSkis: number
+  totalRiders: number
+  totalPassengers: number
+  primaryRiderName?: string | null
+  safetyVideoUrl?: string | null
+  isRemoved: boolean
+}
+
+export type IndemnitySubmitPayload = {
+  token: string
+  fullName: string
+  email?: string
+  idNumber?: string
+  phone?: string
+  dateOfBirth?: string
+  emergencyContactName?: string
+  emergencyContactPhone?: string
+  medicalConditions?: string
+  canSwim: boolean
+  hasWatchedVideo: boolean
+  hasAcceptedIndemnity: boolean
+  signatureName?: string
+}
+
+export type IndemnitySubmitResult = {
+  ok: boolean
+  status: 'SIGNED' | 'REMOVED'
+  removed: boolean
+  bookingCancelled: boolean
+  refundAmountInCents: number
+  refundStatus?: string | null
+  message?: string | null
+}
+
+export async function getIndemnityContext(token: string) {
+  const res = await fetch(`${API_BASE}/api/indemnities/context?token=${encodeURIComponent(token)}`)
+  if (!res.ok) {
+    let msg = 'This indemnity link is not valid.'
+    try {
+      const data = await res.json()
+      msg = data?.detail || data?.message || msg
+    } catch {}
+    throw new Error(msg)
+  }
+  return (await res.json()) as IndemnityContext
+}
+
+export async function submitIndemnity(payload: IndemnitySubmitPayload) {
+  return postJSON<IndemnitySubmitResult>('/api/indemnities/submit', payload)
+}
+
 // Boat ride requests
 export type BoatRideRequest = {
   firstName: string
