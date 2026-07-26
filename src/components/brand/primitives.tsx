@@ -171,7 +171,7 @@ export function BrandButton({
   children: React.ReactNode
 } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
   const classes = cn(
-    'inline-flex items-center justify-center gap-2 rounded-xl font-bold no-underline transition-colors',
+    'inline-flex items-center justify-center gap-2 rounded-xl font-bold no-underline transition-colors disabled:cursor-not-allowed disabled:opacity-50',
     toneClasses[tone],
     sizeClasses[size],
     className,

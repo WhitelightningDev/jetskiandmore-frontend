@@ -60,6 +60,102 @@ export async function getAvailableTimes(rideId: string, date: string, jetSkiQty?
   return (await res.json()) as { rideId: string; date: string; times: Array<string | { time: string; availableJetSkis?: number }> }
 }
 
+// Advanced harbour weather + marine planning guidance
+export type HarbourAssessment = {
+  rating: 'prime' | 'fair' | 'rough'
+  score: number
+  reasons: Array<string>
+  confidence: 'high' | 'medium' | 'low'
+}
+
+export type HarbourCurrentConditions = {
+  time?: string | null
+  temperatureC?: number | null
+  apparentTemperatureC?: number | null
+  windSpeedKmh?: number | null
+  windGustKmh?: number | null
+  windDirectionDeg?: number | null
+  precipitationMm?: number | null
+  visibilityM?: number | null
+  weatherCode?: number | null
+  waveHeightM?: number | null
+  waveDirectionDeg?: number | null
+  wavePeriodS?: number | null
+  swellHeightM?: number | null
+  swellDirectionDeg?: number | null
+  swellPeriodS?: number | null
+  seaSurfaceTemperatureC?: number | null
+  assessment: HarbourAssessment
+}
+
+export type HarbourForecastHour = {
+  time: string
+  temperatureC?: number | null
+  windSpeedKmh?: number | null
+  windGustKmh?: number | null
+  windDirectionDeg?: number | null
+  precipitationProbabilityPct?: number | null
+  precipitationMm?: number | null
+  visibilityM?: number | null
+  weatherCode?: number | null
+  waveHeightM?: number | null
+  waveDirectionDeg?: number | null
+  wavePeriodS?: number | null
+  swellHeightM?: number | null
+  swellDirectionDeg?: number | null
+  swellPeriodS?: number | null
+  seaSurfaceTemperatureC?: number | null
+  assessment: HarbourAssessment
+}
+
+export type HarbourForecastDay = {
+  date: string
+  temperatureMaxC?: number | null
+  temperatureMinC?: number | null
+  windSpeedMaxKmh?: number | null
+  windGustMaxKmh?: number | null
+  precipitationProbabilityMaxPct?: number | null
+  sunrise?: string | null
+  sunset?: string | null
+  waveHeightMaxM?: number | null
+  wavePeriodMaxS?: number | null
+  swellHeightMaxM?: number | null
+  swellPeriodMaxS?: number | null
+  assessment: HarbourAssessment
+}
+
+export type HarbourRideWindow = {
+  startsAt: string
+  endsAt: string
+  rating: 'prime' | 'fair'
+  score: number
+  summary: string
+}
+
+export type HarbourConditionsResponse = {
+  generatedAt: string
+  sourceUpdatedAt?: string | null
+  stale: boolean
+  cacheTtlSeconds: number
+  location: {
+    name: string
+    latitude: number
+    longitude: number
+    timezone: string
+  }
+  current: HarbourCurrentConditions
+  hourly: Array<HarbourForecastHour>
+  daily: Array<HarbourForecastDay>
+  bestWindows: Array<HarbourRideWindow>
+  disclaimer: string
+}
+
+export async function getHarbourConditions() {
+  const res = await fetch(`${API_BASE}/api/weather/harbour`)
+  if (!res.ok) throw new Error('Advanced harbour conditions are unavailable')
+  return (await res.json()) as HarbourConditionsResponse
+}
+
 export async function initiatePayment(booking: any) {
   return postJSON<{ currency: 'ZAR'; amountInCents: number; publicKey: string; reference: string }>(
     '/api/payments/initiate',

@@ -248,10 +248,16 @@ Only an authenticated admin can change the persisted controls.
 
 ### Weather
 
-Weather views call the public Open-Meteo forecast API directly from the browser.
-The hero weather card also calls the Open-Meteo marine endpoint for wave height.
-Coordinates and the `Africa/Johannesburg` timezone are defined in the relevant
-weather components.
+Weather views prefer the backend's cached `GET /api/weather/harbour` aggregation,
+which combines Open-Meteo weather and marine guidance into current, hourly, and
+seven-day conditions. The response includes wind and gusts, wave and swell
+height/period, precipitation, visibility, sea temperature, explainable
+prime/fair/rough scores, and ranked two-hour riding windows.
+
+Until that backend revision is reachable—or during a backend outage—the public
+page falls back to a smaller direct Open-Meteo weather and marine request so the
+forecast does not disappear completely. Harbour coordinates and the
+`Africa/Johannesburg` timezone are shared with the backend configuration.
 
 Weather data is advisory. The business's operational go/no-go decision remains
 the source of truth.

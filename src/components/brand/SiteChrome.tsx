@@ -58,12 +58,21 @@ export function SiteHeader() {
     setMenuOpen(false)
   }, [pathname])
 
+  React.useEffect(() => {
+    if (!menuOpen) return
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMenuOpen(false)
+    }
+    document.addEventListener('keydown', closeOnEscape)
+    return () => document.removeEventListener('keydown', closeOnEscape)
+  }, [menuOpen])
+
   return (
-    <div className="sticky top-0 z-50 border-b border-brand-line bg-white/92 backdrop-blur-[14px]">
+    <header className="sticky top-0 z-50 border-b border-brand-line bg-white/92 backdrop-blur-[14px]">
       <div className="mx-auto flex h-[76px] max-w-[1240px] items-center justify-between gap-5 px-5 sm:px-8 xl:gap-7">
         <Link to={ROUTES.home} className="flex flex-none items-center gap-3 no-underline">
           <img src={logoBadge} alt="Jet Ski &amp; More" className="block h-12 w-12" />
-          <span className="text-left leading-[1.05]">
+          <span className="hidden text-left leading-[1.05] min-[480px]:block">
             <span className="block font-display text-[15px] font-extrabold tracking-[0.02em] text-brand-ink sm:text-[16px]">
               JET SKI &amp; MORE
             </span>
@@ -73,7 +82,7 @@ export function SiteHeader() {
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-0.5 xl:flex">
+        <nav className="hidden items-center gap-0.5 min-[1180px]:flex">
           {NAV_ITEMS.map((item) => (
             <Link
               key={item.to}
@@ -97,7 +106,7 @@ export function SiteHeader() {
             aria-expanded={menuOpen}
             aria-label={menuOpen ? 'Close menu' : 'Open menu'}
             onClick={() => setMenuOpen((v) => !v)}
-            className="flex items-center gap-2.5 rounded-[10px] border border-brand-line-strong bg-white px-3 py-2.5 text-[14px] font-bold text-brand-ink transition-colors hover:border-brand-teal xl:hidden"
+            className="flex items-center gap-2.5 rounded-[10px] border border-brand-line-strong bg-white px-3 py-2.5 text-[14px] font-bold text-brand-ink transition-colors hover:border-brand-teal min-[1180px]:hidden"
           >
             <span className="flex flex-col gap-[3px]">
               <span className="block h-0.5 w-4 rounded-sm bg-brand-ink" />
@@ -123,7 +132,7 @@ export function SiteHeader() {
       </div>
 
       {menuOpen ? (
-        <div className="border-t border-brand-line bg-white xl:hidden">
+        <div className="border-t border-brand-line bg-white min-[1180px]:hidden">
           <div className="mx-auto flex max-w-[1240px] flex-col gap-1 px-5 pb-5 pt-3.5">
             {MOBILE_NAV_ITEMS.map((item) => (
               <Link
@@ -150,7 +159,7 @@ export function SiteHeader() {
           </div>
         </div>
       ) : null}
-    </div>
+    </header>
   )
 }
 
@@ -167,7 +176,7 @@ function FooterLink({ to, children }: { to: string; children: React.ReactNode })
 
 export function SiteFooter() {
   return (
-    <div className="mt-[88px] bg-brand-deep text-brand-on-dark">
+    <footer className="mt-[88px] bg-brand-deep text-brand-on-dark">
       <div className="mx-auto grid max-w-[1240px] gap-10 px-5 pt-16 sm:px-8 md:grid-cols-2 xl:grid-cols-[1.4fr_1fr_1fr_1.1fr]">
         <div>
           <div className="flex items-center gap-3">
@@ -235,6 +244,6 @@ export function SiteFooter() {
           </span>
         </div>
       </div>
-    </div>
+    </footer>
   )
 }

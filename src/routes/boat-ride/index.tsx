@@ -1,402 +1,307 @@
 import * as React from 'react'
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
+import { CheckCircle2, Ship } from 'lucide-react'
+
 import {
-  CalendarDays,
-  CheckCircle2,
-  Info,
-  MapPin,
-  Phone,
-  Ship,
-  Users,
-  Waves,
-} from 'lucide-react'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button, buttonVariants } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Calendar } from '@/components/ui/calendar'
-import boatImg from '@/lib/images/Spectatorboatride.png'
+  BrandButton,
+  ClosingCta,
+  DisplayHeading,
+  Eyebrow,
+  Panel,
+  Section,
+  Shell,
+  Shot,
+} from '@/components/brand/primitives'
+import { useBookingControls } from '@/lib/bookingControls'
+import {
+  BOAT_OFFERINGS,
+  CONTACT,
+  PARTNER_HOW,
+  ROUTES,
+  boatImg,
+} from '@/lib/brand-content'
 import { sendBoatRideRequest } from '@/lib/api'
-import { pickPrimaryBookingAction, useBookingControls } from '@/lib/bookingControls'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
 export const Route = createFileRoute('/boat-ride/')({
-  component: RouteComponent,
+  head: () => ({
+    meta: [
+      { title: "Boat Rides & Fishing Charters | Gordon's Bay" },
+      {
+        name: 'description',
+        content:
+          "Skippered False Bay boat rides, spectator boats and fishing charters from Gordon's Bay Harbour.",
+      },
+    ],
+  }),
+  component: BoatPage,
 })
 
-const maxPeople = 12
+const fieldClass =
+  'mt-2 w-full rounded-xl border border-brand-line-strong bg-brand-surface px-4 py-3 text-[15px] text-brand-ink outline-none transition focus:border-brand-teal focus:ring-2 focus:ring-brand-teal/15'
 
-function RouteComponent() {
+function BoatPage() {
   const { controls } = useBookingControls()
-  const primary = pickPrimaryBookingAction(controls)
-  const boatRideClosed = !controls.boatRideBookingsEnabled
-
-  const [dialogOpen, setDialogOpen] = React.useState(false)
-  const [successOpen, setSuccessOpen] = React.useState(false)
-  const [submitting, setSubmitting] = React.useState(false)
-  const [selectedDate, setSelectedDate] = React.useState<Date>()
-  const [error, setError] = React.useState<string | null>(null)
   const [form, setForm] = React.useState({
     firstName: '',
     lastName: '',
     phone: '',
     email: '',
     people: 2,
+    date: '',
   })
+  const [submitting, setSubmitting] = React.useState(false)
+  const [success, setSuccess] = React.useState(false)
+  const [error, setError] = React.useState<string | null>(null)
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
     setError(null)
-    if (boatRideClosed) {
+    setSuccess(false)
+    if (!controls.boatRideBookingsEnabled) {
       setError('Boat ride requests are currently closed.')
       return
     }
-
-    if (!selectedDate) {
-      setError('Please choose a date for your boat ride.')
-      return
-    }
-
-    const people = Math.min(maxPeople, Math.max(1, Number(form.people) || 1))
-    const date = selectedDate.toISOString().split('T')[0]
 
     try {
       setSubmitting(true)
       await sendBoatRideRequest({
         ...form,
-        people,
-        date,
+        people: Math.min(12, Math.max(1, Number(form.people) || 1)),
       })
-      setForm({ firstName: '', lastName: '', phone: '', email: '', people: 2 })
-      setSelectedDate(undefined)
-      setDialogOpen(false)
-      setSuccessOpen(true)
-    } catch (err: any) {
-      setError(err?.message || 'Sorry, something went wrong. Please try again.')
+      setSuccess(true)
+      setForm({
+        firstName: '',
+        lastName: '',
+        phone: '',
+        email: '',
+        people: 2,
+        date: '',
+      })
+    } catch (caught) {
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : 'We could not send this request. Please use WhatsApp instead.',
+      )
     } finally {
       setSubmitting(false)
     }
   }
 
   return (
-    <div className="bg-gradient-to-b from-sky-50 via-white to-white">
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-sky-100 via-white to-emerald-50" />
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 md:py-14">
-          <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] items-center">
-            <div className="space-y-5">
-              <Badge className="bg-white/70 text-sky-800 border-sky-200 flex items-center gap-2 w-fit">
-                <Ship className="h-4 w-4" />
-                Boat ride experience
-              </Badge>
-              <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-slate-900">
-                Book a False Bay boat ride
-              </h1>
-              <p className="text-slate-700 max-w-2xl">
-                Enjoy a skippered boat ride around Gordon&apos;s Bay and False Bay—perfect as its own outing, or added alongside jet ski bookings. We handle the skipper, safety and route so you can relax and take in the views.
-              </p>
-              {boatRideClosed ? (
-                <Alert variant="destructive">
-                  <AlertTitle>Boat ride requests closed</AlertTitle>
-                  <AlertDescription>
-                    Boat ride requests are currently turned off. Please contact us, or choose another available experience.
-                  </AlertDescription>
-                </Alert>
-              ) : null}
-
-              <div className="flex flex-wrap gap-3 text-sm text-slate-700">
-                <Badge variant="secondary" className="flex items-center gap-2 rounded-full">
-                  <Users className="h-4 w-4" />
-                  Up to {maxPeople} people
-                </Badge>
-                <Badge variant="secondary" className="flex items-center gap-2 rounded-full">
-                  <MapPin className="h-4 w-4" />
-                  Gordon&apos;s Bay Harbour launch
-                </Badge>
-                <Badge variant="outline" className="flex items-center gap-2 rounded-full">
-                  <Waves className="h-4 w-4" />
-                  Weather &amp; sea conditions apply
-                </Badge>
-              </div>
-
-              <div className="flex flex-wrap gap-3">
-                {boatRideClosed ? (
-                  <Button size="lg" disabled>
-                    <CalendarDays className="mr-2 h-5 w-5" />
-                    Boat ride requests closed
-                  </Button>
-                ) : (
-                  <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); setError(null) }}>
-                    <DialogTrigger asChild>
-                      <Button size="lg">
-                        <CalendarDays className="mr-2 h-5 w-5" />
-                        Request a boat ride
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Request a boat ride</DialogTitle>
-                        <DialogDescription>
-                          Share your details and preferred date. We&apos;ll confirm availability and email {`heinrichkaiser007@gmail.com`}.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          <div className="space-y-2">
-                            <Label htmlFor="firstName">Name</Label>
-                            <Input
-                              id="firstName"
-                              value={form.firstName}
-                              onChange={(e) => setForm((f) => ({ ...f, firstName: e.target.value }))}
-                              required
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="lastName">Surname</Label>
-                            <Input
-                              id="lastName"
-                              value={form.lastName}
-                              onChange={(e) => setForm((f) => ({ ...f, lastName: e.target.value }))}
-                              required
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="phone">Cell number</Label>
-                            <Input
-                              id="phone"
-                              inputMode="tel"
-                              value={form.phone}
-                              onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-                              placeholder="+27"
-                              required
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="email">Email address</Label>
-                            <Input
-                              id="email"
-                              type="email"
-                              value={form.email}
-                              onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                              placeholder="you@example.com"
-                              required
-                            />
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          <div className="space-y-2">
-                            <Label htmlFor="people">How many people? (max {maxPeople})</Label>
-                            <Input
-                              id="people"
-                              type="number"
-                              min={1}
-                              max={maxPeople}
-                              value={form.people}
-                              onChange={(e) =>
-                                setForm((f) => ({
-                                  ...f,
-                                  people: Math.min(maxPeople, Math.max(1, Number(e.target.value) || 1)),
-                                }))
-                              }
-                              required
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="boat-date">Choose a date</Label>
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <Button id="boat-date" variant="outline" className="w-full justify-start font-normal">
-                                  <CalendarDays className="mr-2 h-4 w-4" />
-                                  {selectedDate
-                                    ? selectedDate.toLocaleDateString('en-ZA', {
-                                        weekday: 'short',
-                                        year: 'numeric',
-                                        month: 'short',
-                                        day: 'numeric',
-                                      })
-                                    : 'Pick a date'}
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent className="p-0" align="start">
-                                <Calendar
-                                  mode="single"
-                                  selected={selectedDate}
-                                  onSelect={setSelectedDate}
-                                  disabled={(d) => d < new Date(new Date().setHours(0, 0, 0, 0))}
-                                  initialFocus
-                                />
-                              </PopoverContent>
-                            </Popover>
-                            <p className="text-xs text-muted-foreground">We&apos;ll match times to weather and harbour slots.</p>
-                          </div>
-                        </div>
-
-                        {error ? <p className="text-sm text-red-600">{error}</p> : null}
-
-                        <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                          <p className="text-xs text-muted-foreground flex items-center gap-2">
-                            <Info className="h-3.5 w-3.5" />
-                            Subject to skipper availability and sea conditions.
-                          </p>
-                          <div className="flex gap-2">
-                            <Button type="button" variant="ghost" onClick={() => setDialogOpen(false)}>
-                              Cancel
-                            </Button>
-                            <Button type="submit" disabled={submitting}>
-                              {submitting ? 'Sending...' : 'Send request'}
-                            </Button>
-                          </div>
-                        </DialogFooter>
-                      </form>
-                    </DialogContent>
-                  </Dialog>
-                )}
-
-                {primary.enabled && primary.to !== '/boat-ride' ? (
-                  <Link to={primary.to} className={buttonVariants({ variant: 'outline', size: 'lg' })}>
-                    See available bookings
-                  </Link>
-                ) : null}
-
-                <Link to="/contact" className={buttonVariants({ variant: 'outline', size: 'lg' })}>
-                  <Phone className="mr-2 h-5 w-5" />
-                  Talk to us
-                </Link>
-              </div>
-            </div>
-
-            <Card className="border-sky-200/70 shadow-lg shadow-sky-200/60">
-              <CardContent className="p-0">
-                <div className="relative aspect-[4/3] overflow-hidden rounded-t-xl">
-                  <img
-                    src={boatImg}
-                    alt="False Bay boat ride"
-                    className="h-full w-full object-cover"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent" />
-                  <div className="absolute bottom-3 left-3 flex items-center gap-2 text-xs text-white">
-                    <Badge variant="secondary" className="bg-white/90 text-slate-900">
-                      Safe &amp; skippered
-                    </Badge>
-                    <Badge variant="secondary" className="bg-emerald-400/90 text-emerald-900">
-                      Great for photos
-                    </Badge>
-                  </div>
-                </div>
-                <div className="p-5 space-y-3">
-                  <div className="flex items-center gap-2 text-slate-700">
-                    <Users className="h-4 w-4 text-sky-700" />
-                    <span className="text-sm">Family-friendly boat ride with shade and life jackets.</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-700">
-                    <MapPin className="h-4 w-4 text-sky-700" />
-                    <span className="text-sm">Launches from Gordon&apos;s Bay Harbour; add it to jet ski days or book it alone.</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-700">
-                    <CalendarDays className="h-4 w-4 text-sky-700" />
-                    <span className="text-sm">Choose your date and we&apos;ll confirm the best weather window.</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+    <div>
+      <Shell className="pt-12 sm:pt-16">
+        <div className="flex items-center gap-4">
+          <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-fba font-display text-[13px] font-extrabold text-white">
+            FBA
+          </span>
+          <div>
+            <Eyebrow>IN PARTNERSHIP WITH FALSE BAY ADVENTURES</Eyebrow>
+            <p className="mt-1 font-display text-[16px] font-bold text-brand-ink">
+              Skippered boat rides &amp; fishing charters
+            </p>
           </div>
+        </div>
+        <DisplayHeading as="h1" className="mt-6 max-w-[930px]" size="xl">
+          When the group is bigger — or the bay is busier — we take the boat.
+        </DisplayHeading>
+        <p className="mt-4 max-w-[720px] text-[17px] leading-[1.65] text-brand-muted">
+          A licensed vessel with its own skipper, launching from the same harbour.
+          Ideal for spectators, families, whale season and anyone who would rather
+          watch than ride.
+        </p>
 
-          <div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-2">
-            {[
-              {
-                icon: <Users className="h-5 w-5 text-sky-700" />,
-                title: 'Standalone outing',
-                desc: 'Great for family, friends, or content teams wanting a scenic cruise—no jet skis required.',
-              },
-              {
-                icon: <Waves className="h-5 w-5 text-sky-700" />,
-                title: 'Comfort & safety',
-                desc: 'Experienced skipper, life jackets provided, and we stay within agreed calm zones.',
-              },
-              {
-                icon: <CalendarDays className="h-5 w-5 text-sky-700" />,
-                title: 'Flexible timing',
-                desc: 'Book as a stand-alone boat ride or add it to your jet ski booking.',
-              },
-              {
-                icon: <Phone className="h-5 w-5 text-sky-700" />,
-                title: 'Simple confirmation',
-                desc: 'Send your request and we&apos;ll reply with timing, price and next steps.',
-              },
-            ].map((item) => (
-              <Card key={item.title} className="h-full border-slate-200/80">
-                <CardHeader className="pb-2">
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-sky-50 border border-sky-100">
-                      {item.icon}
-                    </span>
-                    {item.title}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="text-sm text-slate-600 pt-0">
-                  {item.desc}
-                </CardContent>
-              </Card>
+        <div className="relative mt-8 h-[380px] overflow-hidden rounded-[22px]">
+          <Shot src={boatImg} alt="False Bay Adventures boat with passengers" />
+          <div className="absolute inset-0 bg-gradient-to-t from-brand-deep/50 to-transparent" />
+          <div className="absolute bottom-6 left-6 rounded-xl bg-white/90 px-4 py-3 backdrop-blur">
+            <div className="flex items-center gap-2 font-bold text-brand-ink">
+              <Ship className="h-4 w-4 text-brand-teal" aria-hidden />
+              Gordon&apos;s Bay Harbour departures
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-5 grid gap-5 lg:grid-cols-3">
+          {BOAT_OFFERINGS.map((offering, index) => (
+            <Panel key={offering.title} className="flex flex-col p-7">
+              <Eyebrow>{offering.tag}</Eyebrow>
+              <h2 className="mt-2.5 font-display text-[21px] font-bold text-brand-ink">
+                {offering.title}
+              </h2>
+              <p className="mt-2.5 flex-1 text-[15px] leading-[1.6] text-brand-muted">
+                {offering.body}
+              </p>
+              <div className="mt-5 font-display text-[22px] font-extrabold text-brand-ink">
+                {offering.price}
+              </div>
+              <div className="mt-1 text-[13px] font-semibold text-brand-faint">
+                {offering.duration}
+              </div>
+              <BrandButton
+                to={index === 2 ? '/fishing-charters' : undefined}
+                href={index === 2 ? undefined : '#boat-request'}
+                className="mt-5"
+              >
+                {offering.cta}
+              </BrandButton>
+            </Panel>
+          ))}
+        </div>
+      </Shell>
+
+      <Section>
+        <Panel className="p-8 sm:p-10">
+          <DisplayHeading size="md">How the partnership works</DisplayHeading>
+          <div className="mt-6 grid gap-5 lg:grid-cols-3">
+            {PARTNER_HOW.map((item) => (
+              <div key={item.title} className="border-t-2 border-brand-teal pt-4">
+                <h3 className="font-bold text-brand-ink">{item.title}</h3>
+                <p className="mt-2 text-[14.5px] leading-[1.6] text-brand-muted">
+                  {item.body}
+                </p>
+              </div>
             ))}
           </div>
+        </Panel>
+      </Section>
 
-          <Card className="mt-8 border-slate-200/80 bg-linear-to-br from-white to-sky-50/60">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                How it works
-              </CardTitle>
-              <CardDescription>Quick steps to arrange your boat ride.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-4 md:grid-cols-3 text-sm text-slate-700">
-              {[
-                'Send your request with your details and preferred date.',
-                'We confirm availability, ideal time and weather with you.',
-                'Arrive 15 minutes early for life jackets and a short briefing.',
-              ].map((step, idx) => (
-                <div key={step} className="flex items-start gap-3">
-                  <span className="mt-0.5 inline-flex h-7 w-7 items-center justify-center rounded-full bg-emerald-50 text-emerald-800 border border-emerald-100 text-sm font-semibold">
-                    {idx + 1}
-                  </span>
-                  <p>{step}</p>
-                </div>
-              ))}
-            </CardContent>
-            <CardFooter className="flex flex-wrap gap-3 items-center justify-between">
-              <p className="text-xs text-muted-foreground flex items-center gap-2">
-                <Info className="h-4 w-4" />
-                If seas look rough, we may shift your slot to a calmer window.
-              </p>
-              <Button variant="outline" onClick={() => setDialogOpen(true)} disabled={boatRideClosed}>
-                <CalendarDays className="mr-2 h-4 w-4" />
-                {boatRideClosed ? 'Boat ride requests closed' : 'Request a boat ride'}
-              </Button>
-            </CardFooter>
-          </Card>
-        </div>
-      </section>
+      <Section>
+        <Panel id="boat-request" className="grid overflow-hidden lg:grid-cols-[0.85fr_1.15fr]">
+          <div className="bg-brand-deep p-8 text-white sm:p-10">
+            <Eyebrow tone="amber">REQUEST A BOAT</Eyebrow>
+            <h2 className="mt-3 font-display text-[30px] font-extrabold leading-[1.12] tracking-[-0.02em]">
+              Tell us the date and group size.
+            </h2>
+            <p className="mt-4 text-[15.5px] leading-[1.65] text-brand-on-dark">
+              No payment is taken here. The team confirms the vessel, skipper,
+              weather window and final price before you commit.
+            </p>
+            <BrandButton href={CONTACT.whatsapp} tone="ghost-dark" className="mt-6">
+              Prefer WhatsApp?
+            </BrandButton>
+          </div>
 
-      <Dialog open={successOpen} onOpenChange={setSuccessOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-              Request sent
-            </DialogTitle>
-            <DialogDescription>
-              Thanks for your interest! We&apos;ve sent your details to heinrichkaiser007@gmail.com and will confirm availability soon.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button onClick={() => setSuccessOpen(false)}>Close</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          <form onSubmit={submit} className="p-8 sm:p-10">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="text-[13px] font-bold text-brand-body">
+                First name
+                <input
+                  required
+                  value={form.firstName}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      firstName: event.target.value,
+                    }))
+                  }
+                  className={fieldClass}
+                />
+              </label>
+              <label className="text-[13px] font-bold text-brand-body">
+                Last name
+                <input
+                  required
+                  value={form.lastName}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      lastName: event.target.value,
+                    }))
+                  }
+                  className={fieldClass}
+                />
+              </label>
+              <label className="text-[13px] font-bold text-brand-body">
+                Mobile / WhatsApp
+                <input
+                  required
+                  value={form.phone}
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, phone: event.target.value }))
+                  }
+                  className={fieldClass}
+                  inputMode="tel"
+                />
+              </label>
+              <label className="text-[13px] font-bold text-brand-body">
+                Email
+                <input
+                  required
+                  type="email"
+                  value={form.email}
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, email: event.target.value }))
+                  }
+                  className={fieldClass}
+                />
+              </label>
+              <label className="text-[13px] font-bold text-brand-body">
+                Preferred date
+                <input
+                  required
+                  type="date"
+                  value={form.date}
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, date: event.target.value }))
+                  }
+                  className={fieldClass}
+                />
+              </label>
+              <label className="text-[13px] font-bold text-brand-body">
+                Number of people
+                <input
+                  required
+                  min={1}
+                  max={12}
+                  type="number"
+                  value={form.people}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      people: Number(event.target.value),
+                    }))
+                  }
+                  className={fieldClass}
+                />
+              </label>
+            </div>
+
+            {success ? (
+              <div className="mt-5 flex gap-2 rounded-xl bg-prime-bg p-4 text-[14px] font-semibold text-prime-fg">
+                <CheckCircle2 className="h-5 w-5 flex-none" aria-hidden />
+                Request sent. We&apos;ll confirm availability directly.
+              </div>
+            ) : null}
+            {error ? (
+              <div className="mt-5 rounded-xl bg-rough-bg p-4 text-[14px] font-semibold text-rough-fg">
+                {error}
+              </div>
+            ) : null}
+
+            <BrandButton
+              type="submit"
+              className="mt-6 w-full"
+              disabled={submitting || !controls.boatRideBookingsEnabled}
+            >
+              {submitting
+                ? 'Sending request…'
+                : controls.boatRideBookingsEnabled
+                  ? 'Send boat request'
+                  : 'Boat requests closed'}
+            </BrandButton>
+          </form>
+        </Panel>
+      </Section>
+
+      <ClosingCta
+        title="Need both skis and a spectator boat?"
+        body="We coordinate the two operators so the group shares one meeting point and one clear plan."
+      >
+        <BrandButton to={ROUTES.contact} tone="amber" size="lg">
+          Plan a group day
+        </BrandButton>
+      </ClosingCta>
     </div>
   )
 }

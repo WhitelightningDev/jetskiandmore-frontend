@@ -1,329 +1,325 @@
 import * as React from 'react'
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
+import { CheckCircle2, Mail, MapPin, MessageCircle, Phone } from 'lucide-react'
+
 import {
-  MapPin,
-  Phone,
-  Mail,
-  Clock,
-  MessageSquare,
-  CalendarDays,
-  Info,
-  CheckCircle2,
-  ShieldCheck,
-  LifeBuoy,
-  CloudSun,
-  Anchor,
-  Users,
-} from 'lucide-react'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
-import { Button, buttonVariants } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
-import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+  BrandButton,
+  DisplayHeading,
+  Eyebrow,
+  Panel,
+  Shell,
+} from '@/components/brand/primitives'
+import { CONTACT } from '@/lib/brand-content'
 import { postJSON } from '@/lib/api'
+import { cn } from '@/lib/utils'
 
 export const Route = createFileRoute('/contact/')({
-  component: RouteComponent,
+  head: () => ({
+    meta: [
+      { title: "Contact Jet Ski & More | Gordon's Bay" },
+      {
+        name: 'description',
+        content:
+          "Request a jet ski, boat ride, fishing charter or group slot from Gordon's Bay Harbour.",
+      },
+    ],
+  }),
+  component: ContactPage,
 })
 
-function RouteComponent() {
-  const [fullName, setFullName] = React.useState('')
-  const [email, setEmail] = React.useState('')
-  const [phone, setPhone] = React.useState('')
-  const [message, setMessage] = React.useState('')
-  const [successOpen, setSuccessOpen] = React.useState(false)
+const INTERESTS = [
+  'Jet ski',
+  'Boat ride',
+  'Fishing charter',
+  'Group day',
+  'Not sure yet',
+]
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+const fieldClass =
+  'mt-2 w-full rounded-xl border border-brand-line-strong bg-brand-surface px-4 py-3 text-[15px] text-brand-ink outline-none transition placeholder:text-brand-faint focus:border-brand-teal focus:ring-2 focus:ring-brand-teal/15'
+
+function ContactPage() {
+  const [form, setForm] = React.useState({
+    fullName: '',
+    phone: '',
+    email: '',
+    date: '',
+    people: '',
+    interest: 'Jet ski',
+    notes: '',
+  })
+  const [submitting, setSubmitting] = React.useState(false)
+  const [success, setSuccess] = React.useState(false)
+  const [error, setError] = React.useState<string | null>(null)
+
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setSuccess(false)
+    setError(null)
+
     try {
+      setSubmitting(true)
       await postJSON<{ ok: boolean; id: string }>('/api/contact', {
-        fullName,
-        email,
-        phone,
-        message,
+        fullName: form.fullName,
+        phone: form.phone,
+        email: form.email,
+        message: [
+          `Interest: ${form.interest}`,
+          `Preferred date: ${form.date || 'Flexible'}`,
+          `People: ${form.people || 'Not specified'}`,
+          '',
+          form.notes || 'No additional notes.',
+        ].join('\n'),
+        subject: `${form.interest} website enquiry`,
       })
-      setFullName('')
-      setEmail('')
-      setPhone('')
-      setMessage('')
-      setSuccessOpen(true)
-    } catch (err: any) {
-      alert(`Sorry, we couldn't send your message: ${err?.message || 'Unknown error'}`)
+      setSuccess(true)
+      setForm({
+        fullName: '',
+        phone: '',
+        email: '',
+        date: '',
+        people: '',
+        interest: 'Jet ski',
+        notes: '',
+      })
+    } catch (caught) {
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : 'We could not send your request. Please use WhatsApp instead.',
+      )
+    } finally {
+      setSubmitting(false)
     }
   }
 
   return (
-    <div className="bg-gradient-to-b from-sky-50 via-white to-white">
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-sky-100 via-white to-emerald-50" />
-        <div className="relative mx-auto max-w-6xl px-4 py-10 md:py-16">
-          {/* Header */}
-          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <Badge className="bg-white/80 text-sky-800 border-sky-200">Get in touch</Badge>
-              <h1 className="mt-2 text-3xl font-semibold tracking-tight md:text-4xl text-slate-900">
-                Contact us
-              </h1>
-              <p className="mt-2 max-w-xl text-sm text-slate-600">
-                Ask about availability, weather conditions, special occasions, or group bookings.
-                We&apos;re happy to help you plan the perfect time on the water.
-              </p>
-            </div>
-            <Badge
-              variant="secondary"
-              className="flex items-center gap-2 self-start rounded-full bg-white/80 text-slate-800 border-sky-200"
-            >
-              <MapPin className="h-4 w-4" />
-              Gordon&apos;s Bay Harbour • Western Cape
-            </Badge>
+    <Shell className="pt-12 sm:pt-16">
+      <div className="grid gap-7 lg:grid-cols-2 lg:items-start">
+        <div>
+          <Eyebrow>CONTACT</Eyebrow>
+          <DisplayHeading as="h1" className="mt-3" size="xl">
+            Tell us your date. We&apos;ll tell you the truth about it.
+          </DisplayHeading>
+          <p className="mt-4 max-w-[560px] text-[16.5px] leading-[1.65] text-brand-muted">
+            Give us your preferred day and group size. We&apos;ll come back with
+            availability, a price and an honest read on the conditions.
+          </p>
+
+          <div className="mt-7 space-y-3">
+            <ContactMethod
+              href={CONTACT.whatsapp}
+              icon={MessageCircle}
+              title="WhatsApp"
+              detail="Fastest — usually within the hour"
+              value={CONTACT.whatsappLabel}
+            />
+            <ContactMethod
+              href={CONTACT.phoneHref}
+              icon={Phone}
+              title="Call us"
+              detail="08:00–18:00, seven days in season"
+              value={CONTACT.phone}
+            />
+            <ContactMethod
+              href={CONTACT.emailHref}
+              icon={Mail}
+              title="Email"
+              detail="Best for group and corporate quotes"
+              value={CONTACT.email}
+            />
           </div>
 
-        {/* Quick info pills */}
-        <div className="mb-8 flex flex-wrap items-center gap-2 text-xs">
-          <Badge variant="secondary" className="flex items-center gap-1 rounded-full">
-            <ShieldCheck className="h-3 w-3" />
-            Safety briefing included
-          </Badge>
-          <Badge variant="secondary" className="flex items-center gap-1 rounded-full">
-            <LifeBuoy className="h-3 w-3" />
-            Life jackets provided
-          </Badge>
-          <Badge variant="outline" className="flex items-center gap-1 rounded-full">
-            <Clock className="h-3 w-3" />
-            Arrive 15 min early
-          </Badge>
-          <Badge variant="outline" className="flex items-center gap-1 rounded-full">
-            <CloudSun className="h-3 w-3" />
-            Weather‑flexible
-          </Badge>
-          <Badge variant="outline" className="flex items-center gap-1 rounded-full">
-            <Anchor className="h-3 w-3" />
-            Gordon&apos;s Bay only
-          </Badge>
+          <div className="mt-3 rounded-[18px] bg-brand-deep p-7 text-white">
+            <div className="flex items-center gap-2 text-[11.5px] font-bold tracking-[0.16em] text-brand-amber">
+              <MapPin className="h-4 w-4" aria-hidden />
+              WHERE TO MEET US
+            </div>
+            <h2 className="mt-2.5 font-display text-[20px] font-bold">
+              Gordon&apos;s Bay Harbour slipway
+            </h2>
+            <p className="mt-2 text-[15px] leading-[1.6] text-brand-on-dark">
+              One launch point, every session. Park at the harbour and look for the
+              trailer — arrive 15 minutes before your slot.
+            </p>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          {/* Contact form */}
-          <Card className="lg:col-span-2 border-slate-200/80 shadow-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-sky-50">
-                  <MessageSquare className="h-4 w-4 text-sky-700" />
-                </span>
-                <span>Send us a message</span>
-              </CardTitle>
-              <CardDescription>We usually reply within a few hours during operating times.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="fullName">Full name</Label>
-                    <Input
-                      id="fullName"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      placeholder="Jane Doe"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone / WhatsApp</Label>
-                    <Input
-                      id="phone"
-                      inputMode="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="+27"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="example@gmail.com"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="message">How can we help?</Label>
-                    <Textarea
-                      id="message"
-                      placeholder="Ask about availability, sunrise/sunset slots, weather, or group bookings…"
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                      required
-                      className="min-h-[120px]"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      The more detail you share, the easier it is for us to tailor the perfect ride.
-                    </p>
-                  </div>
-                </div>
+        <Panel className="p-7 sm:p-9">
+          <DisplayHeading size="md">Request a slot</DisplayHeading>
+          <p className="mt-2 text-[15px] text-brand-muted">
+            No payment taken here — we confirm availability first.
+          </p>
 
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <Badge className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Info className="h-4 w-4 bg-yellow-500 rounded" />
-                    <span className='text-white'>We’ll never share your contact details with anyone else.</span>
-                  </Badge>
-                  <div className="flex gap-3">
-                    <Link
-                      to="/Bookings"
-                      className={buttonVariants({ variant: 'outline', size: 'sm' })}
-                    >
-                      Browse bookings
-                    </Link>
-                    <Button type="submit" size="sm">
-                      Send message
-                    </Button>
-                  </div>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
+          <form onSubmit={submit} className="mt-6">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="text-[13px] font-bold text-brand-body">
+                Your name
+                <input
+                  required
+                  value={form.fullName}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      fullName: event.target.value,
+                    }))
+                  }
+                  placeholder="Full name"
+                  className={fieldClass}
+                />
+              </label>
+              <label className="text-[13px] font-bold text-brand-body">
+                Mobile / WhatsApp
+                <input
+                  required
+                  value={form.phone}
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, phone: event.target.value }))
+                  }
+                  placeholder="+27 …"
+                  inputMode="tel"
+                  className={fieldClass}
+                />
+              </label>
+              <label className="text-[13px] font-bold text-brand-body">
+                Email
+                <input
+                  required
+                  type="email"
+                  value={form.email}
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, email: event.target.value }))
+                  }
+                  placeholder="you@example.com"
+                  className={fieldClass}
+                />
+              </label>
+              <label className="text-[13px] font-bold text-brand-body">
+                Preferred date
+                <input
+                  type="date"
+                  value={form.date}
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, date: event.target.value }))
+                  }
+                  className={fieldClass}
+                />
+              </label>
+              <label className="text-[13px] font-bold text-brand-body sm:col-span-2">
+                People joining
+                <input
+                  min={1}
+                  type="number"
+                  value={form.people}
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, people: event.target.value }))
+                  }
+                  placeholder="e.g. 4"
+                  className={fieldClass}
+                />
+              </label>
+            </div>
 
-          {/* Contact details / map */}
-          <Card className="border-slate-200/80 bg-linear-to-b from-sky-50/60 via-white to-white shadow-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-sky-50">
-                  <MapPin className="h-4 w-4 text-sky-700" />
-                </span>
-                <span>Find us</span>
-              </CardTitle>
-              <CardDescription>We launch directly from Gordon&apos;s Bay Harbour.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-5 text-sm text-muted-foreground">
-              <div>
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="space-y-1">
-                    <p className="font-medium text-foreground">
-                      159 Beach Road, Gordon&apos;s Bay Harbour
-                    </p>
-                    <p className="text-xs">
-                      Easy parking nearby and a short walk to the launch point.
-                    </p>
-                  </div>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" size="sm">
-                        View map
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-80">
-                      <div className="space-y-3 text-xs">
-                        <div className="flex items-center gap-2">
-                          <MapPin className="h-4 w-4" />
-                          <span>Map preview</span>
-                        </div>
-                        <div className="flex h-40 items-center justify-center rounded-md border bg-slate-100">
-                          <span className="max-w-[220px] text-center text-[11px] text-muted-foreground">
-                            Map embed coming soon. For now, search &quot;Jetski &amp; More Gordon&apos;s
-                            Bay&quot; in your maps app.
-                          </span>
-                        </div>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                </div>
+            <fieldset className="mt-5">
+              <legend className="text-[13px] font-bold text-brand-body">
+                What are you after?
+              </legend>
+              <div className="mt-2.5 flex flex-wrap gap-2">
+                {INTERESTS.map((interest) => (
+                  <button
+                    key={interest}
+                    type="button"
+                    onClick={() =>
+                      setForm((current) => ({ ...current, interest }))
+                    }
+                    className={cn(
+                      'rounded-full border px-4 py-2 text-[13.5px] font-semibold transition-colors',
+                      form.interest === interest
+                        ? 'border-brand-teal bg-brand-tint text-brand-teal-dark'
+                        : 'border-brand-line-strong bg-brand-surface text-brand-body hover:border-brand-teal',
+                    )}
+                  >
+                    {interest}
+                  </button>
+                ))}
               </div>
+            </fieldset>
 
-              <Separator />
+            <label className="mt-5 block text-[13px] font-bold text-brand-body">
+              Anything else
+              <textarea
+                rows={4}
+                value={form.notes}
+                onChange={(event) =>
+                  setForm((current) => ({ ...current, notes: event.target.value }))
+                }
+                placeholder="Group type, experience level, whether you want the boat alongside…"
+                className={fieldClass}
+              />
+            </label>
 
-              <div className="space-y-3">
-                <a
-                  href="tel:+27XXXXXXXXX"
-                  className="flex items-center gap-2 transition hover:text-foreground"
-                >
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100">
-                    <Phone className="h-4 w-4" />
-                  </span>
-                  <div className="space-y-0.5">
-                    <p className="text-xs font-medium text-foreground">Phone / WhatsApp</p>
-                    <p className="text-xs text-muted-foreground">+27 74 658 8885</p>
-                  </div>
-                </a>
-
-                <a
-                  href="mailto:info@example.com"
-                  className="flex items-center gap-2 transition hover:text-foreground"
-                >
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100">
-                    <Mail className="h-4 w-4" />
-                  </span>
-                  <div className="space-y-0.5">
-                    <p className="text-xs font-medium text-foreground">Email</p>
-                    <p className="text-xs text-muted-foreground">jetskiadventures1@gmail.com</p>
-                  </div>
-                </a>
-
-                <div className="flex items-center gap-2">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100">
-                    <Clock className="h-4 w-4" />
-                  </span>
-                  <div className="space-y-0.5">
-                    <p className="text-xs font-medium text-foreground">Typical hours</p>
-                    <p className="text-xs text-muted-foreground">
-                      08:00–17:00 (weather dependent) • Sunrise and sunset rides on request.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100">
-                    <Users className="h-4 w-4" />
-                  </span>
-                  <div className="space-y-0.5">
-                    <p className="text-xs font-medium text-foreground">Groups &amp; events</p>
-                    <p className="text-xs text-muted-foreground">
-                      Ask us about birthdays, team events, and special occasions.
-                    </p>
-                  </div>
-                </div>
+            {success ? (
+              <div className="mt-5 flex items-start gap-2 rounded-xl bg-prime-bg p-4 text-[14px] font-semibold text-prime-fg">
+                <CheckCircle2 className="h-5 w-5 flex-none" aria-hidden />
+                Request sent. We&apos;ll reply with availability and next steps.
               </div>
-            </CardContent>
-            <CardFooter className="flex flex-col gap-2 border-t bg-white/60 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
-              <Link
-                to="/safety"
-                className={buttonVariants({ variant: 'outline', size: 'sm' })}
-              >
-                Safety &amp; rider info
-              </Link>
-              <Link to="/weather" className={buttonVariants({ size: 'sm' })}>
-                <CalendarDays className="mr-2 h-4 w-4" />
-                Weather tips
-              </Link>
-            </CardFooter>
-          </Card>
-        </div>
-        </div>
-      </section>
+            ) : null}
+            {error ? (
+              <div className="mt-5 rounded-xl bg-rough-bg p-4 text-[14px] font-semibold text-rough-fg">
+                {error}
+              </div>
+            ) : null}
 
-      {/* Success dialog */}
-      <Dialog open={successOpen} onOpenChange={setSuccessOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-              Message sent
-            </DialogTitle>
-            <DialogDescription>
-              Thanks! We&apos;ve received your message and will get back to you shortly.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button onClick={() => setSuccessOpen(false)}>Close</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+            <BrandButton
+              type="submit"
+              className="mt-5 w-full"
+              size="lg"
+              disabled={submitting}
+            >
+              {submitting ? 'Sending…' : 'Send request'}
+            </BrandButton>
+            <p className="mt-3 text-center text-[13px] text-brand-faint">
+              We&apos;ll reply with availability, a price and a conditions read.
+            </p>
+          </form>
+        </Panel>
+      </div>
+    </Shell>
+  )
+}
+
+function ContactMethod({
+  href,
+  icon: Icon,
+  title,
+  detail,
+  value,
+}: {
+  href: string
+  icon: React.ComponentType<{ className?: string; 'aria-hidden'?: boolean }>
+  title: string
+  detail: string
+  value: string
+}) {
+  return (
+    <a
+      href={href}
+      target={href.startsWith('http') ? '_blank' : undefined}
+      rel="noreferrer"
+      className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-brand-line bg-white px-5 py-5 no-underline transition-colors hover:border-brand-teal"
+    >
+      <span className="flex items-center gap-3">
+        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-tint text-brand-teal">
+          <Icon className="h-5 w-5" aria-hidden />
+        </span>
+        <span>
+          <span className="block font-display text-[17px] font-bold text-brand-ink">
+            {title}
+          </span>
+          <span className="mt-0.5 block text-[13.5px] text-brand-muted">{detail}</span>
+        </span>
+      </span>
+      <span className="break-all text-[14px] font-bold text-brand-teal">{value}</span>
+    </a>
   )
 }

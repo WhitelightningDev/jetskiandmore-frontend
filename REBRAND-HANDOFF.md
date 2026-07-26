@@ -1,7 +1,7 @@
 # Jet Ski & More — rebrand handoff
 
-**Status:** foundation complete, pages not started. Repo builds and typechecks clean.
-**Last verified:** `npx tsc --noEmit` clean, `npx vite build` clean, home page renders (with one known defect, see §6).
+**Status:** redesign implemented across all primary public marketing routes.
+**Last verified:** 2026-07-26 — changed-file ESLint clean, `npm run build` clean, TypeScript clean.
 **Nothing is committed.** All work below is in the working tree.
 
 There are two independent workstreams in this branch. §A is finished. §B is the one you're picking up.
@@ -42,7 +42,7 @@ The Yoco refund endpoint has **never run against live credentials**. It degrades
 
 ---
 
-# §B — Rebrand (IN PROGRESS — your task)
+# §B — Rebrand (IMPLEMENTED)
 
 ## 1. Source of truth
 
@@ -95,24 +95,24 @@ It is not plain HTML. Translate as follows:
 Ratings: `bg-prime-bg/text-prime-fg`, `fair-*`, `rough-*`
 Fonts: `font-display` (Archivo, headings) — body inherits Public Sans.
 
-## 3. What is NOT built — the actual work
-
-**Zero of the seven designed pages exist.** Every route below still renders its OLD pre-rebrand content under the new chrome.
+## 3. Implemented pages
 
 | Design page | Design lines | Target route file |
 |---|---|---|
-| Home (variant A) | 130–432 | `src/routes/home/index.tsx` |
-| Rides & pricing | 581–672 | `src/routes/rides/index.tsx` |
-| Conditions | 674–786 | `src/routes/weather/index.tsx` |
-| Safety | 788–860 | `src/routes/safety/index.tsx` |
-| Boat & fishing | 862–903 | `src/routes/boat-ride/index.tsx` |
-| Plan your day | 905–939 | `src/routes/things-to-do-gordons-bay-on-the-water/index.tsx` |
-| FAQs | 941–965 | `src/routes/jet-ski-faqs-gordons-bay/index.tsx` |
-| Contact | 967–1044 | `src/routes/contact/index.tsx` |
-| Legal | 1046–1060 | `src/routes/terms/index.tsx` + `/privacy` |
+| Home (variant A) | 130–432 | ✅ `src/routes/home/index.tsx` |
+| Rides & pricing | 581–672 | ✅ `src/routes/rides/index.tsx` |
+| Conditions | 674–786 | ✅ `src/routes/weather/index.tsx` |
+| Safety | 788–860 | ✅ `src/routes/safety/index.tsx` |
+| Boat & fishing | 862–903 | ✅ `src/routes/boat-ride/index.tsx` |
+| Fishing charters | Existing route | ✅ `src/routes/fishing-charters/index.tsx` |
+| Plan your day | 905–939 | ✅ `src/routes/things-to-do-gordons-bay-on-the-water/index.tsx` |
+| FAQs | 941–965 | ✅ `src/routes/jet-ski-faqs-gordons-bay/index.tsx` |
+| Contact | 967–1044 | ✅ `src/routes/contact/index.tsx` |
+| Legal | 1046–1060 | ✅ `src/routes/terms/index.tsx` + `/privacy` |
 
-### Also missing: the conditions engine
-Home and Conditions both need a shared hook (suggested `src/lib/useConditions.ts`) providing:
+### Conditions engine
+Home and Conditions share `src/lib/useConditions.ts` and
+`src/components/brand/ConditionsBoard.tsx`, providing:
 - **Real 7-day forecast.** The design hardcodes July-2026 sample values — **do not ship those.** The app already calls open-meteo in `src/components/HeroWeatherCard.tsx:141` (weather) and `:145` (marine/swell), and `src/routes/weather/calm-slots/index.tsx:81`. Reuse that.
 - **Rating derivation:** `prime` / `fair` / `rough` from wind. Design thresholds (from `weatherGuides`): `<15 km/h` comfortable, `15–25` choppy, `>30` no launch.
 - **Capacity calculator**, ported from design lines 1119–1202:
@@ -122,7 +122,9 @@ Home and Conditions both need a shared hook (suggested `src/lib/useConditions.ts
   ```
   Defaults: `open 09:00`, `winterClose 17:00`, `summerClose 19:45`, `fleetSize 2`, `turnaround 15min`, session ∈ {15,30,60}.
 - **State:** `season` (winter|summer), `sessionLen`, `selectedDay` — all three drive UI toggles that ARE product features, keep them.
-- The design's per-day booked-load array (`[0.78, 0.38, …]`) is fake. Either wire it to `GET /api/timeslots` or drop the "slots left" figures rather than invent them.
+- Live 30/60-minute availability from `GET /api/timeslots`. The 15-minute
+  concept remains an enquiry until checkout has a matching product and pricing
+  contract; no fake booked-load data is shown.
 
 ## 4. Image mapping (decided — the design's slots were empty)
 
@@ -146,20 +148,21 @@ All are already wired in `src/lib/brand-content.ts`. If real photography arrives
 3. **`validateSearch` is deliberately not used** on `/indemnity`. Adding it tightened the router-wide search schema and broke `src/routes/rides/index.tsx:150` (`<Link search={{ rideId }}>`). The token is read from `window.location.search` instead. **Don't "fix" this** without also giving `/Bookings` an explicit search schema.
 4. Header CTA "Check availability" → `/rides`, per the design. The real booking engine is `/Bookings`; consider using `pickPrimaryBookingAction()` from `src/lib/bookingControls.tsx` to point at `/Bookings` when `jetSkiBookingsEnabled`.
 
-## 6. Known defects to fix first
+## 6. Remaining cleanup
 
-1. **🔴 Duplicate navigation on `/home`.** `src/routes/home/index.tsx` renders its own floating nav pill (WhatsApp / "Book a Boat Ride" buttons, ~lines 250–285) *inside* the hero. It now appears directly beneath the new `SiteHeader`. Visible in the screenshot check. Delete the page-level nav when you rebuild Home. `/` simply redirects to `/home`.
-2. **🟠 Header nav wraps at ~1440px.** Seven nav items plus two buttons overflow onto two lines. The design collapses to a burger at `max-width: 1180px`; `SiteChrome.tsx` currently uses Tailwind's `xl:` (1280px). Either add a custom `min-[1180px]:` breakpoint or trim nav items.
-3. **🟡 Orphaned components.** `src/components/Header.tsx`, `Footer.tsx`, `Breadcrumbs.tsx` are no longer referenced. `HolidayBanner.tsx` and `BookingPauseBanner.tsx` are also unreferenced — their messaging is now in `StatusBar`. Delete once the rebrand lands, not before.
-4. **🟡 Possible clobber.** `public/brand/` and `src/components/brand/` were already untracked-but-present at session start, and `index.html` + `src/styles.css` already had uncommitted edits. Prior work in those paths may have been overwritten. Untracked files aren't recoverable from git — worth asking the user before assuming the current contents are complete.
+1. Legacy `Header.tsx`, `Footer.tsx`, `Breadcrumbs.tsx`,
+   `HolidayBanner.tsx`, `BookingPauseBanner.tsx` and `HeroWeatherCard.tsx` are
+   no longer used by the redesigned public shell. They are intentionally left in
+   place for a separate dead-code cleanup.
+2. The full-repository lint command still reports pre-existing errors outside
+   the redesign surface. The redesign files themselves pass ESLint.
+3. Vitest currently has no test files and exits with code 1 for that reason.
 
-## 7. Suggested order
+## 7. Verification
 
-1. Fix the duplicate nav + header breakpoint (§6.1, §6.2).
-2. Build `useConditions.ts` (§3) — Home and Conditions both block on it.
-3. Home → Rides → Conditions → Safety → Boats → Plan → FAQs → Contact → Legal.
-4. After each page: `npx vite build` (regenerates `routeTree.gen.ts`) then `npx tsc --noEmit`.
-5. Screenshot each page at 1440×900 and 390×844 before calling it done.
+1. `npm run build`
+2. Run ESLint against the changed redesign files.
+3. Verify the public routes at desktop and mobile widths before deployment.
 
 ### Do not break
 `/Bookings`, `/indemnity`, `/admin/*`, `/payments/*` are functional, not marketing. They inherit the new tokens automatically via the shadcn palette remap. Restyle only; don't touch their logic.

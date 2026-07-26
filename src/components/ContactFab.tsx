@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Mail, MessageCircle, X, MessageSquareMore } from 'lucide-react'
+import { Mail, MessageCircle, MessageSquareMore, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export default function ContactFab() {
@@ -27,7 +27,7 @@ export default function ContactFab() {
   }, [open])
 
   const waText = encodeURIComponent('Hi! I have a question about bookings.')
-  const waNumber = '27756588885' // +27 756 588 885 without the plus sign for wa.me
+  const waNumber = '27746588885'
   const emailTo = 'jetskiadventures1@gmail.com'
   const emailSubject = encodeURIComponent('Jet Ski booking enquiry')
   const emailBody = encodeURIComponent('Hi! I have a question about bookings.')
@@ -52,7 +52,7 @@ export default function ContactFab() {
           rel="noopener noreferrer"
           className={cn(
             'inline-flex items-center gap-2 rounded-full shadow-md ring-1 ring-border',
-            'bg-emerald-500 text-white hover:bg-emerald-600',
+            'bg-brand-teal text-white hover:bg-brand-teal-dark',
             'px-3 py-2 text-sm font-medium transition-all',
             open
               ? 'opacity-100 translate-y-0 animate-in fade-in slide-in-from-bottom-4 duration-200'
@@ -92,7 +92,7 @@ export default function ContactFab() {
         className={cn(
           'pointer-events-auto inline-flex items-center justify-center',
           'h-14 w-14 rounded-full shadow-lg ring-1 ring-border',
-          'bg-foreground text-background hover:brightness-95 transition-all',
+          'bg-brand-deep text-white hover:bg-brand-deep-soft transition-all',
           'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring'
         )}
       >

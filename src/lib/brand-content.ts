@@ -144,7 +144,7 @@ export const FAQS = [
   },
   {
     q: 'What happens if the weather turns?',
-    a: 'We only launch when it is safe. If we call it off, your session moves to the next suitable slot or is refunded in full. Check the Conditions page before you pick a date — green days almost never move.',
+    a: 'We only launch when it is safe. If we call it off, your session moves to the next suitable slot. If travel makes that impossible because you do not live in Cape Town, we issue a voucher valid for two years under the confirmed booking terms. Check the Conditions page before you pick a date.',
   },
   {
     q: 'What should I bring, and what do you provide?',
