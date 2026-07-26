@@ -1,14 +1,10 @@
 import { useEffect, useRef } from 'react'
 import { Outlet, createRootRoute, useRouterState } from '@tanstack/react-router'
 
-import Header from '../components/Header'
 import ContactFab from '../components/ContactFab'
-import Breadcrumbs from '../components/Breadcrumbs'
-import Footer from '../components/Footer'
 import { API_BASE } from '@/lib/api'
-import HolidayBanner from '@/components/HolidayBanner'
-import BookingPauseBanner from '@/components/BookingPauseBanner'
 import { BookingControlsProvider } from '@/lib/bookingControls'
+import { SiteFooter, SiteHeader, StatusBar } from '@/components/brand/SiteChrome'
 import { Toaster } from '@/components/ui/toaster'
 
 export const Route = createRootRoute({
@@ -18,7 +14,6 @@ export const Route = createRootRoute({
 function RootLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const isAdmin = pathname.startsWith('/admin')
-  const isHome = pathname === '/' || pathname === '/home' || pathname === '/home/'
   useTrackPageView(pathname, isAdmin)
 
   if (isAdmin) {
@@ -32,19 +27,15 @@ function RootLayout() {
 
   return (
     <BookingControlsProvider>
-      <BookingPauseBanner />
-      <HolidayBanner />
-      {isHome ? (
-        <div className="md:hidden">
-          <Header />
-        </div>
-      ) : (
-        <Header />
-      )}
-      <Breadcrumbs />
-      <Outlet />
-      <ContactFab />
-      <Footer />
+      <div className="flex min-h-screen flex-col bg-brand-canvas">
+        <StatusBar />
+        <SiteHeader />
+        <main className="flex-1">
+          <Outlet />
+        </main>
+        <ContactFab />
+        <SiteFooter />
+      </div>
       <Toaster />
     </BookingControlsProvider>
   )

@@ -5,11 +5,68 @@
 
 body {
   @apply m-0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
+  font-family: "Public Sans", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", "Roboto", "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: #f2a93b;
+  color: #06202f;
+}
+
+/*
+ * Brand tokens — from the "Jet Ski & More" design canvas.
+ * Named utilities (bg-brand-teal, font-display, …) so pages read as the design
+ * does rather than as a wall of hex codes.
+ */
+@theme {
+  --font-display: "Archivo", system-ui, sans-serif;
+  --font-sans: "Public Sans", system-ui, sans-serif;
+
+  /* Core */
+  --color-brand-ink: #0f2532;
+  --color-brand-deep: #06202f;
+  --color-brand-deep-soft: #0e3a52;
+  --color-brand-teal: #0e7c8b;
+  --color-brand-teal-dark: #0a5f6b;
+  --color-brand-amber: #f2a93b;
+  --color-brand-amber-light: #ffc15e;
+  --color-brand-amber-pale: #f5c778;
+
+  /* Text */
+  --color-brand-body: #37556a;
+  --color-brand-muted: #5b7183;
+  --color-brand-faint: #7a93a3;
+  --color-brand-on-dark: #b9d0dd;
+  --color-brand-on-dark-muted: #8fb0c2;
+  --color-brand-on-dark-faint: #7c9bad;
+
+  /* Surfaces & lines */
+  --color-brand-canvas: #f5f8fa;
+  --color-brand-surface: #f9fcfd;
+  --color-brand-surface-alt: #f7fbfc;
+  --color-brand-tint: #eaf5f7;
+  --color-brand-tint-cool: #f1f6f9;
+  --color-brand-line: #e2eaef;
+  --color-brand-line-soft: #eef3f6;
+  --color-brand-line-cool: #e7eef2;
+  --color-brand-line-strong: #d5e1e9;
+
+  /* Condition ratings */
+  --color-prime-bg: #e4f6ec;
+  --color-prime-fg: #12694a;
+  --color-prime-line: #bee7cf;
+  --color-fair-bg: #fff3df;
+  --color-fair-fg: #8a5a10;
+  --color-fair-line: #f6dcaf;
+  --color-rough-bg: #fce9e7;
+  --color-rough-fg: #9b3126;
+  --color-rough-line: #f3c8c2;
+
+  /* Partner mark */
+  --color-fba: #0f3b54;
 }
 
 code {
@@ -57,25 +114,25 @@ code {
 
 :root {
   --radius: 0.625rem;
-  /* Light theme palette */
-  --background: #ffffff;
-  --foreground: #0d1321; /* deep navy text */
+  /* Light theme palette — matched to the brand tokens above */
+  --background: #f5f8fa; /* brand canvas */
+  --foreground: #0f2532; /* brand ink */
   --card: #ffffff;
-  --card-foreground: #0d1321;
+  --card-foreground: #0f2532;
   --popover: #ffffff;
-  --popover-foreground: #0d1321;
-  --primary: #0f8b99; /* brand teal */
+  --popover-foreground: #0f2532;
+  --primary: #0e7c8b; /* brand teal */
   --primary-foreground: #ffffff;
-  --secondary: #e6f4f6; /* soft teal tint */
-  --secondary-foreground: #0f8b99;
-  --muted: #f2f5f7; /* subtle gray */
-  --muted-foreground: #5c6b73;
-  --accent: #fdf3e7; /* warm accent tint */
-  --accent-foreground: #7a4e00;
-  --destructive: #e11d48; /* rose-600 */
-  --border: #e6eef0;
-  --input: #e6eef0;
-  --ring: #79c7cf; /* teal ring */
+  --secondary: #eaf5f7; /* brand tint */
+  --secondary-foreground: #0a5f6b;
+  --muted: #f1f6f9; /* brand tint cool */
+  --muted-foreground: #5b7183; /* brand muted */
+  --accent: #fff6e7; /* warm accent tint */
+  --accent-foreground: #8a5a10;
+  --destructive: #9b3126; /* rough */
+  --border: #e2eaef; /* brand line */
+  --input: #d5e1e9; /* brand line strong */
+  --ring: #0e7c8b; /* teal ring */
   /* Charts (optional) */
   --chart-1: #4cc9f0;
   --chart-2: #4895ef;
