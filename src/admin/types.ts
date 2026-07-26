@@ -10,13 +10,13 @@ export type Booking = {
   phone: string
   notes?: string | null
   addons?: Record<string, any> | null
-  passengers?: { name?: string }[] | null
+  passengers?: Array<{ name?: string }> | null
   status: string
   amountInCents: number
   createdAt?: string | null
   bookingReference?: string | null
   numberOfJetSkis?: number | null
-  riders?: { name?: string; email?: string }[] | null
+  riders?: Array<{ name?: string; email?: string }> | null
   // Indemnity progress across active (non-removed) participants
   indemnitySignedCount?: number
   indemnityTotalCount?: number
@@ -26,6 +26,17 @@ export type Booking = {
 
 export type RideStat = {
   rideId: string
+  bookings: number
+  revenueInCents: number
+}
+
+export type BookingStatusStat = {
+  status: string
+  bookings: number
+}
+
+export type MonthlyBookingStat = {
+  month: string
   bookings: number
   revenueInCents: number
 }
@@ -41,7 +52,7 @@ export type PageViewAnalyticsItem = {
 }
 
 export type PageViewAnalytics = {
-  items: PageViewAnalyticsItem[]
+  items: Array<PageViewAnalyticsItem>
   totalViews: number
   totalUniqueSessions: number
   totalUniqueVisitors: number
@@ -65,13 +76,13 @@ export type ReturningStat = {
 }
 
 export type PageViewBreakdowns = {
-  countries: CountStat[]
-  cities: CountStat[]
-  deviceTypes: CountStat[]
-  os: CountStat[]
-  browsers: CountStat[]
-  languages: CountStat[]
-  timeOfDay: TimeOfDayStat[]
+  countries: Array<CountStat>
+  cities: Array<CountStat>
+  deviceTypes: Array<CountStat>
+  os: Array<CountStat>
+  browsers: Array<CountStat>
+  languages: Array<CountStat>
+  timeOfDay: Array<TimeOfDayStat>
   returning: ReturningStat
 }
 
@@ -80,7 +91,21 @@ export type AnalyticsSummary = {
   totalRevenueInCents: number
   totalRevenueZar: number
   totalPageViews: number
-  rides: RideStat[]
+  averageBookingValueInCents: number
+  refundedAmountInCents: number
+  uniqueCustomers: number
+  repeatCustomers: number
+  upcomingBookings: number
+  jetSkisBooked: number
+  bookingsThisMonth: number
+  revenueThisMonthInCents: number
+  bookingsPreviousMonth: number
+  revenuePreviousMonthInCents: number
+  indemnitiesSigned: number
+  indemnitiesRequired: number
+  statusCounts: Array<BookingStatusStat>
+  monthly: Array<MonthlyBookingStat>
+  rides: Array<RideStat>
 }
 
 export type QuizSubmission = {
@@ -93,12 +118,12 @@ export type QuizSubmission = {
   passengerSurname?: string | null
   passengerEmail?: string | null
   passengerIdNumber?: string | null
-   passengers?: {
+   passengers?: Array<{
     name?: string | null
     surname?: string | null
     email?: string | null
     idNumber?: string | null
-  }[] | null
+  }> | null
   hasWatchedTutorial: boolean
   hasAcceptedIndemnity: boolean
   quizAnswers: Record<string, any>
@@ -107,9 +132,9 @@ export type QuizSubmission = {
 
 export type AdminOutletContext = {
   token: string | null
-  bookings: Booking[]
+  bookings: Array<Booking>
   analytics: AnalyticsSummary | null
-  quizSubs: QuizSubmission[]
+  quizSubs: Array<QuizSubmission>
   pageViews: PageViewAnalytics | null
   loadingBookings: boolean
   loadingMeta: boolean

@@ -203,7 +203,7 @@ generated and must not be edited by hand.
 | Route                     | Purpose                                                      |
 | ------------------------- | ------------------------------------------------------------ |
 | `/admin`                  | Login and authenticated admin layout                         |
-| `/admin/overview`         | Operational summary                                          |
+| `/admin/overview`         | SaaS-style operations dashboard and action queue             |
 | `/admin/bookings`         | Search, inspect, update, and delete bookings                 |
 | `/admin/calendar`         | Booking calendar                                             |
 | `/admin/analytics`        | Revenue, booking, and page-view analysis                     |
@@ -283,6 +283,14 @@ the source of truth.
 The public root layout records route visits, duration, referrer, browser, OS,
 device type, language, session ID, and visitor ID through
 `POST /api/metrics/pageview`. Admin routes are excluded.
+
+The admin overview combines that traffic data with full-database booking
+aggregates from `GET /api/admin/analytics/summary`. It presents captured
+revenue, paid bookings, average booking value, booking-page conversion, unique
+and repeat customers, upcoming bookings, jet-ski volume, indemnity completion,
+refunds, booking statuses, a 12-month revenue/booking series, ride mix, top
+pages, and an operational attention queue. The recent-customer table is still
+based on the latest 100 booking records; headline totals and charts are not.
 
 Identifiers are stored as:
 

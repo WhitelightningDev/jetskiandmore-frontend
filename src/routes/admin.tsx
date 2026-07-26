@@ -14,13 +14,13 @@ import {
   LogOut,
   Mail,
   RefreshCw,
-  Search,
   Settings,
   ShieldCheck,
   SlidersHorizontal,
   Sparkles,
 } from 'lucide-react'
 
+import type { AnalyticsSummary, Booking, PageViewAnalytics, QuizSubmission } from '@/admin/types'
 import { API_BASE } from '@/lib/api'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -32,7 +32,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { AdminContext } from '@/admin/context'
-import type { AnalyticsSummary, Booking, PageViewAnalytics, QuizSubmission } from '@/admin/types'
 import { cn } from '@/lib/utils'
 import { toast } from '@/components/ui/use-toast'
 
@@ -72,10 +71,10 @@ function AdminLayout() {
   const [password, setPassword] = React.useState('')
   const [token, setToken] = React.useState<string | null>(() => getStoredToken())
   const [error, setError] = React.useState<string | null>(null)
-  const [bookings, setBookings] = React.useState<Booking[]>([])
+  const [bookings, setBookings] = React.useState<Array<Booking>>([])
   const [analytics, setAnalytics] = React.useState<AnalyticsSummary | null>(null)
   const [pageViews, setPageViews] = React.useState<PageViewAnalytics | null>(null)
-  const [quizSubs, setQuizSubs] = React.useState<QuizSubmission[]>([])
+  const [quizSubs, setQuizSubs] = React.useState<Array<QuizSubmission>>([])
   const [loadingBookings, setLoadingBookings] = React.useState(false)
   const [loadingMeta, setLoadingMeta] = React.useState(false)
   const [loadingPageViews, setLoadingPageViews] = React.useState(false)
@@ -107,7 +106,7 @@ function AdminLayout() {
           return
         }
         if (!res.ok) throw new Error('Failed to load bookings')
-        const data = (await res.json()) as Booking[]
+        const data = (await res.json()) as Array<Booking>
         setBookings(data)
       } catch (e: any) {
         setError(e?.message ?? 'Failed to load bookings')
@@ -138,7 +137,7 @@ function AdminLayout() {
         if (!aRes.ok) throw new Error('Failed to load analytics')
         if (!qRes.ok) throw new Error('Failed to load quiz submissions')
         const aData = (await aRes.json()) as AnalyticsSummary
-        const qData = (await qRes.json()) as QuizSubmission[]
+        const qData = (await qRes.json()) as Array<QuizSubmission>
         setAnalytics(aData)
         setQuizSubs(qData)
       } catch (e: any) {
@@ -198,8 +197,8 @@ function AdminLayout() {
       }
       setPassword('')
       router.navigate({ to: '/admin/overview' })
-    } catch (e: any) {
-      setError(e?.message ?? 'Login failed')
+    } catch (loginError: any) {
+      setError(loginError?.message ?? 'Login failed')
     }
   }
 
@@ -352,40 +351,40 @@ function AdminLayout() {
   }
 
   return (
-    <div className="h-screen overflow-hidden bg-white text-slate-900">
-      <div className="grid h-screen grid-cols-1 md:grid-cols-[280px_1fr]">
-        <aside className="hidden h-screen overflow-y-auto border-r border-slate-200 bg-white md:block">
+    <div className="h-screen overflow-hidden bg-slate-50 text-slate-900">
+      <div className="grid h-screen grid-cols-1 md:grid-cols-[252px_1fr]">
+        <aside className="hidden h-screen overflow-y-auto border-r border-slate-800 bg-slate-950 text-white md:block">
           <div className="flex h-full flex-col">
-            <div className="flex items-center justify-between px-4 py-4">
-              <div className="flex items-center gap-2">
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-sm font-semibold">
+            <div className="flex items-center justify-between px-4 py-5">
+              <div className="flex items-center gap-3">
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 text-sm font-bold text-white shadow-lg shadow-cyan-950">
                   JM
                 </span>
                 <div className="leading-tight">
                   <p className="text-sm font-semibold">Jet Ski &amp; More</p>
-                  <p className="text-xs text-slate-500">Admin</p>
+                  <p className="text-xs text-slate-400">Operations OS</p>
                 </div>
               </div>
-              <Badge variant="outline" className="border-slate-200 bg-white text-slate-600">
-                Online
-              </Badge>
             </div>
 
-            <div className="px-4 pb-3">
-              <div className="relative">
-                <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" aria-hidden />
-                <Input
-                  placeholder="Search"
-                  className="h-9 pl-9 pr-10"
-                  disabled
-                />
-                <kbd className="pointer-events-none absolute right-2 top-2 rounded border border-slate-200 bg-slate-50 px-1.5 text-[10px] text-slate-500">
-                  ⌘K
-                </kbd>
+            <div className="px-3 pb-5">
+              <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/80 px-3 py-2.5">
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                    Workspace
+                  </p>
+                  <p className="mt-0.5 text-xs font-medium text-slate-200">Durban operations</p>
+                </div>
+                <Badge className="border border-emerald-400/20 bg-emerald-400/10 px-2 text-[10px] text-emerald-300">
+                  Live
+                </Badge>
               </div>
             </div>
 
-            <nav className="flex-1 px-2 pb-4">
+            <nav className="flex-1 px-3 pb-4">
+              <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-600">
+                Workspace
+              </p>
               <div className="space-y-1">
                 {navItems.map((item) => {
                   const active = pathname.startsWith(item.to)
@@ -401,100 +400,134 @@ function AdminLayout() {
                       to={item.to as any}
                       preload="intent"
                       className={cn(
-                        'group flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm transition',
-                        active ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900',
+                        'group flex items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-sm transition',
+                        active
+                          ? 'bg-white/10 text-white shadow-sm ring-1 ring-white/10'
+                          : 'text-slate-400 hover:bg-white/5 hover:text-white',
                       )}
                     >
                       <span className="flex items-center gap-2">
-                        <item.icon className={cn('h-4 w-4', active ? 'text-slate-900' : 'text-slate-500')} />
+                        <item.icon
+                          className={cn('h-4 w-4', active ? 'text-cyan-300' : 'text-slate-500')}
+                        />
                         <span className="font-medium">{item.label}</span>
                         {typeof count === 'number' && count > 0 ? (
-                          <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-slate-100 px-1.5 text-[11px] font-semibold text-slate-700">
+                          <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-cyan-400/10 px-1.5 text-[11px] font-semibold text-cyan-200">
                             {count > 99 ? '99+' : count}
                           </span>
                         ) : null}
                       </span>
-                      <ChevronRight className="h-4 w-4 text-slate-400 opacity-0 transition group-hover:opacity-100" aria-hidden />
+                      <ChevronRight
+                        className={cn(
+                          'h-4 w-4 text-slate-500 transition',
+                          active ? 'opacity-100' : 'opacity-0 group-hover:opacity-100',
+                        )}
+                        aria-hidden
+                      />
                     </Link>
                   )
                 })}
               </div>
 
-              <Separator className="my-4" />
+              <Separator className="my-5 bg-slate-800" />
 
+              <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-600">
+                Configuration
+              </p>
               <div className="space-y-1">
                 <Link
                   to="/admin/booking-controls"
-                  className="flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                  className={cn(
+                    'flex items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-sm transition',
+                    pathname.startsWith('/admin/booking-controls')
+                      ? 'bg-white/10 text-white ring-1 ring-white/10'
+                      : 'text-slate-400 hover:bg-white/5 hover:text-white',
+                  )}
                 >
                   <span className="flex items-center gap-2">
                     <SlidersHorizontal className="h-4 w-4 text-slate-500" />
                     Settings
                   </span>
-                  <ChevronRight className="h-4 w-4 text-slate-400" aria-hidden />
+                  <ChevronRight className="h-4 w-4 text-slate-600" aria-hidden />
                 </Link>
                 <Link
                   to={'/admin/support' as any}
-                  className="flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                  className={cn(
+                    'flex items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-sm transition',
+                    pathname.startsWith('/admin/support')
+                      ? 'bg-white/10 text-white ring-1 ring-white/10'
+                      : 'text-slate-400 hover:bg-white/5 hover:text-white',
+                  )}
                 >
                   <span className="flex items-center gap-2">
                     <Settings className="h-4 w-4 text-slate-500" />
                     Support
                   </span>
-                  <ChevronRight className="h-4 w-4 text-slate-400" aria-hidden />
+                  <ChevronRight className="h-4 w-4 text-slate-600" aria-hidden />
                 </Link>
                 <Link
                   to={'/partner-pack' as any}
-                  className="flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                  className="flex items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-sm text-slate-400 transition hover:bg-white/5 hover:text-white"
                 >
                   <span className="flex items-center gap-2">
                     <FileText className="h-4 w-4 text-slate-500" />
                     Partner pack (PDF)
                   </span>
-                  <ChevronRight className="h-4 w-4 text-slate-400" aria-hidden />
+                  <ChevronRight className="h-4 w-4 text-slate-600" aria-hidden />
                 </Link>
               </div>
             </nav>
 
-            <div className="border-t border-slate-200 p-4">
+            <div className="border-t border-slate-800 p-4">
               <div className="mb-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback className="text-xs">A</AvatarFallback>
+                  <Avatar className="h-8 w-8 border border-slate-700">
+                    <AvatarFallback className="bg-slate-800 text-xs text-slate-200">A</AvatarFallback>
                   </Avatar>
                   <div className="min-w-0 leading-tight">
-                    <p className="truncate text-sm font-medium">{email || 'Admin'}</p>
-                    <p className="text-xs text-slate-500">Signed in</p>
+                    <p className="max-w-32 truncate text-sm font-medium text-slate-200">
+                      {email || 'Administrator'}
+                    </p>
+                    <p className="text-xs text-slate-500">Secure session</p>
                   </div>
                 </div>
-                <Button variant="ghost" size="icon" onClick={handleLogout} aria-label="Logout">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-slate-400 hover:bg-white/10 hover:text-white"
+                  onClick={handleLogout}
+                  aria-label="Logout"
+                >
                   <LogOut className="h-4 w-4" />
                 </Button>
               </div>
               <Button
                 variant="outline"
-                className="w-full justify-between"
+                className="w-full justify-between border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-800 hover:text-white"
                 onClick={() => window.open('/home', '_blank', 'noopener,noreferrer')}
               >
                 Visit site
-                <ExternalLink className="h-4 w-4 text-slate-500" />
+                <ExternalLink className="h-4 w-4 text-slate-400" />
               </Button>
             </div>
           </div>
         </aside>
 
         <div className="flex min-w-0 flex-col overflow-hidden">
-          <header className="border-b border-slate-200 bg-white">
-            <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <header className="z-20 border-b border-slate-200 bg-white/95 backdrop-blur">
+            <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-3 px-4 py-3 lg:px-6">
               <div className="flex min-w-0 items-center gap-2 text-sm text-slate-500">
-                <span className="font-medium text-slate-700">Jet Ski &amp; More</span>
-                <ChevronRight className="h-4 w-4" aria-hidden />
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-950 text-[10px] font-bold text-white md:hidden">
+                  JM
+                </span>
+                <span className="hidden font-medium text-slate-700 sm:inline">Operations</span>
+                <ChevronRight className="hidden h-4 w-4 sm:block" aria-hidden />
                 <span className="truncate">{activeNav}</span>
               </div>
-              <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+              <div className="flex items-center gap-2">
                 <Dialog open={whatsNewOpen} onOpenChange={setWhatsNewOpen}>
                   <DialogTrigger asChild>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" className="hidden lg:inline-flex">
                       <Sparkles className="mr-2 h-4 w-4" />
                       What&apos;s new?
                     </Button>
@@ -531,26 +564,74 @@ function AdminLayout() {
                   </DialogContent>
                 </Dialog>
                 <Button variant="outline" size="sm" onClick={handleRefresh}>
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                  Refresh
+                  <RefreshCw className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Refresh</span>
                 </Button>
-                <Button variant="outline" size="sm" onClick={handleCopyLink}>
+                <Button variant="outline" size="sm" className="hidden xl:inline-flex" onClick={handleCopyLink}>
                   <Copy className="mr-2 h-4 w-4" />
                   Copy link
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
+                  className="hidden sm:inline-flex"
                   onClick={() => window.open('/home', '_blank', 'noopener,noreferrer')}
                 >
                   Visit site
                   <ExternalLink className="ml-2 h-4 w-4" />
                 </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="md:hidden"
+                  onClick={handleLogout}
+                  aria-label="Logout"
+                >
+                  <LogOut className="h-4 w-4" />
+                </Button>
               </div>
             </div>
+            <nav
+              className="flex gap-1 overflow-x-auto border-t border-slate-100 px-3 py-2 md:hidden"
+              aria-label="Admin navigation"
+            >
+              {navItems
+                .filter((item) => item.id !== 'home')
+                .map((item) => {
+                  const active = pathname.startsWith(item.to)
+                  return (
+                    <Link
+                      key={item.id}
+                      to={item.to as any}
+                      preload="intent"
+                      className={cn(
+                        'inline-flex flex-none items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition',
+                        active
+                          ? 'bg-slate-950 text-white'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-950',
+                      )}
+                    >
+                      <item.icon className="h-3.5 w-3.5" />
+                      {item.label}
+                    </Link>
+                  )
+                })}
+              <Link
+                to="/admin/booking-controls"
+                className={cn(
+                  'inline-flex flex-none items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition',
+                  pathname.startsWith('/admin/booking-controls')
+                    ? 'bg-slate-950 text-white'
+                    : 'bg-slate-100 text-slate-600',
+                )}
+              >
+                <SlidersHorizontal className="h-3.5 w-3.5" />
+                Settings
+              </Link>
+            </nav>
           </header>
 
-          <main className="mx-auto w-full max-w-7xl flex-1 space-y-6 overflow-y-auto px-4 py-6">
+          <main className="mx-auto w-full max-w-[1600px] flex-1 space-y-6 overflow-y-auto px-4 py-5 lg:px-6 lg:py-6">
             {error ? (
               <Alert variant="destructive">
                 <AlertTitle>Error</AlertTitle>
