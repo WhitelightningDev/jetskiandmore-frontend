@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { ArrowRight, BadgeCheck, Check, ShieldCheck } from 'lucide-react'
 
 import { ConditionsBoard } from '@/components/brand/ConditionsBoard'
+import OpeningDateBanner from '@/components/OpeningDateBanner'
 import {
   BrandButton,
   ClosingCta,
@@ -49,6 +50,7 @@ function HomePage() {
 
   return (
     <div>
+      <OpeningDateBanner />
       <section className="relative isolate min-h-[650px] overflow-hidden bg-brand-deep">
         <img
           src={harbourImg}

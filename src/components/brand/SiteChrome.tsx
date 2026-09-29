@@ -3,6 +3,7 @@ import { Link, useRouterState } from '@tanstack/react-router'
 
 import { cn } from '@/lib/utils'
 import { formatJetSkiOpenDate, useBookingControls } from '@/lib/bookingControls'
+import { isBeforeOpeningDate, OPENING_DATE_LABEL } from '@/lib/site'
 import { CONTACT, MOBILE_NAV_ITEMS, NAV_ITEMS, ROUTES, logoBadge } from '@/lib/brand-content'
 
 /** True when `to` is the active route (treating /home as /). */
@@ -20,11 +21,16 @@ export function StatusBar() {
   const { controls } = useBookingControls()
   const open = controls.jetSkiBookingsEnabled
   const openingLabel = formatJetSkiOpenDate(controls.jetSkiBookingsOpenAt)
+  const prelaunch = isBeforeOpeningDate()
 
-  const headline = open
+  const headline = prelaunch
+    ? `Jet Ski & More opens ${OPENING_DATE_LABEL}`
+    : open
     ? 'Jet ski bookings are open'
     : 'Winter season: boat rides & charters running daily'
-  const detail = open
+  const detail = prelaunch
+    ? 'Our first day of operation is Tuesday, 20 October 2026.'
+    : open
     ? 'Launching daily from Gordon’s Bay Harbour, weather permitting'
     : openingLabel
       ? `Jet ski bookings open ${openingLabel} — join the waitlist`
