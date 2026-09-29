@@ -367,3 +367,19 @@ export const THINGS_TO_DO = [
   { id: 'hike', tag: 'HIKING', title: 'Steenbras trails', body: 'Explore local mountain trails only after checking current access, permits and weather conditions.', minutes: 180, location: 'Steenbras Nature Reserve, Gordon’s Bay, South Africa', Icon: Mountain },
   { id: 'harbour', tag: 'HARBOUR WALK', title: 'Gordon’s Bay Old Harbour', body: 'Walk around the working harbour, see the fishing boats and take in the False Bay view.', minutes: 45, location: 'Gordon’s Bay Old Harbour, Western Cape, South Africa', Icon: Anchor, img: harbourImg, imageAlt: 'Gordon’s Bay Harbour and breakwater' },
 ]
+
+/** Reviewed local businesses that visitors can add to a day plan and map route. */
+export type TravelPartnerListing = {
+  id: string
+  category: 'Stay' | 'Airport transfer' | 'Tour guide' | 'Local experience'
+  name: string
+  summary: string
+  location: string
+  websiteUrl: string
+  imageUrl?: string
+  imageAlt?: string
+  durationMinutes: number
+}
+
+// Keep this list empty until a real provider has been reviewed and approved.
+export const TRAVEL_PARTNERS: TravelPartnerListing[] = []
