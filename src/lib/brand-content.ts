@@ -5,6 +5,7 @@ import droneImg from '@/lib/images/drone-video.png'
 import goproImg from '@/lib/images/gopro-footage.png'
 import wetsuitImg from '@/lib/images/wetsuit-hire.png'
 import passengersImg from '@/lib/images/additional-passengers.png'
+import { WEATHER_CANCELLATION_POLICY } from '@/lib/weatherPolicy'
 
 /**
  * Copy and data for the rebranded marketing pages, transcribed from the
@@ -16,10 +17,10 @@ export const logoBadge = '/brand/logo-badge.png'
 export { harbourImg, waterImg, boatImg }
 
 export const CONTACT = {
-  phone: '+27 (074) 658 8885',
-  phoneHref: 'tel:+27746588885',
-  whatsapp: 'https://wa.me/27746588885',
-  whatsappLabel: '+27 74 658 8885',
+  phone: '079 555 8249',
+  phoneHref: 'tel:+27795558249',
+  whatsapp: 'https://wa.me/27795558249',
+  whatsappLabel: '079 555 8249',
   email: 'jetskiadventures1@gmail.com',
   emailHref: 'mailto:jetskiadventures1@gmail.com',
   place: "Gordon's Bay Harbour · Western Cape",
@@ -144,7 +145,7 @@ export const FAQS = [
   },
   {
     q: 'What happens if the weather turns?',
-    a: 'We only launch when it is safe. If we call it off, your session moves to the next suitable slot. If travel makes that impossible because you do not live in Cape Town, we issue a voucher valid for two years under the confirmed booking terms. Check the Conditions page before you pick a date.',
+    a: `${WEATHER_CANCELLATION_POLICY} Check the Conditions page before you pick a date.`,
   },
   {
     q: 'What should I bring, and what do you provide?',
@@ -241,7 +242,7 @@ export const ADDONS = [
 ]
 
 export const BEFORE_YOU_PAY = [
-  'We confirm conditions before taking payment — no deposit lost to weather.',
+  WEATHER_CANCELLATION_POLICY,
   'Riders must be 16+ to drive; passengers from 8 years old.',
   'You must be able to swim to operate a jet ski.',
   'Arrive 15 minutes early — the briefing is part of your slot, not on top of it.',

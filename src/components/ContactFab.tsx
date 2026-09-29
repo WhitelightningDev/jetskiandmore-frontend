@@ -27,7 +27,7 @@ export default function ContactFab() {
   }, [open])
 
   const waText = encodeURIComponent('Hi! I have a question about bookings.')
-  const waNumber = '27746588885'
+  const waNumber = '27795558249'
   const emailTo = 'jetskiadventures1@gmail.com'
   const emailSubject = encodeURIComponent('Jet Ski booking enquiry')
   const emailBody = encodeURIComponent('Hi! I have a question about bookings.')

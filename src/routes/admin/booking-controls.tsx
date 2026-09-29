@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useAdminContext } from '@/admin/context'
+import { OPENING_DATE_ISO, OPENING_DATE_LABEL } from '@/lib/site'
 
 export const Route = createFileRoute('/admin/booking-controls')({
   component: BookingControlsAdminPage,
@@ -36,6 +37,7 @@ function BookingControlsAdminPage() {
   const [controls, setControls] = React.useState<BookingControls>(DEFAULT_CONTROLS)
   const [jetSkiOpenDate, setJetSkiOpenDate] = React.useState('')
   const [savedAt, setSavedAt] = React.useState<string | null>(null)
+  const [controlsLoaded, setControlsLoaded] = React.useState(false)
 
   React.useEffect(() => {
     if (!token) return
@@ -55,6 +57,7 @@ function BookingControlsAdminPage() {
         const data = (await res.json()) as BookingControls
         setControls((prev) => ({ ...prev, ...data }))
         setJetSkiOpenDate(toJohannesburgDate(data.jetSkiBookingsOpenAt))
+        setControlsLoaded(true)
       } catch (e: any) {
         setError(e?.message ?? 'Failed to load booking controls')
       } finally {
@@ -87,6 +90,7 @@ function BookingControlsAdminPage() {
       const data = (await res.json()) as BookingControls
       setControls((prev) => ({ ...prev, ...data }))
       setJetSkiOpenDate(toJohannesburgDate(data.jetSkiBookingsOpenAt))
+      setControlsLoaded(true)
       setSavedAt(new Date().toLocaleString('en-ZA'))
     } catch (e: any) {
       setError(e?.message ?? 'Failed to save booking controls')
@@ -96,6 +100,7 @@ function BookingControlsAdminPage() {
   }
 
   const updatedAtLabel = controls.updatedAt ? new Date(controls.updatedAt).toLocaleString('en-ZA') : '—'
+  const siteScheduleMismatch = controlsLoaded && jetSkiOpenDate !== OPENING_DATE_ISO
 
   return (
     <div className="space-y-6">
@@ -177,11 +182,35 @@ function BookingControlsAdminPage() {
                 </Button>
               ) : null}
             </div>
+            {siteScheduleMismatch ? (
+              <div role="alert" className="mt-4 flex flex-col gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950 sm:flex-row sm:items-center sm:justify-between">
+                <p>
+                  The public site announces operations from <strong>{OPENING_DATE_LABEL}</strong>, but the saved booking schedule is {jetSkiOpenDate ? <strong>{formatDateLabel(jetSkiOpenDate)}</strong> : <strong>not set</strong>}. Align these dates so online bookings stay closed until launch.
+                </p>
+                <Button type="button" variant="outline" className="shrink-0 border-amber-400 bg-white" onClick={() => {
+                  setJetSkiOpenDate(OPENING_DATE_ISO)
+                  setControls((current) => ({ ...current, jetSkiBookingsEnabled: false }))
+                }}>
+                  Use site opening date
+                </Button>
+              </div>
+            ) : null}
           </div>
         </CardContent>
       </Card>
     </div>
   )
+}
+
+function formatDateLabel(value: string) {
+  const date = new Date(`${value}T12:00:00+02:00`)
+  return new Intl.DateTimeFormat('en-ZA', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'Africa/Johannesburg',
+  }).format(date)
 }
 
 function toJohannesburgDate(value?: string | null): string {
