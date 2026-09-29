@@ -5,6 +5,7 @@ import droneImg from '@/lib/images/drone-video.png'
 import goproImg from '@/lib/images/gopro-footage.png'
 import wetsuitImg from '@/lib/images/wetsuit-hire.png'
 import passengersImg from '@/lib/images/additional-passengers.png'
+import clarenceDriveImg from '@/lib/images/clarence-drive.jpg'
 import { Anchor, Car, Coffee, Mountain, Ship, Waves } from 'lucide-react'
 import { WEATHER_CANCELLATION_POLICY } from '@/lib/weatherPolicy'
 
@@ -360,9 +361,9 @@ export const ITINERARY = [
 
 export const THINGS_TO_DO = [
   { id: 'beach', tag: 'BEACH', title: 'Bikini Beach', body: 'A sheltered False Bay beach close to the harbour. Check local flags and conditions before swimming.', minutes: 90, location: 'Bikini Beach, Gordon’s Bay, South Africa', Icon: Waves },
-  { id: 'drive', tag: 'COASTAL DRIVE', title: 'Clarence Drive (R44)', body: 'Take the scenic coastal road towards Rooi-Els and Betty’s Bay; allow time for safe stops at signed viewpoints.', minutes: 120, location: 'Clarence Drive R44, Gordon’s Bay, South Africa', Icon: Car },
+  { id: 'drive', tag: 'COASTAL DRIVE', title: 'Clarence Drive (R44)', body: 'Take the scenic coastal road towards Rooi-Els and Betty’s Bay; allow time for safe stops at signed viewpoints.', minutes: 120, location: 'Clarence Drive R44, Gordon’s Bay, South Africa', Icon: Car, img: clarenceDriveImg, imageAlt: 'Coastal road and False Bay scenery along Clarence Drive' },
   { id: 'food', tag: 'FOOD & COFFEE', title: 'Harbour restaurants', body: 'Keep it easy with seafood, coffee or sundowners a short walk from the launch point.', minutes: 60, location: 'Harbour Road, Gordon’s Bay, South Africa', Icon: Coffee },
-  { id: 'whales', tag: 'BOAT & WILDLIFE', title: 'False Bay boat trip', body: 'Ask about a partner boat trip. Wildlife sightings are seasonal and never guaranteed.', minutes: 120, location: 'Gordon’s Bay Harbour, South Africa', Icon: Ship, img: boatImg },
+  { id: 'whales', tag: 'BOAT & WILDLIFE', title: 'False Bay boat trip', body: 'Ask about a partner boat trip. Wildlife sightings are seasonal and never guaranteed.', minutes: 120, location: 'Gordon’s Bay Harbour, South Africa', Icon: Ship, img: boatImg, imageAlt: 'Skippered boat trip on False Bay' },
   { id: 'hike', tag: 'HIKING', title: 'Steenbras trails', body: 'Explore local mountain trails only after checking current access, permits and weather conditions.', minutes: 180, location: 'Steenbras Nature Reserve, Gordon’s Bay, South Africa', Icon: Mountain },
-  { id: 'harbour', tag: 'HARBOUR WALK', title: 'Gordon’s Bay Old Harbour', body: 'Walk around the working harbour, see the fishing boats and take in the False Bay view.', minutes: 45, location: 'Gordon’s Bay Old Harbour, Western Cape, South Africa', Icon: Anchor, img: harbourImg },
+  { id: 'harbour', tag: 'HARBOUR WALK', title: 'Gordon’s Bay Old Harbour', body: 'Walk around the working harbour, see the fishing boats and take in the False Bay view.', minutes: 45, location: 'Gordon’s Bay Old Harbour, Western Cape, South Africa', Icon: Anchor, img: harbourImg, imageAlt: 'Gordon’s Bay Harbour and breakwater' },
 ]
