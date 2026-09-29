@@ -41,26 +41,23 @@ export const ROUTES = {
   book: '/Bookings',
 } as const
 
-export const NAV_ITEMS = [
-  { label: 'Home', to: ROUTES.home },
-  { label: 'Rides & pricing', to: ROUTES.rides },
-  { label: 'Conditions', to: ROUTES.weather },
-  { label: 'Safety', to: ROUTES.safety },
-  { label: 'Boat & fishing', to: ROUTES.boats },
-  { label: 'Plan your day', to: ROUTES.plan },
-  { label: 'FAQs', to: ROUTES.faq },
-]
-
-/** Mobile menu adds Contact and spells "Conditions" out in full. */
-export const MOBILE_NAV_ITEMS = [
-  { label: 'Home', to: ROUTES.home },
-  { label: 'Rides & pricing', to: ROUTES.rides },
-  { label: 'Conditions & availability', to: ROUTES.weather },
-  { label: 'Safety', to: ROUTES.safety },
-  { label: 'Boat & fishing', to: ROUTES.boats },
-  { label: 'Plan your day', to: ROUTES.plan },
-  { label: 'FAQs', to: ROUTES.faq },
-  { label: 'Contact', to: ROUTES.contact },
+export const NAV_GROUPS = [
+  {
+    label: 'Experiences',
+    items: [
+      { label: 'Jet ski rides', to: ROUTES.rides, description: 'Guided rides from Gordon’s Bay Harbour' },
+      { label: 'Boat & fishing', to: ROUTES.boats, description: 'Skippered trips and fishing charters' },
+      { label: 'Plan your day', to: ROUTES.plan, description: 'Build a route around the bay' },
+    ],
+  },
+  {
+    label: 'Plan your visit',
+    items: [
+      { label: 'Conditions & weather', to: ROUTES.weather, description: 'Check the latest launch guidance' },
+      { label: 'Safety standards', to: ROUTES.safety, description: 'What to expect before you ride' },
+      { label: 'FAQs', to: ROUTES.faq, description: 'Answers before you book' },
+    ],
+  },
 ]
 
 export const HERO_PROOF = [
@@ -376,6 +373,8 @@ export type TravelPartnerListing = {
   summary: string
   location: string
   websiteUrl: string
+  logoUrl?: string
+  logoAlt?: string
   imageUrl?: string
   imageAlt?: string
   durationMinutes: number
