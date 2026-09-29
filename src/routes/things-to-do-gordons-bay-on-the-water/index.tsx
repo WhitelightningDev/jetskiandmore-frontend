@@ -248,7 +248,7 @@ function PlanPage() {
             {THINGS_TO_DO.map((activity) => {
               const Icon = activity.Icon
               return <Panel key={activity.id} className="overflow-hidden">
-                {activity.img ? <div className="h-40"><Shot src={activity.img} alt={activity.id === 'harbour' ? 'Gordon’s Bay Harbour and breakwater' : 'Skippered boat trip on False Bay'} /></div> : <div className="flex h-40 items-center justify-center bg-gradient-to-br from-brand-deep to-brand-teal text-white"><Icon className="h-12 w-12 opacity-90" strokeWidth={1.4} /></div>}
+                {activity.img ? <div className="h-40"><Shot src={activity.img} alt={activity.imageAlt || activity.title} /></div> : <div className="flex h-40 items-center justify-center bg-gradient-to-br from-brand-deep to-brand-teal text-white"><Icon className="h-12 w-12 opacity-90" strokeWidth={1.4} /></div>}
                 <div className="p-5">
                   <Eyebrow>{activity.tag}</Eyebrow>
                   <h3 className="mt-2 font-display text-lg font-bold text-brand-ink">{activity.title}</h3>
