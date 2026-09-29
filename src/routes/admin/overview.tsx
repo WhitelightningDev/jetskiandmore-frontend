@@ -44,6 +44,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
+import LaunchReadinessCard from '@/admin/LaunchReadinessCard'
 
 export const Route = createFileRoute('/admin/overview')({
   component: AdminOverviewPage,
@@ -186,6 +187,8 @@ function AdminOverviewPage() {
           </div>
         </div>
       </section>
+
+      <LaunchReadinessCard />
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard
@@ -435,9 +438,14 @@ function AdminOverviewPage() {
         </Card>
 
         <Card className="border-slate-200 bg-white shadow-sm">
-          <CardHeader>
-            <CardDescription>Traffic</CardDescription>
-            <CardTitle className="text-base text-slate-950">Top pages</CardTitle>
+          <CardHeader className="flex flex-row items-end justify-between gap-3">
+            <div>
+              <CardDescription>Traffic</CardDescription>
+              <CardTitle className="text-base text-slate-950">Top pages</CardTitle>
+            </div>
+            <Link to="/admin/top-pages" className="text-sm font-semibold text-cyan-800 hover:underline">
+              View all
+            </Link>
           </CardHeader>
           <CardContent className="space-y-3">
             {(pageViews?.items ?? []).slice(0, 5).map((page, index) => (

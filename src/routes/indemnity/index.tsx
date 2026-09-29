@@ -219,8 +219,8 @@ function IndemnityRoute() {
             <p>
               Please open the link directly from your booking confirmation email. If it still does not work,
               contact us on{' '}
-              <a className="font-semibold text-sky-700" href="tel:+27746588885">
-                074 658 8885
+              <a className="font-semibold text-sky-700" href="tel:+27795558249">
+                079 555 8249
               </a>{' '}
               and we will sort it out.
             </p>
@@ -592,7 +592,7 @@ function IndemnityRoute() {
                     providers lawfully collecting, processing, storing and transferring my personal information, as
                     defined in the Protection of Personal Information Act 4 of 2013 (POPI) in accordance with POPI and
                     to process such information insofar as necessary. If you do not understand the meaning or effect
-                    of any clause, please contact Daniel Mommsen on 074 658 8885 before accepting.
+                    of any clause, please contact Daniel Mommsen on 079 555 8249 before accepting.
                   </p>
                 </div>
 

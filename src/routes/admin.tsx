@@ -59,6 +59,7 @@ const navItems = [
   { id: 'home', label: 'Home', to: '/home', icon: Home, description: 'Public site' },
   { id: 'overview', label: 'Dashboard', to: '/admin/overview', icon: LayoutDashboard, description: 'Pulse & alerts' },
   { id: 'analytics', label: 'Analytics', to: '/admin/analytics', icon: BarChart3, description: 'Bookings & revenue' },
+  { id: 'top-pages', label: 'Top pages', to: '/admin/top-pages', icon: FileText, description: 'Site traffic by page' },
   { id: 'bookings', label: 'Bookings', to: '/admin/bookings', icon: CalendarClock, description: 'Manage customers' },
   { id: 'calendar', label: 'Calendar', to: '/admin/calendar', icon: CalendarRange, description: 'Date & time grid' },
   { id: 'marketing', label: 'Marketing', to: '/admin/marketing', icon: Mail, description: 'Email campaigns' },
@@ -373,7 +374,7 @@ function AdminLayout() {
                   <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
                     Workspace
                   </p>
-                  <p className="mt-0.5 text-xs font-medium text-slate-200">Durban operations</p>
+                  <p className="mt-0.5 text-xs font-medium text-slate-200">Gordon&apos;s Bay operations</p>
                 </div>
                 <Badge className="border border-emerald-400/20 bg-emerald-400/10 px-2 text-[10px] text-emerald-300">
                   Live

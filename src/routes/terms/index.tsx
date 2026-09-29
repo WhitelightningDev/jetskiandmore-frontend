@@ -10,6 +10,7 @@ import {
   Shell,
 } from '@/components/brand/primitives'
 import { CONTACT, ROUTES } from '@/lib/brand-content'
+import { WEATHER_CANCELLATION_POLICY } from '@/lib/weatherPolicy'
 
 export const Route = createFileRoute('/terms/')({
   head: () => ({
@@ -37,8 +38,9 @@ const sections = [
   {
     title: 'Cancellations & weather',
     points: [
-      'If conditions are unsafe, we may pause, reschedule or shorten a session.',
-      'Same-day changes may be necessary when harbour or sea conditions shift suddenly.',
+      'Jet ski rides are weather-bound. Forecasts are guidance only; the skipper at the harbour makes the final safety decision.',
+      WEATHER_CANCELLATION_POLICY,
+      'A weather call may be made on the day because harbour and sea conditions can change quickly.',
       'Customer changes should be requested at least 24 hours before launch where possible.',
     ],
   },

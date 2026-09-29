@@ -207,6 +207,7 @@ generated and must not be edited by hand.
 | `/admin/bookings`         | Search, inspect, update, and delete bookings                 |
 | `/admin/calendar`         | Booking calendar                                             |
 | `/admin/analytics`        | Revenue, booking, and page-view analysis                     |
+| `/admin/top-pages`        | Page-level views, sessions, engagement time, and last-seen data |
 | `/admin/booking-controls` | Enable, disable, or schedule booking categories               |
 | `/admin/marketing`        | Campaigns, audiences, uploads, assets, sending, and insights |
 | `/admin/quiz`             | Review interim skipper quiz submissions                      |

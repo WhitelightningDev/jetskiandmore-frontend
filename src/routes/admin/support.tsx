@@ -54,7 +54,7 @@ function AdminSupportPage() {
               <span>Page views</span>
               <span className="font-semibold text-slate-900">{pageViewsTotal.toLocaleString()}</span>
             </div>
-            <div className="text-xs text-slate-500">This is an internal summary; use Analytics for deep breakdowns.</div>
+            <div className="text-xs text-slate-500">Use Top pages for the full page-by-page traffic breakdown.</div>
           </CardContent>
         </Card>
 
@@ -78,6 +78,7 @@ function AdminSupportPage() {
           </CardHeader>
           <CardContent className="grid gap-2">
             <QuickLink to="/admin/overview" label="Admin dashboard" />
+            <QuickLink to="/admin/top-pages" label="Top pages analytics" />
             <QuickLink to="/admin/bookings" label="Manage bookings" />
             <QuickLink to="/admin/booking-controls" label="Booking controls" />
             <QuickLink to="/admin/marketing" label="Email marketing" />
@@ -141,6 +142,7 @@ function AdminSupportPage() {
           </CardHeader>
           <CardContent className="space-y-3 text-sm text-slate-700">
             <SectionRow icon={<BookOpen className="h-4 w-4 text-slate-600" />} title="Dashboard" desc="Fast overview of revenue, bookings, and operational signals." />
+            <SectionRow icon={<CalendarRange className="h-4 w-4 text-slate-600" />} title="Top pages" desc="Page-by-page traffic, sessions, time on page and last-seen activity." />
             <SectionRow icon={<CalendarRange className="h-4 w-4 text-slate-600" />} title="Calendar" desc="Schedule view to plan staffing, spot peak days, and reduce clashes." />
             <SectionRow icon={<LifeBuoy className="h-4 w-4 text-slate-600" />} title="Bookings" desc="Customer management: status changes, notes, and communication." />
             <SectionRow icon={<Mail className="h-4 w-4 text-slate-600" />} title="Marketing" desc="Email campaigns, uploaded recipient lists, images, performance stats, and send logs." />

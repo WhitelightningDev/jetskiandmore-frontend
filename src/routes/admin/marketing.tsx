@@ -108,6 +108,33 @@ type CampaignIdea = {
   audience?: CampaignAudience | null
 }
 
+const EMAIL_TEMPLATE_PRESETS: CampaignIdea[] = [
+  {
+    title: 'Weather reschedule update',
+    subject: 'Your Jet Ski & More booking: next steps',
+    preheader: 'A safe launch comes first. Here are your options.',
+    content: 'Hi there,\n\nSea and weather conditions mean we cannot safely run your planned session. We are sorry for the disruption.\n\nReply to this email or contact our team to choose a suitable future date at no extra charge. If rescheduling is not practical, we can issue a voucher for the unused booking amount, valid for three years from the date it is issued. We do not offer an automatic cash refund for a weather-only cancellation; this does not limit any remedy required by applicable law.\n\nYour skipper makes the final safety decision at Gordon’s Bay Harbour. Thank you for understanding that safety comes first.\n\nJet Ski & More',
+    ctaLabel: 'Contact us to reschedule',
+    ctaUrl: 'https://wa.me/27795558249',
+  },
+  {
+    title: 'Booking details and what to bring',
+    subject: 'Get ready for your ride at Gordon’s Bay Harbour',
+    preheader: 'Your arrival checklist, safety notes and location.',
+    content: 'Hi there,\n\nWe look forward to seeing you at Gordon’s Bay Harbour. Please arrive 15 minutes before your session for check-in and the safety briefing. Bring swimwear, a towel, sunscreen and sunglasses with a strap. Life jackets are provided.\n\nEvery rider and passenger must be able to swim. The skipper will review wind, swell and visibility before launch, and may reschedule if conditions are unsafe.\n\nSee you on the water,\nJet Ski & More',
+    ctaLabel: 'Check the conditions',
+    ctaUrl: 'https://www.jetskiandmore.com/weather',
+  },
+  {
+    title: 'Season opening announcement',
+    subject: 'We open Tuesday, 20 October',
+    preheader: 'Jet Ski & More begins operating on 20 October 2026.',
+    content: 'Hi there,\n\nJet Ski & More begins operating on Tuesday, 20 October 2026. We are getting the equipment, harbour setup and booking process ready for the season.\n\nSessions are weather-dependent. Forecasts help you plan, but our skipper makes the final safety decision at the harbour.\n\nWe look forward to welcoming you to Gordon’s Bay.\n\nJet Ski & More',
+    ctaLabel: 'Explore rides',
+    ctaUrl: 'https://www.jetskiandmore.com/rides',
+  },
+]
+
 type MarketingInsights = {
   industry: string
   location: string
@@ -1093,14 +1120,26 @@ function AdminMarketingPage() {
 
                     <Card className="border-slate-200 bg-white shadow-sm">
                       <CardHeader>
-                        <CardTitle className="text-base text-slate-900">Next campaign ideas</CardTitle>
-                        <CardDescription className="text-slate-600">Turn any idea into a draft and adjust copy.</CardDescription>
+                        <CardTitle className="text-base text-slate-900">Email templates</CardTitle>
+                        <CardDescription className="text-slate-600">Start from a polished, purpose-built message, then personalize and preview it before sending.</CardDescription>
                       </CardHeader>
                       <CardContent className="grid gap-3 lg:grid-cols-2">
-                        {(insights?.ideas || []).length === 0 ? (
-                          <p className="text-sm text-slate-600">No ideas yet.</p>
-                        ) : (
-                          (insights?.ideas || []).slice(0, 6).map((idea) => (
+                        {EMAIL_TEMPLATE_PRESETS.map((idea) => (
+                            <div key={idea.title} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0">
+                                  <p className="truncate font-semibold text-slate-900">{idea.title}</p>
+                                  <p className="mt-1 truncate text-xs text-slate-500">{idea.subject}</p>
+                                </div>
+                                <Button size="sm" onClick={() => {
+                                  setEditing({ id: '', name: idea.title, subject: idea.subject, preheader: idea.preheader ?? null, content: idea.content, ctaLabel: idea.ctaLabel ?? 'Read more', ctaUrl: idea.ctaUrl ?? 'https://www.jetskiandmore.com', audience: { rideId: null, status: null, lastNDays: null }, html: null, status: 'draft' })
+                                  setComposerOpen(true)
+                                }}>Use template</Button>
+                              </div>
+                              <p className="mt-3 whitespace-pre-wrap text-sm text-slate-700">{idea.preheader}</p>
+                            </div>
+                          ))}
+                        {(insights?.ideas || []).slice(0, 3).map((idea) => (
                             <div key={idea.title} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                               <div className="flex items-start justify-between gap-3">
                                 <div className="min-w-0">
@@ -1130,8 +1169,7 @@ function AdminMarketingPage() {
                               </div>
                               <p className="mt-3 whitespace-pre-wrap text-sm text-slate-700">{idea.preheader || idea.content.slice(0, 180) + (idea.content.length > 180 ? '…' : '')}</p>
                             </div>
-                          ))
-                        )}
+                          ))}
                       </CardContent>
                     </Card>
 
@@ -1877,7 +1915,7 @@ function renderEmailHtml({
 
   const buttonHtml =
     ctaLabel && ctaUrl
-      ? `<a href="${escapeAttr(ctaUrl)}" style="display:inline-block;background:#0f172a;color:#ffffff;text-decoration:none;padding:12px 16px;border-radius:10px;font-weight:700;">${escapeHtml(ctaLabel)}</a>`
+      ? `<a href="${escapeAttr(ctaUrl)}" style="display:inline-block;background:#e9ad43;color:#173b39;text-decoration:none;padding:13px 19px;border-radius:8px;font-weight:700;">${escapeHtml(ctaLabel)}</a>`
       : ''
 
   return [
@@ -1886,18 +1924,23 @@ function renderEmailHtml({
     '<meta name="viewport" content="width=device-width, initial-scale=1" />',
     `<title>${safeTitle}</title>`,
     '</head>',
-    '<body style="margin:0;background:#f8fafc;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;">',
+    '<body style="margin:0;background:#f2f6f7;font-family:Arial,Helvetica,sans-serif;">',
     `<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">${safePreheader}</div>`,
     '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">',
-    '<tr><td align="center" style="padding:24px 12px;">',
+    '<tr><td align="center" style="padding:32px 12px;">',
     '<table role="presentation" width="600" cellspacing="0" cellpadding="0" style="border-collapse:collapse;width:100%;max-width:600px;">',
-    '<tr><td style="padding:18px 20px;border:1px solid #e2e8f0;border-radius:16px;background:#ffffff;">',
-    '<div style="font-size:12px;letter-spacing:0.24em;text-transform:uppercase;color:#64748b;margin-bottom:8px;">Jet Ski &amp; More</div>',
-    `<h1 style="font-size:20px;margin:0 0 10px 0;color:#0f172a;">${safeTitle}</h1>`,
-    `<div style="font-size:14px;color:#334155;">${blocks || '<p style="margin:0;color:#64748b;">(No content)</p>'}</div>`,
-    buttonHtml ? `<div style="margin-top:14px;">${buttonHtml}</div>` : '',
-    '<div style="margin-top:18px;padding-top:14px;border-top:1px solid #e2e8f0;font-size:12px;color:#64748b;">',
-    'Gordon’s Bay Harbour • False Bay',
+    '<tr><td style="padding:0;border:1px solid #dce5e6;border-radius:18px;background:#ffffff;overflow:hidden;">',
+    '<div style="padding:22px 28px;background:#073b3a;color:#ffffff;">',
+    '<div style="font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#f5c76b;font-weight:700;">Gordon’s Bay Harbour · False Bay</div>',
+    '<div style="font-size:19px;letter-spacing:0.02em;font-weight:800;margin-top:8px;">JET SKI &amp; MORE</div>',
+    '</div>',
+    '<div style="padding:28px;">',
+    `<h1 style="font-size:26px;line-height:1.2;margin:0 0 18px 0;color:#123b3a;">${safeTitle}</h1>`,
+    `<div style="font-size:15px;color:#334155;line-height:1.7;">${blocks || '<p style="margin:0;color:#64748b;">(No content)</p>'}</div>`,
+    buttonHtml ? `<div style="margin-top:20px;">${buttonHtml}</div>` : '',
+    '<div style="margin-top:24px;padding-top:16px;border-top:1px solid #e2e8f0;font-size:12px;line-height:1.6;color:#64748b;">',
+    'Weather-dependent sessions. Our skipper makes the final safety decision at the harbour.<br/>Need help? WhatsApp <a href="https://wa.me/27795558249" style="color:#0c6460;">079 555 8249</a> · <a href="https://www.jetskiandmore.com/terms" style="color:#0c6460;">Booking terms</a>',
+    '</div>',
     '</div>',
     '</td></tr></table>',
     '</td></tr></table>',

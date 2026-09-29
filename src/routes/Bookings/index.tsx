@@ -21,6 +21,7 @@ import { AddOnsSection } from '@/features/bookings/AddOnsSection'
 import type { AddonsState } from '@/features/bookings/AddOnsSection'
 import { WeatherSnapshot } from '@/features/weather/WeatherSnapshot'
 import { BOOKINGS_WHATSAPP_URL } from '@/lib/bookingStatus'
+import { WEATHER_CANCELLATION_POLICY, WEATHER_POLICY_SUMMARY } from '@/lib/weatherPolicy'
 import { formatJetSkiOpenDate, useBookingControls } from '@/lib/bookingControls'
 
 export const Route = createFileRoute('/Bookings/')({
@@ -32,7 +33,6 @@ type Ride = {
   title: string
   subtitle: string
   price: number
-  displayPrice: string
   icon: React.ReactNode
   durationMinutes?: number
   pricePerJetSki?: number
@@ -63,7 +63,6 @@ const RIDES: Ride[] = [
     title: '30‑min Rental (1 Jet‑Ski)',
     subtitle: 'Quick burst of fun',
     price: 1488,
-    displayPrice: 'From ZAR 1,488',
     icon: <Clock className="h-4 w-4" />,
     minJetSkis: 1,
     maxJetSkis: 1,
@@ -73,7 +72,6 @@ const RIDES: Ride[] = [
     title: '60‑min Rental (1 Jet‑Ski)',
     subtitle: 'Extra time to explore',
     price: 2210,
-    displayPrice: 'From ZAR 2,210',
     icon: <Clock className="h-4 w-4" />,
     minJetSkis: 1,
     maxJetSkis: 1,
@@ -83,7 +81,6 @@ const RIDES: Ride[] = [
     title: '30‑min Rental (2 Jet‑Skis)',
     subtitle: 'Ride together',
     price: 2635,
-    displayPrice: 'From ZAR 2,635',
     icon: <Users className="h-4 w-4" />,
     minJetSkis: 2,
     maxJetSkis: 2,
@@ -93,7 +90,6 @@ const RIDES: Ride[] = [
     title: '60‑min Rental (2 Jet‑Skis)',
     subtitle: 'Double the fun, more time',
     price: 4080,
-    displayPrice: 'From ZAR 4,080',
     icon: <Users className="h-4 w-4" />,
     minJetSkis: 2,
     maxJetSkis: 2,
@@ -103,7 +99,6 @@ const RIDES: Ride[] = [
     title: 'Joy Ride (Instructed) • 10 min',
     subtitle: 'Instructor drives / assisted',
     price: 595,
-    displayPrice: 'ZAR 595',
     icon: <Gift className="h-4 w-4" />,
     minJetSkis: 0,
     maxJetSkis: 0,
@@ -113,7 +108,6 @@ const RIDES: Ride[] = [
     title: 'Group Session • 2 hr 30 min',
     subtitle: 'For 5+ people (events & teams)',
     price: 6375,
-    displayPrice: 'From ZAR 6,375',
     icon: <Users className="h-4 w-4" />,
     minJetSkis: 0,
     maxJetSkis: 0,
@@ -124,7 +118,6 @@ const RIDES: Ride[] = [
     subtitle: 'Group ride – explore the bay together',
     price: 2210,
     pricePerJetSki: 2210,
-    displayPrice: 'From ZAR 8,840 (4 skis)',
     durationMinutes: 60,
     minJetSkis: 4,
     maxJetSkis: 6,
@@ -136,10 +129,7 @@ const RIDES: Ride[] = [
 
 // --- Add-on pricing rules ---
 const WETSUIT_PRICE = 150
-const BOAT_PRICE_PER_PERSON = 450
 const EXTRA_PERSON_PRICE = 350
-
-const WEEKEND_ONLY_BLOCKED_DATE = '2026-01-17' // YYYY-MM-DD (local date)
 
 function formatZAR(n: number) {
   try {
@@ -161,10 +151,6 @@ function isWeekendDate(d: Date) {
   return day === 0 || day === 6
 }
 
-function isBlockedBookingDate(d: Date) {
-  return formatLocalDateKey(d) === WEEKEND_ONLY_BLOCKED_DATE
-}
-
 function startOfLocalDay(d: Date) {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate())
 }
@@ -174,7 +160,7 @@ function isPastLocalDate(d: Date) {
 }
 
 function isBookableBookingDate(d: Date) {
-  return isWeekendDate(d) && !isBlockedBookingDate(d) && !isPastLocalDate(d)
+  return isWeekendDate(d) && !isPastLocalDate(d)
 }
 
 function toBool(v: unknown) {
@@ -292,7 +278,7 @@ function RouteComponent() {
                 WhatsApp us
               </a>
               <a
-                href="tel:+27756588885"
+                href="tel:+27795558249"
                 className={buttonVariants({ variant: 'outline', size: 'sm' })}
               >
                 <Phone className="mr-2 h-4 w-4" />
@@ -353,6 +339,8 @@ function RouteComponent() {
 
   // Payment state
   const [quoteCents, setQuoteCents] = React.useState<number | null>(null)
+  const [quoteLoading, setQuoteLoading] = React.useState(true)
+  const quoteRequestId = React.useRef(0)
   const [paying, setPaying] = React.useState(false)
   const [, setPaidId] = React.useState<string | null>(null)
   const [payOpen, setPayOpen] = React.useState(false)
@@ -463,7 +451,7 @@ function RouteComponent() {
       return
     }
     if (!isBookableBookingDate(date)) {
-      setTimesError('Bookings are available on Saturdays and Sundays only (17 Jan 2026 excluded).')
+      setTimesError('Bookings are available on Saturdays and Sundays only.')
       timeslotKeyRef.current = { rideId, dateStr }
       return
     }
@@ -497,28 +485,20 @@ function RouteComponent() {
 
   // Fetch authoritative payment quote from backend when inputs change
   React.useEffect(() => {
-    (async () => {
+    const requestId = ++quoteRequestId.current
+    setQuoteCents(null)
+    setQuoteLoading(true)
+    ;(async () => {
       try {
         const q = await getPaymentQuote(rideId, addons as any, requiredJetSkis)
-        setQuoteCents(q.amountInCents)
+        if (requestId === quoteRequestId.current) setQuoteCents(q.amountInCents)
       } catch {
-        setQuoteCents(null)
+        if (requestId === quoteRequestId.current) setQuoteCents(null)
+      } finally {
+        if (requestId === quoteRequestId.current) setQuoteLoading(false)
       }
     })()
   }, [rideId, addons, requiredJetSkis])
-
-  const baseTotal =
-    selectedRide?.pricePerJetSki != null
-      ? selectedRide.pricePerJetSki * Math.max(0, jetSkiQty)
-      : selectedRide?.price ?? 0
-
-  // Add-on cost calculations
-  const wetsuitCost = addons.wetsuit ? WETSUIT_PRICE : 0
-  const boatCost = addons.boat ? BOAT_PRICE_PER_PERSON * Math.max(1, addons.boatCount || 1) : 0
-  const extraPeopleCost = (addons.extraPeople || 0) * EXTRA_PERSON_PRICE
-  const goproCost = 0 // priced on request / not included in estimate
-  const addonsTotal = wetsuitCost + boatCost + extraPeopleCost + goproCost
-  const estimatedTotal = baseTotal + addonsTotal
 
   // Fixed location: Gordon's Bay Harbour (do NOT replace with geolocation)
   const GBAY = { lat: -34.165, lon: 18.866, tz: 'Africa/Johannesburg' as const }
@@ -651,7 +631,7 @@ function classifySeverity(speed?: number | null, gust?: number | null, direction
         return
       }
       if (date && !dateIsBookable) {
-        alert('Bookings are available on Saturdays and Sundays only (17 Jan 2026 excluded).')
+        alert('Bookings are available on Saturdays and Sundays only.')
         return
       }
       alert('Please choose a date and time to continue.')
@@ -682,7 +662,7 @@ function classifySeverity(speed?: number | null, gust?: number | null, direction
           <Info className="h-5 w-5" aria-hidden />
           <AlertTitle>Weekend bookings only</AlertTitle>
           <AlertDescription>
-            We&apos;re currently only taking bookings on Saturdays and Sundays. Weekday bookings are unavailable. Note: 17 Jan 2026 is not bookable.
+            We&apos;re currently only taking bookings on Saturdays and Sundays. All sessions are subject to live availability and safe weather conditions.
           </AlertDescription>
         </Alert>
 
@@ -766,7 +746,7 @@ function classifySeverity(speed?: number | null, gust?: number | null, direction
                           <SelectContent>
                             {RIDES.map((r) => (
                               <SelectItem key={r.id} value={r.id} className="whitespace-normal leading-tight">
-                                {r.title} — {r.displayPrice}
+                                {r.title}
                                 {r.badge ? ' • ' + r.badge : ''}
                               </SelectItem>
                             ))}
@@ -807,20 +787,15 @@ function classifySeverity(speed?: number | null, gust?: number | null, direction
                                   setDateError('Weekend bookings only — please choose a Saturday or Sunday.')
                                   return
                                 }
-                                if (isBlockedBookingDate(d)) {
-                                  setDate(undefined)
-                                  setDateError('17 Jan 2026 is not available.')
-                                  return
-                                }
                                 setDate(d)
                               }}
-                              disabled={(d) => isPastLocalDate(d) || !isWeekendDate(d) || isBlockedBookingDate(d)}
+                              disabled={(d) => isPastLocalDate(d) || !isWeekendDate(d)}
                               initialFocus
                             />
                           </PopoverContent>
                         </Popover>
                         <p className="text-xs text-muted-foreground">
-                          Bookings are available on Saturdays and Sundays only. 17 Jan 2026 is unavailable.
+                          Weekend bookings are subject to live slot availability and safe weather conditions.
                         </p>
                         {dateError ? (
                           <p className="text-xs text-red-500">{dateError}</p>
@@ -1123,7 +1098,7 @@ function classifySeverity(speed?: number | null, gust?: number | null, direction
                     </p>
                     <ul className="list-disc pl-5 space-y-1">
                       <li>Payments are processed securely via Yoco.</li>
-                      <li>Our weather policy allows rescheduling if conditions are unsafe.</li>
+                      <li>{WEATHER_POLICY_SUMMARY}</li>
                     </ul>
                   </div>
                 )}
@@ -1204,52 +1179,11 @@ function classifySeverity(speed?: number | null, gust?: number | null, direction
                 </div>
               )}
               <Separator />
-              <div className="space-y-2">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="text-sm">Subtotal</span>
-                  <span className="font-medium">{formatZAR(baseTotal)}</span>
-                </div>
-                {addons.wetsuit || addons.gopro || addons.boat || (addons.extraPeople || 0) > 0 ? (
-                  <div className="space-y-1">
-                    {addons.gopro ? (
-                      <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-                        <span>GoPro footage</span>
-                        <span className="text-muted-foreground">On request</span>
-                      </div>
-                    ) : null}
-                    {addons.wetsuit ? (
-                      <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-                        <span>Wetsuit hire</span>
-                        <span className="text-muted-foreground">{formatZAR(wetsuitCost)}</span>
-                      </div>
-                    ) : null}
-                    {addons.boat ? (
-                      <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-                        <span>Boat ride × {Math.max(1, addons.boatCount || 1)}</span>
-                        <span className="text-muted-foreground">{formatZAR(boatCost)}</span>
-                      </div>
-                    ) : null}
-                    {(addons.extraPeople || 0) > 0 ? (
-                      <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-                        <span>Additional passenger(s) × {addons.extraPeople}</span>
-                        <span className="text-muted-foreground">{formatZAR(extraPeopleCost)}</span>
-                      </div>
-                    ) : null}
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="text-sm">Add‑ons total</span>
-                      <span className="font-medium">{formatZAR(addonsTotal)}</span>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-xs text-muted-foreground">No add‑ons selected.</p>
-                )}
-                <Separator />
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="text-sm font-semibold">Estimated total</span>
-                  <span className="font-semibold">{formatZAR(estimatedTotal)}</span>
-                </div>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="text-sm font-semibold">Current total</span>
+                <span className="font-semibold">{quoteCents != null ? formatZAR(quoteCents / 100) : quoteLoading ? 'Updating…' : 'Unavailable'}</span>
               </div>
-              <p className="text-xs text-muted-foreground">Prices subject to change. Final total confirmed on booking.</p>
+              <p className="text-xs text-muted-foreground">This amount comes from our booking system and updates when you change your ride or extras.</p>
             </CardContent>
             <CardFooter className="flex flex-wrap items-center justify-between gap-3">
               <Link to="/rides" className={buttonVariants({ variant: 'outline', size: 'sm' })}>See all rides</Link>
@@ -1320,7 +1254,7 @@ function classifySeverity(speed?: number | null, gust?: number | null, direction
           <DialogHeader>
             <DialogTitle>Safety requirement & terms</DialogTitle>
             <DialogDescription>
-              We do not refund due to bad weather. If conditions are unsafe or poor, we will reschedule your booking to a better day. If you cannot attend because you do not live in Cape Town, you will receive a voucher valid for 2 years.
+              {WEATHER_CANCELLATION_POLICY}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -1369,7 +1303,7 @@ function classifySeverity(speed?: number | null, gust?: number | null, direction
                 return
               }
               if (!date || !dateIsBookable) {
-                alert('Bookings are available on Saturdays and Sundays only (17 Jan 2026 excluded).')
+                alert('Bookings are available on Saturdays and Sundays only.')
                 return
               }
               setPaying(true)

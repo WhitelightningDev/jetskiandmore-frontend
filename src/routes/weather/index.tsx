@@ -11,6 +11,7 @@ import {
   TickRow,
 } from '@/components/brand/primitives'
 import { CONTACT, ROUTES, WEATHER_GUIDES } from '@/lib/brand-content'
+import { WEATHER_CANCELLATION_POLICY } from '@/lib/weatherPolicy'
 
 export const Route = createFileRoute('/weather/')({
   head: () => ({
@@ -69,12 +70,10 @@ function ConditionsPage() {
         <div className="flex flex-wrap items-center justify-between gap-8 rounded-[20px] bg-brand-deep p-8 sm:p-11">
           <div className="max-w-[680px]">
             <h2 className="font-display text-[28px] font-extrabold leading-[1.15] tracking-[-0.02em] text-white sm:text-[30px]">
-              If we call it off, you don&apos;t lose your money.
+              If unsafe weather stops a launch, your booking value is protected.
             </h2>
             <p className="mt-3 text-[16px] leading-[1.65] text-brand-on-dark">
-              Sessions we cancel for unsafe weather move to the next suitable slot.
-              If travel makes that impossible, contact us and we&apos;ll resolve the
-              booking under the confirmed booking terms.
+              {WEATHER_CANCELLATION_POLICY}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
