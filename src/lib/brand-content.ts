@@ -5,6 +5,7 @@ import droneImg from '@/lib/images/drone-video.png'
 import goproImg from '@/lib/images/gopro-footage.png'
 import wetsuitImg from '@/lib/images/wetsuit-hire.png'
 import passengersImg from '@/lib/images/additional-passengers.png'
+import { Anchor, Car, Coffee, Mountain, Ship, Waves } from 'lucide-react'
 import { WEATHER_CANCELLATION_POLICY } from '@/lib/weatherPolicy'
 
 /**
@@ -352,17 +353,16 @@ export const PARTNER_HOW = [
 ]
 
 export const ITINERARY = [
-  { time: '07:30', title: 'Meet at the slipway', body: 'Briefing on the machine while the bay is at its calmest.' },
-  { time: '08:00', title: 'Your session', body: '30 or 60 minutes on the water, skipper watching the zone.' },
-  { time: '09:30', title: 'Breakfast at the harbour', body: 'Coffee and something hot a two-minute walk from the trailer.' },
-  { time: '11:00', title: 'Clarence Drive', body: 'The coastal road towards Rooi Els — one of the best drives in the country.' },
+  { time: '07:30', title: 'Meet at the slipway', body: 'Allow 15 minutes for check-in and your safety briefing before launch.' },
+  { time: '08:00', title: 'Your session', body: 'Choose a 30 or 60 minute ride; the skipper confirms launch conditions at the harbour.' },
+  { time: 'After your ride', title: 'Make the day yours', body: 'Choose a beach stop, harbour meal, coastal drive, boat trip or hike in the planner below.' },
 ]
 
 export const THINGS_TO_DO = [
-  { tag: 'BEACH', title: 'Bikini Beach', body: 'Blue Flag beach, sheltered and shallow — five minutes from the harbour.', img: waterImg },
-  { tag: 'DRIVE', title: 'Clarence Drive (R44)', body: 'Cliff-edge coastal road to Rooi Els and Betty’s Bay, with whale lookouts on the way.', img: harbourImg },
-  { tag: 'FOOD', title: 'Harbour restaurants', body: 'Fresh seafood and sundowners a short walk from where you launch.', img: harbourImg },
-  { tag: 'WILDLIFE', title: 'Whale watching (Jun–Nov)', body: 'Southern rights come right into False Bay — best seen from the partner boat.', img: boatImg },
-  { tag: 'HIKE', title: 'Steenbras River Gorge', body: 'A proper Cape hike with river pools, 25 minutes up the pass.', img: waterImg },
-  { tag: 'VIEW', title: 'Gordon’s Bay Old Harbour', body: 'The working harbour, the fishing fleet, and the walk out along the wall.', img: harbourImg },
+  { id: 'beach', tag: 'BEACH', title: 'Bikini Beach', body: 'A sheltered False Bay beach close to the harbour. Check local flags and conditions before swimming.', minutes: 90, location: 'Bikini Beach, Gordon’s Bay, South Africa', Icon: Waves },
+  { id: 'drive', tag: 'COASTAL DRIVE', title: 'Clarence Drive (R44)', body: 'Take the scenic coastal road towards Rooi-Els and Betty’s Bay; allow time for safe stops at signed viewpoints.', minutes: 120, location: 'Clarence Drive R44, Gordon’s Bay, South Africa', Icon: Car },
+  { id: 'food', tag: 'FOOD & COFFEE', title: 'Harbour restaurants', body: 'Keep it easy with seafood, coffee or sundowners a short walk from the launch point.', minutes: 60, location: 'Harbour Road, Gordon’s Bay, South Africa', Icon: Coffee },
+  { id: 'whales', tag: 'BOAT & WILDLIFE', title: 'False Bay boat trip', body: 'Ask about a partner boat trip. Wildlife sightings are seasonal and never guaranteed.', minutes: 120, location: 'Gordon’s Bay Harbour, South Africa', Icon: Ship, img: boatImg },
+  { id: 'hike', tag: 'HIKING', title: 'Steenbras trails', body: 'Explore local mountain trails only after checking current access, permits and weather conditions.', minutes: 180, location: 'Steenbras Nature Reserve, Gordon’s Bay, South Africa', Icon: Mountain },
+  { id: 'harbour', tag: 'HARBOUR WALK', title: 'Gordon’s Bay Old Harbour', body: 'Walk around the working harbour, see the fishing boats and take in the False Bay view.', minutes: 45, location: 'Gordon’s Bay Old Harbour, Western Cape, South Africa', Icon: Anchor, img: harbourImg },
 ]
