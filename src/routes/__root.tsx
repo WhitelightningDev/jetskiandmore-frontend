@@ -27,7 +27,7 @@ function RootLayout() {
 
   return (
     <BookingControlsProvider>
-      <div className="flex min-h-screen flex-col bg-brand-canvas">
+      <div className="flex min-h-screen flex-col bg-brand-canvas print:bg-white">
         <StatusBar />
         <SiteHeader />
         <main className="flex-1">

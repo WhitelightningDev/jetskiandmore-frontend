@@ -37,7 +37,7 @@ export default function ContactFab() {
       ref={containerRef}
       className={cn(
         'fixed z-50 right-4 bottom-4 md:right-6 md:bottom-6',
-        'flex flex-col items-end gap-2'
+        'flex flex-col items-end gap-2 print:hidden'
       )}
     >
       {/* Action bubbles */}

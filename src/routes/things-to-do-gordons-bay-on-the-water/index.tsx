@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import { ArrowDown, ArrowUp, CalendarClock, Check, Clock3, Copy, MapPinned, Plus, Route as RouteIcon, Waves, Building2, BusFront, Compass, ShieldCheck, Send } from 'lucide-react'
+import { ArrowDown, ArrowUp, CalendarClock, Check, Clock3, Copy, FileDown, MapPinned, Plus, Route as RouteIcon, Waves, Building2, BusFront, Compass, ShieldCheck, Send } from 'lucide-react'
 
 import {
   BrandButton,
@@ -31,7 +31,7 @@ export const Route = createFileRoute('/things-to-do-gordons-bay-on-the-water/')(
 const RIDE_STARTS = ['08:00', '09:00', '10:00', '11:00']
 const HARBOUR = 'Gordon’s Bay Harbour, South Africa'
 const PLAN_ACTIVITIES = [
-  ...THINGS_TO_DO,
+  ...THINGS_TO_DO.map((activity) => ({ ...activity, isPartner: false as const, partnerLogoUrl: undefined as string | undefined, partnerLogoAlt: undefined as string | undefined, partnerWebsiteUrl: undefined as string | undefined })),
   ...TRAVEL_PARTNERS.map((partner) => ({
     id: `partner:${partner.id}`,
     tag: partner.category.toUpperCase(),
@@ -42,6 +42,10 @@ const PLAN_ACTIVITIES = [
     Icon: Compass,
     img: partner.imageUrl,
     imageAlt: partner.imageAlt || partner.name,
+    isPartner: true as const,
+    partnerLogoUrl: partner.logoUrl,
+    partnerLogoAlt: partner.logoAlt || `${partner.name} logo`,
+    partnerWebsiteUrl: partner.websiteUrl,
   })),
 ]
 
@@ -65,7 +69,7 @@ function PlanPage() {
   const [rideMinutes, setRideMinutes] = React.useState(30)
   const [selectedIds, setSelectedIds] = React.useState<string[]>(['food', 'harbour'])
   const [copied, setCopied] = React.useState(false)
-  const [partnerForm, setPartnerForm] = React.useState({ business: '', contact: '', email: '', phone: '', category: 'Accommodation · B&B or guesthouse', area: '', website: '', details: '', consent: false })
+  const [partnerForm, setPartnerForm] = React.useState({ business: '', contact: '', email: '', phone: '', category: 'Accommodation · B&B or guesthouse', area: '', website: '', logoUrl: '', details: '', consent: false })
   const [partnerSubmitting, setPartnerSubmitting] = React.useState(false)
   const [partnerSuccess, setPartnerSuccess] = React.useState(false)
   const [partnerError, setPartnerError] = React.useState<string | null>(null)
@@ -104,6 +108,7 @@ function PlanPage() {
 
   const itineraryText = dayPlan.map((stop) => `${stop.time}–${stop.end} · ${stop.title}\n${stop.body}`).join('\n\n')
   const whatsappPlan = `Hi Jet Ski & More, can you help with this Gordon’s Bay day plan?\n\n${itineraryText}`
+  const printablePartners = selectedActivities.filter((activity) => activity.isPartner)
 
   function toggleActivity(id: string) {
     setSelectedIds((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id])
@@ -148,6 +153,7 @@ function PlanPage() {
           `Category: ${partnerForm.category}`,
           `Service area: ${partnerForm.area}`,
           `Website or social profile: ${partnerForm.website || 'Not provided'}`,
+          `Public logo image URL: ${partnerForm.logoUrl || 'Not provided'}`,
           '',
           'Service details and credentials:',
           partnerForm.details,
@@ -156,7 +162,7 @@ function PlanPage() {
         ].join('\n'),
       })
       setPartnerSuccess(true)
-      setPartnerForm({ business: '', contact: '', email: '', phone: '', category: 'Accommodation · B&B or guesthouse', area: '', website: '', details: '', consent: false })
+      setPartnerForm({ business: '', contact: '', email: '', phone: '', category: 'Accommodation · B&B or guesthouse', area: '', website: '', logoUrl: '', details: '', consent: false })
     } catch (caught) {
       setPartnerError(caught instanceof Error ? caught.message : 'We could not send your application. Please email us directly.')
     } finally {
@@ -166,6 +172,7 @@ function PlanPage() {
 
   return (
     <div>
+      <div className="print:hidden">
       <Shell className="pt-10 sm:pt-14">
         <div className="grid items-center gap-8 lg:grid-cols-[1.05fr_.95fr]">
           <div>
@@ -286,6 +293,9 @@ function PlanPage() {
               <button type="button" onClick={copyPlan} className="inline-flex items-center gap-2 rounded-xl border border-brand-line-strong px-4 py-3 text-sm font-bold text-brand-ink hover:border-brand-teal">
                 {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}{copied ? 'Copied' : 'Copy itinerary'}
               </button>
+              <button type="button" title="Choose Save as PDF in the print dialog" onClick={() => window.print()} className="inline-flex items-center gap-2 rounded-xl border border-brand-line-strong px-4 py-3 text-sm font-bold text-brand-ink hover:border-brand-teal">
+                <FileDown className="h-4 w-4" /> Print or save PDF
+              </button>
               <a href={routeUrl(selectedActivities)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl bg-brand-teal px-4 py-3 text-sm font-bold text-white hover:bg-brand-teal-dark">
                 <RouteIcon className="h-4 w-4" /> Open route in Maps
               </a>
@@ -340,9 +350,8 @@ function PlanPage() {
               <h3 className="font-display text-xl font-extrabold">Local partners to add to your day</h3>
               {TRAVEL_PARTNERS.length > 0 ? <div className="mt-4 grid gap-3">
                 {TRAVEL_PARTNERS.map((partner) => <article key={partner.id} className="rounded-2xl bg-white p-4 text-brand-ink">
-                  <p className="text-xs font-bold uppercase tracking-wider text-brand-teal">{partner.category} · reviewed listing</p>
-                  <h4 className="mt-1 font-bold">{partner.name}</h4>
-                  <p className="mt-1 text-sm text-brand-muted">{partner.summary}</p>
+                  <div className="flex items-center gap-3">{partner.logoUrl && <img src={partner.logoUrl} alt={partner.logoAlt || `${partner.name} logo`} className="h-12 w-12 rounded-lg border border-brand-line bg-white object-contain p-1.5" />}<div><p className="text-xs font-bold uppercase tracking-wider text-brand-teal">{partner.category} · reviewed listing</p><h4 className="mt-1 font-bold">{partner.name}</h4></div></div>
+                  <p className="mt-2 text-sm text-brand-muted">{partner.summary}</p>
                   <div className="mt-3 flex flex-wrap gap-3">
                     <button type="button" onClick={() => toggleActivity(`partner:${partner.id}`)} className="inline-flex items-center gap-1 text-sm font-bold text-brand-teal">{selectedIds.includes(`partner:${partner.id}`) ? 'Added to your day' : 'Add to your day'} <Plus className="h-4 w-4" /></button>
                     {partner.websiteUrl && <a href={partner.websiteUrl} target="_blank" rel="noreferrer" className="text-sm font-bold text-brand-teal underline">Visit provider</a>}
@@ -363,7 +372,10 @@ function PlanPage() {
                   <label className="text-sm font-semibold">Service type<select value={partnerForm.category} onChange={(e) => setPartnerForm({ ...partnerForm, category: e.target.value })} className={fieldClass}><option>Accommodation · B&amp;B or guesthouse</option><option>Airport shuttle or private transfer</option><option>Tour guide</option><option>Local visitor experience</option></select></label>
                   <label className="text-sm font-semibold">Area served<input required maxLength={200} placeholder="e.g. Gordon’s Bay, Cape Town" value={partnerForm.area} onChange={(e) => setPartnerForm({ ...partnerForm, area: e.target.value })} className={fieldClass} /></label>
                 </div>
-                <label className="block text-sm font-semibold">Website or social page <span className="font-normal text-brand-faint">(optional)</span><input type="url" maxLength={300} placeholder="https://" value={partnerForm.website} onChange={(e) => setPartnerForm({ ...partnerForm, website: e.target.value })} className={fieldClass} /></label>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <label className="block text-sm font-semibold">Website or social page <span className="font-normal text-brand-faint">(optional)</span><input type="url" maxLength={300} placeholder="https://" value={partnerForm.website} onChange={(e) => setPartnerForm({ ...partnerForm, website: e.target.value })} className={fieldClass} /></label>
+                  <label className="block text-sm font-semibold">Public logo image URL <span className="font-normal text-brand-faint">(optional)</span><input type="url" maxLength={500} placeholder="https://yourbusiness.co.za/logo.png" value={partnerForm.logoUrl} onChange={(e) => setPartnerForm({ ...partnerForm, logoUrl: e.target.value })} className={fieldClass} /></label>
+                </div>
                 <label className="block text-sm font-semibold">Tell us about your service and relevant permits, insurance, registrations or references<textarea required minLength={20} maxLength={2000} rows={4} value={partnerForm.details} onChange={(e) => setPartnerForm({ ...partnerForm, details: e.target.value })} className={fieldClass} /></label>
                 <label className="flex items-start gap-3 text-sm leading-5 text-brand-muted"><input required type="checkbox" checked={partnerForm.consent} onChange={(e) => setPartnerForm({ ...partnerForm, consent: e.target.checked })} className="mt-1 accent-brand-teal" /><span>I agree Jet Ski &amp; More may contact me about this application.</span></label>
                 <p className="text-xs leading-5 text-brand-faint">Applications are sent to our team for manual review. We’ll contact you before any listing is published. This is not a booking or payment service.</p>
@@ -384,6 +396,62 @@ function PlanPage() {
         <BrandButton to={ROUTES.weather} tone="amber" size="lg">Check conditions</BrandButton>
         <BrandButton href={CONTACT.whatsapp} tone="ghost-dark" size="lg">Ask for a local plan</BrandButton>
       </ClosingCta>
+      </div>
+
+      <section className="hidden print:block" aria-label="Printable trip itinerary">
+        <style>{`@page { size: A4; margin: 15mm; } @media print { html, body { background: #fff !important; color: #102a36 !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; } }`}</style>
+        <div className="mx-auto max-w-[760px] font-sans text-slate-800">
+          <header className="flex items-center justify-between border-b-2 border-teal-700 pb-5">
+            <div className="flex items-center gap-3">
+              <img src="/brand/logo-badge.png" alt="Jet Ski & More" className="h-14 w-14 object-contain" />
+              <div><p className="text-xs font-bold uppercase tracking-[.18em] text-teal-800">JET SKI &amp; MORE · GORDON’S BAY</p><p className="mt-1 text-xs text-slate-500">A day plan for the Western Cape</p></div>
+            </div>
+            <div className="text-right"><p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Prepared</p><p className="mt-1 text-sm font-bold">{new Intl.DateTimeFormat('en-ZA', { dateStyle: 'long' }).format(new Date())}</p></div>
+          </header>
+
+          <div className="py-6">
+            <h1 className="font-display text-3xl font-extrabold text-slate-900">Your Gordon’s Bay itinerary</h1>
+            <p className="mt-2 text-sm text-slate-600">Start at Gordon’s Bay Harbour · Ride at {rideStart} · {rideMinutes}-minute water session</p>
+          </div>
+
+          <ol className="space-y-0">
+            {dayPlan.map((stop, index) => {
+              const activity = selectedActivities.find((item) => item.title === stop.title)
+              return <li key={`${stop.title}-${index}`} className="flex gap-4 border-t border-slate-200 py-4">
+                <div className="w-[58px] shrink-0 pt-0.5 text-sm font-extrabold tabular-nums text-teal-800">{stop.time}</div>
+                {activity?.isPartner && activity.partnerLogoUrl ? <img src={activity.partnerLogoUrl} alt={activity.partnerLogoAlt} className="h-12 w-12 shrink-0 rounded-lg border border-slate-200 bg-white object-contain p-1.5" /> : <span className="mt-1 h-3 w-3 shrink-0 rounded-full bg-teal-700" />}
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2"><h2 className="font-bold text-slate-900">{stop.title}</h2><span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600">{stop.duration}</span></div>
+                  <p className="mt-1 text-sm leading-5 text-slate-600">{stop.body}</p>
+                  {activity?.isPartner && <div className="mt-1 flex flex-wrap gap-x-3 text-xs text-teal-800">{activity.partnerWebsiteUrl && <span>{activity.partnerWebsiteUrl}</span>}<span>{activity.location}</span></div>}
+                </div>
+              </li>
+            })}
+          </ol>
+
+          <div className="mt-5 rounded-xl bg-slate-50 p-4">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700">Your route</h2>
+            <p className="mt-1 break-all text-xs text-slate-600">Gordon’s Bay Harbour{selectedActivities.length ? ` → ${selectedActivities.map((item) => item.title).join(' → ')}` : ''}</p>
+            <a href={routeUrl(selectedActivities)} className="mt-2 inline-block text-sm font-bold text-teal-800">Open this route in Google Maps</a>
+          </div>
+
+          {printablePartners.length > 0 && <section className="mt-6 break-inside-avoid">
+            <h2 className="border-b border-slate-200 pb-2 text-xs font-bold uppercase tracking-wider text-slate-700">Local providers in your plan</h2>
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              {printablePartners.map((partner) => <article key={partner.id} className="flex items-center gap-3 rounded-xl border border-slate-200 p-3">
+                {partner.partnerLogoUrl ? <img src={partner.partnerLogoUrl} alt={partner.partnerLogoAlt} className="h-12 w-12 shrink-0 rounded-lg bg-white object-contain" /> : <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-teal-50 text-xs font-black text-teal-800">{partner.title.slice(0, 2).toUpperCase()}</span>}
+                <div className="min-w-0"><p className="text-[10px] font-bold uppercase tracking-wide text-teal-800">{partner.tag}</p><p className="truncate text-sm font-bold">{partner.title}</p>{partner.partnerWebsiteUrl && <p className="truncate text-[10px] text-slate-500">{partner.partnerWebsiteUrl}</p>}</div>
+              </article>)}
+            </div>
+          </section>}
+
+          <footer className="mt-7 border-t border-slate-200 pt-4 text-xs leading-5 text-slate-500">
+            <p className="font-semibold text-slate-700">A few helpful notes</p>
+            <p className="mt-1">Times and travel durations are estimates. Jet ski sessions are weather-dependent; the skipper confirms whether conditions are safe to launch. Check provider availability and current access before travelling.</p>
+            <p className="mt-2">Jet Ski &amp; More · {CONTACT.phone} · {CONTACT.email} · jetskiandmore.com</p>
+          </footer>
+        </div>
+      </section>
     </div>
   )
 }
