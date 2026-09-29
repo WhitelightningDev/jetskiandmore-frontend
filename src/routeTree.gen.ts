@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PartnerPackRouteImport } from './routes/partner-pack'
+import { Route as CareersCollaborationsRouteImport } from './routes/careers-collaborations'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WhyRideWithUsIndexRouteImport } from './routes/why-ride-with-us/index'
@@ -51,6 +52,11 @@ import { Route as WeatherCalmSlotsIndexRouteImport } from './routes/weather/calm
 const PartnerPackRoute = PartnerPackRouteImport.update({
   id: '/partner-pack',
   path: '/partner-pack',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CareersCollaborationsRoute = CareersCollaborationsRouteImport.update({
+  id: '/careers-collaborations',
+  path: '/careers-collaborations',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -247,6 +253,7 @@ const WeatherCalmSlotsIndexRoute = WeatherCalmSlotsIndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/careers-collaborations': typeof CareersCollaborationsRoute
   '/partner-pack': typeof PartnerPackRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/booking-controls': typeof AdminBookingControlsRoute
@@ -287,6 +294,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/careers-collaborations': typeof CareersCollaborationsRoute
   '/partner-pack': typeof PartnerPackRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/booking-controls': typeof AdminBookingControlsRoute
@@ -328,6 +336,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/careers-collaborations': typeof CareersCollaborationsRoute
   '/partner-pack': typeof PartnerPackRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/booking-controls': typeof AdminBookingControlsRoute
@@ -370,6 +379,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/careers-collaborations'
     | '/partner-pack'
     | '/admin/analytics'
     | '/admin/booking-controls'
@@ -410,6 +420,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/careers-collaborations'
     | '/partner-pack'
     | '/admin/analytics'
     | '/admin/booking-controls'
@@ -450,6 +461,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/careers-collaborations'
     | '/partner-pack'
     | '/admin/analytics'
     | '/admin/booking-controls'
@@ -491,6 +503,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
+  CareersCollaborationsRoute: typeof CareersCollaborationsRoute
   PartnerPackRoute: typeof PartnerPackRoute
   PaymentsCancelledRoute: typeof PaymentsCancelledRoute
   PaymentsFailedRoute: typeof PaymentsFailedRoute
@@ -526,6 +539,13 @@ declare module '@tanstack/react-router' {
       path: '/partner-pack'
       fullPath: '/partner-pack'
       preLoaderRoute: typeof PartnerPackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/careers-collaborations': {
+      id: '/careers-collaborations'
+      path: '/careers-collaborations'
+      fullPath: '/careers-collaborations'
+      preLoaderRoute: typeof CareersCollaborationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -821,6 +841,7 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
+  CareersCollaborationsRoute: CareersCollaborationsRoute,
   PartnerPackRoute: PartnerPackRoute,
   PaymentsCancelledRoute: PaymentsCancelledRoute,
   PaymentsFailedRoute: PaymentsFailedRoute,

@@ -93,7 +93,7 @@ export function SiteHeader() {
           </span>
         </Link>
 
-        <nav aria-label="Main navigation" className="hidden items-center gap-1 min-[1024px]:flex">
+        <nav aria-label="Main navigation" className="hidden items-center gap-1 min-[1180px]:flex">
           <Link to={ROUTES.home} aria-current={isActive(ROUTES.home) ? 'page' : undefined} className={cn('rounded-lg px-3 py-2.5 text-[14.5px] font-semibold no-underline transition-colors hover:bg-brand-tint/70', isActive(ROUTES.home) ? 'text-brand-teal' : 'text-brand-body hover:text-brand-teal')}>Home</Link>
           {NAV_GROUPS.map((group) => {
             const groupIsActive = group.items.some((item) => isActive(item.to))
@@ -115,6 +115,7 @@ export function SiteHeader() {
               </DropdownMenuContent>
             </DropdownMenu>
           })}
+          <Link to={ROUTES.collaborations} aria-current={isActive(ROUTES.collaborations) ? 'page' : undefined} className={cn('rounded-lg px-3 py-2.5 text-[14.5px] font-semibold no-underline transition-colors hover:bg-brand-tint/70', isActive(ROUTES.collaborations) ? 'text-brand-teal' : 'text-brand-body hover:text-brand-teal')}>Careers &amp; collaborations</Link>
           <Link to={ROUTES.contact} aria-current={isActive(ROUTES.contact) ? 'page' : undefined} className="rounded-lg px-3 py-2.5 text-[14.5px] font-semibold text-brand-body no-underline transition-colors hover:bg-brand-tint/70 hover:text-brand-teal">Contact</Link>
         </nav>
 
@@ -124,7 +125,7 @@ export function SiteHeader() {
             aria-expanded={menuOpen}
             aria-label={menuOpen ? 'Close menu' : 'Open menu'}
             onClick={() => setMenuOpen((v) => !v)}
-            className="flex items-center gap-2.5 rounded-[10px] border border-brand-line-strong bg-white px-3 py-2.5 text-[14px] font-bold text-brand-ink transition-colors hover:border-brand-teal min-[1024px]:hidden"
+            className="flex items-center gap-2.5 rounded-[10px] border border-brand-line-strong bg-white px-3 py-2.5 text-[14px] font-bold text-brand-ink transition-colors hover:border-brand-teal min-[1180px]:hidden"
           >
             <span className="flex flex-col gap-[3px]">
               <span className="block h-0.5 w-4 rounded-sm bg-brand-ink" />
@@ -144,7 +145,7 @@ export function SiteHeader() {
       </div>
 
       {menuOpen ? (
-        <div className="border-t border-brand-line bg-white min-[1024px]:hidden">
+        <div className="border-t border-brand-line bg-white min-[1180px]:hidden">
           <nav aria-label="Mobile navigation" className="mx-auto flex max-w-[1240px] flex-col gap-1 px-5 pb-5 pt-3.5">
             <Link to={ROUTES.home} aria-current={isActive(ROUTES.home) ? 'page' : undefined} className={cn('block rounded-xl px-4 py-3 text-[15px] no-underline', isActive(ROUTES.home) ? 'bg-brand-tint font-bold text-brand-teal-dark' : 'font-semibold text-brand-body')}>Home</Link>
             {NAV_GROUPS.map((group) => <section key={group.label} className="mt-2">
@@ -153,6 +154,7 @@ export function SiteHeader() {
                 <span className="block">{item.label}</span><span className="mt-0.5 block text-xs font-normal text-brand-faint">{item.description}</span>
               </Link>)}
             </section>)}
+            <Link to={ROUTES.collaborations} aria-current={isActive(ROUTES.collaborations) ? 'page' : undefined} className={cn('mt-2 block rounded-xl px-4 py-3 text-[15px] no-underline', isActive(ROUTES.collaborations) ? 'bg-brand-tint font-bold text-brand-teal-dark' : 'font-semibold text-brand-body')}>Careers &amp; collaborations</Link>
             <Link to={ROUTES.contact} aria-current={isActive(ROUTES.contact) ? 'page' : undefined} className={cn('mt-2 block rounded-xl px-4 py-3 text-[15px] no-underline', isActive(ROUTES.contact) ? 'bg-brand-tint font-bold text-brand-teal-dark' : 'font-semibold text-brand-body')}>Contact</Link>
             <a
               href={CONTACT.whatsapp}
@@ -222,6 +224,7 @@ export function SiteFooter() {
           <div className="mt-[18px] flex flex-col items-start gap-2.5">
             <FooterLink to={ROUTES.boats}>Boat &amp; fishing</FooterLink>
             <FooterLink to={ROUTES.plan}>Plan your day</FooterLink>
+            <FooterLink to={ROUTES.collaborations}>Careers &amp; collaborations</FooterLink>
             <FooterLink to={ROUTES.faq}>FAQs</FooterLink>
             <FooterLink to={ROUTES.legal}>Terms &amp; privacy</FooterLink>
           </div>

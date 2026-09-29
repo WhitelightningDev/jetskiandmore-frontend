@@ -35,6 +35,7 @@ export const ROUTES = {
   safety: '/safety',
   boats: '/boat-ride',
   plan: '/things-to-do-gordons-bay-on-the-water',
+  collaborations: '/careers-collaborations',
   faq: '/jet-ski-faqs-gordons-bay',
   contact: '/contact',
   legal: '/terms',
