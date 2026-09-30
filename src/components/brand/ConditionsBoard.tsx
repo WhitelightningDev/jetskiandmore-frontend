@@ -1,5 +1,7 @@
 import * as React from 'react'
 import {
+  ChevronLeft,
+  ChevronRight,
   CloudRain,
   CloudSun,
   Eye,
@@ -53,6 +55,7 @@ function hourTime(value: string) {
 export function ConditionsBoard({ compact = false }: { compact?: boolean }) {
   const conditions = useConditions()
   const { controls } = useBookingControls()
+  const daysScroller = React.useRef<HTMLDivElement>(null)
   const [selectedDate, setSelectedDate] = React.useState<string | null>(null)
   const [sessionLength, setSessionLength] = React.useState<SessionLength>(30)
   const [season, setSeason] = React.useState<Season>(CONDITIONS_DEFAULTS.season)
@@ -72,6 +75,42 @@ export function ConditionsBoard({ compact = false }: { compact?: boolean }) {
   const selectedHours = selectedDay
     ? conditions.hourly.filter((hour) => hour.time.startsWith(selectedDay.date))
     : []
+
+  function scrollDays(direction: -1 | 1) {
+    daysScroller.current?.scrollBy({ left: direction * 340, behavior: 'smooth' })
+  }
+
+  if (compact) {
+    return (
+      <Panel className="overflow-hidden">
+        <div className="grid gap-5 p-5 sm:grid-cols-[1fr_auto] sm:items-center sm:p-6">
+          <div>
+            <div className="flex items-center gap-2 text-[11.5px] font-bold tracking-[0.14em] text-brand-teal">
+              <CloudSun className="h-4 w-4" aria-hidden />
+              TODAY AT THE HARBOUR
+            </div>
+            {conditions.loading ? (
+              <div className="mt-4 h-9 w-32 animate-pulse rounded-lg bg-brand-line-soft" aria-label="Loading today's weather" />
+            ) : (
+              <>
+                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+                  <span className="font-display text-[34px] font-extrabold leading-none tracking-[-0.03em] text-brand-ink">{metric(conditions.current?.temperature, '°C')}</span>
+                  {conditions.current?.assessment && <div className="flex items-center gap-2"><RatingPill rating={conditions.current.assessment.rating} /><span className="text-xs font-bold text-brand-body">{conditions.current.assessment.score}/100 · {conditions.current.assessment.confidence} confidence</span></div>}
+                </div>
+                <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold text-brand-body">
+                  <span className="rounded-lg bg-brand-surface px-3 py-2"><Wind className="mr-1.5 inline h-3.5 w-3.5 text-brand-teal" aria-hidden />Wind {metric(conditions.current?.windSpeed, ' km/h')}</span>
+                  <span className="rounded-lg bg-brand-surface px-3 py-2"><Waves className="mr-1.5 inline h-3.5 w-3.5 text-brand-teal" aria-hidden />Waves {metric(conditions.current?.swell, ' m', 1)}</span>
+                  <span className="rounded-lg bg-brand-surface px-3 py-2">Sea {metric(conditions.current?.seaSurfaceTemperature, '°C', 1)}</span>
+                </div>
+              </>
+            )}
+            <p className="mt-3 text-xs leading-5 text-brand-faint">{conditions.stale ? 'Showing cached guidance. ' : ''}The skipper makes the final launch decision at the harbour.</p>
+          </div>
+          <BrandButton to="/weather" tone="outline">View forecast &amp; launch times <ChevronRight className="h-4 w-4" /></BrandButton>
+        </div>
+      </Panel>
+    )
+  }
 
   return (
     <div className="space-y-5">
@@ -180,23 +219,29 @@ export function ConditionsBoard({ compact = false }: { compact?: boolean }) {
                   NEXT 7 DAYS
                 </div>
                 <p className="mt-1.5 text-[13.5px] text-brand-muted">
-                  Select a day to inspect conditions and launch times.
+                  Swipe to compare days. Select one for launch times.
                 </p>
               </div>
-              {conditions.error ? (
-                <span className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-rough-fg">
-                  <RefreshCw className="h-3.5 w-3.5" aria-hidden />
-                  Live forecast unavailable
-                </span>
-              ) : null}
+              <div className="flex items-center gap-3">
+                {conditions.error ? (
+                  <span className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-rough-fg">
+                    <RefreshCw className="h-3.5 w-3.5" aria-hidden />
+                    Live forecast unavailable
+                  </span>
+                ) : null}
+                <div className="flex gap-1">
+                  <button type="button" onClick={() => scrollDays(-1)} aria-label="Scroll forecast to earlier days" className="flex h-9 w-9 items-center justify-center rounded-full border border-brand-line bg-white text-brand-ink hover:border-brand-teal hover:text-brand-teal"><ChevronLeft className="h-4 w-4" /></button>
+                  <button type="button" onClick={() => scrollDays(1)} aria-label="Scroll forecast to later days" className="flex h-9 w-9 items-center justify-center rounded-full border border-brand-line bg-white text-brand-ink hover:border-brand-teal hover:text-brand-teal"><ChevronRight className="h-4 w-4" /></button>
+                </div>
+              </div>
             </div>
 
-            <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-7">
+            <div ref={daysScroller} className="mt-5 flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain pb-3 [scrollbar-color:#9ab7ba_transparent] [scrollbar-width:thin]" role="list" aria-label="Seven day weather forecast">
               {conditions.loading
                 ? Array.from({ length: 7 }, (_, index) => (
                     <div
                       key={index}
-                      className="h-[150px] animate-pulse rounded-[14px] bg-brand-line-soft"
+                      className="h-[170px] w-[172px] shrink-0 animate-pulse snap-start rounded-[14px] bg-brand-line-soft"
                     />
                   ))
                 : conditions.days.map((day) => {
@@ -207,7 +252,7 @@ export function ConditionsBoard({ compact = false }: { compact?: boolean }) {
                         type="button"
                         onClick={() => setSelectedDate(day.date)}
                         className={cn(
-                          'rounded-[14px] border p-3.5 text-left transition-colors',
+                          'w-[172px] shrink-0 snap-start rounded-[14px] border p-3.5 text-left transition-colors',
                           active
                             ? 'border-brand-teal bg-brand-tint shadow-[0_0_0_1px_#0E7C8B]'
                             : 'border-brand-line bg-white hover:border-brand-teal',
@@ -220,31 +265,11 @@ export function ConditionsBoard({ compact = false }: { compact?: boolean }) {
                           {day.dateLabel}
                         </div>
                         <RatingPill rating={day.rating} className="mt-3" />
-                        <div className="mt-3 text-[12.5px] leading-[1.65] text-brand-muted">
-                          <div>
-                            Wind{' '}
-                            <strong className="text-brand-ink">
-                              {metric(day.windSpeed, ' km/h')}
-                            </strong>
-                          </div>
-                          <div>
-                            Gusts{' '}
-                            <strong className="text-brand-ink">
-                              {metric(day.windGust, ' km/h')}
-                            </strong>
-                          </div>
-                          <div>
-                            Waves{' '}
-                            <strong className="text-brand-ink">
-                              {metric(day.swell, ' m', 1)}
-                            </strong>
-                          </div>
-                          <div>
-                            Rain{' '}
-                            <strong className="text-brand-ink">
-                              {metric(day.precipitationProbability, '%')}
-                            </strong>
-                          </div>
+                        <div className="mt-3 grid grid-cols-2 gap-2 text-[11px]">
+                          <div className="rounded-lg bg-brand-surface p-2"><span className="block text-brand-faint">Wind</span><strong className="mt-0.5 block text-brand-ink">{metric(day.windSpeed, ' km/h')}</strong></div>
+                          <div className="rounded-lg bg-brand-surface p-2"><span className="block text-brand-faint">Gusts</span><strong className="mt-0.5 block text-brand-ink">{metric(day.windGust, ' km/h')}</strong></div>
+                          <div className="rounded-lg bg-brand-surface p-2"><span className="block text-brand-faint">Waves</span><strong className="mt-0.5 block text-brand-ink">{metric(day.swell, ' m', 1)}</strong></div>
+                          <div className="rounded-lg bg-brand-surface p-2"><span className="block text-brand-faint">Rain</span><strong className="mt-0.5 block text-brand-ink">{metric(day.precipitationProbability, '%')}</strong></div>
                         </div>
                       </button>
                     )

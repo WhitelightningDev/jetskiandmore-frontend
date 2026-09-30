@@ -101,20 +101,6 @@ function HomePage() {
       </section>
 
       <Section className="relative z-10 -mt-8">
-        <Panel className="mb-5 px-6 py-5 shadow-[0_18px_50px_-36px_rgba(6,32,47,0.55)] sm:px-8">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <Eyebrow>CONDITIONS &amp; LIVE AVAILABILITY</Eyebrow>
-              <DisplayHeading className="mt-2" size="md">
-                Book a day the bay agrees with.
-              </DisplayHeading>
-            </div>
-            <p className="max-w-[470px] text-[14.5px] leading-relaxed text-brand-muted">
-              Live harbour weather, a seven-day outlook, and launch times from
-              the same booking system used at checkout.
-            </p>
-          </div>
-        </Panel>
         <ConditionsBoard compact />
       </Section>
 
@@ -246,15 +232,15 @@ function HomePage() {
               <Eyebrow>IN PARTNERSHIP WITH</Eyebrow>
               <span className="h-px flex-1 bg-brand-line" />
             </div>
-            <div className="mt-6 flex items-center gap-4">
+            <div className="mt-6 flex max-w-[360px] flex-col items-start gap-3">
               <span className="flex h-14 w-14 items-center justify-center rounded-[14px] bg-fba font-display text-[14px] font-extrabold text-white">
                 FBA
               </span>
               <div>
-                <h2 className="font-display text-[24px] font-extrabold text-brand-ink">
+                <h2 className="font-display text-[24px] font-extrabold leading-tight text-brand-ink">
                   False Bay Adventures
                 </h2>
-                <p className="text-[13.5px] font-semibold text-brand-faint">
+                <p className="mt-1 text-[13.5px] font-semibold text-brand-faint">
                   Skippered boat rides &amp; fishing charters
                 </p>
               </div>

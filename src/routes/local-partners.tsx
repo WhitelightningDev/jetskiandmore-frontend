@@ -59,10 +59,10 @@ function LocalPartnersPage() {
 
       <section className="mt-14 grid gap-6 rounded-[26px] bg-brand-deep p-6 text-white sm:p-8 lg:grid-cols-[.8fr_1.2fr] lg:items-center" aria-label="Vendor reach and listing fee">
         <div className="border-b border-white/15 pb-5 lg:border-b-0 lg:border-r lg:pb-0 lg:pr-8">
-          <p className="text-xs font-bold uppercase tracking-[.15em] text-white/65">International site reach · past 3 years</p>
-          <p className="mt-2 font-display text-4xl font-extrabold sm:text-5xl">1.7M+</p>
-          <p className="mt-1 text-sm text-white/75">overseas site traffic</p>
-          <p className="mt-3 text-xs leading-5 text-white/55">Whole-site traffic, not jet-ski customers or guaranteed vendor enquiries.</p>
+          <p className="text-xs font-bold uppercase tracking-[.15em] text-white/65">Site analytics · 1 Oct 2023–30 Sep 2026</p>
+          <p className="mt-2 font-display text-4xl font-extrabold sm:text-5xl">18,185</p>
+          <p className="mt-1 text-sm text-white/75">recorded page views · 3,976 sessions</p>
+          <p className="mt-3 text-xs leading-5 text-white/55">Today so far: 91 page views · 14 sessions. Country-level data is not currently available in this dashboard, so these are whole-site totals—not overseas-only reach or guaranteed enquiries.</p>
         </div>
         <div>
           <div className="flex flex-wrap items-baseline justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-[.15em] text-white/65">Vendor listing</p><p className="mt-1 font-display text-3xl font-extrabold">R1,200 <span className="text-base font-semibold text-white/70">per month</span></p></div><BrandButton to={ROUTES.vendorJoin} tone="amber">Apply to join</BrandButton></div>
