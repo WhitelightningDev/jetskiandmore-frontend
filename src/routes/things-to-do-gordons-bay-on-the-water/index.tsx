@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { createFileRoute } from '@tanstack/react-router'
-import { ArrowDown, ArrowUp, CalendarClock, Check, Clock3, Copy, FileDown, MapPinned, Plus, Route as RouteIcon, Waves, Building2, BusFront, Compass, ShieldCheck, Send } from 'lucide-react'
+import { createFileRoute, Link, useRouterState } from '@tanstack/react-router'
+import { ArrowDown, ArrowUp, CalendarClock, Check, Clock3, Copy, FileDown, MapPinned, Plus, Route as RouteIcon, Waves, Compass } from 'lucide-react'
 
 import {
   BrandButton,
@@ -12,7 +12,6 @@ import {
   Shot,
 } from '@/components/brand/primitives'
 import { CONTACT, ROUTES, THINGS_TO_DO, TRAVEL_PARTNERS, harbourImg } from '@/lib/brand-content'
-import { postJSON } from '@/lib/api'
 
 export const Route = createFileRoute('/things-to-do-gordons-bay-on-the-water/')({
   head: () => ({
@@ -45,11 +44,9 @@ const PLAN_ACTIVITIES = [
     isPartner: true as const,
     partnerLogoUrl: partner.logoUrl,
     partnerLogoAlt: partner.logoAlt || `${partner.name} logo`,
-    partnerWebsiteUrl: partner.websiteUrl,
+    partnerWebsiteUrl: partner.bookingUrl || partner.websiteUrl,
   })),
 ]
-
-const fieldClass = 'mt-2 w-full rounded-xl border border-brand-line-strong bg-brand-surface px-4 py-3 text-[15px] text-brand-ink outline-none transition placeholder:text-brand-faint focus:border-brand-teal focus:ring-2 focus:ring-brand-teal/15'
 
 function addMinutes(time: string, minutes: number) {
   const [hour, minute] = time.split(':').map(Number)
@@ -65,14 +62,12 @@ function routeUrl(activities: Array<{ location: string }>) {
 }
 
 function PlanPage() {
+  const searchStr = useRouterState({ select: (state) => state.location.searchStr })
+  const requestedActivity = new URLSearchParams(searchStr).get('add')
   const [rideStart, setRideStart] = React.useState('08:00')
   const [rideMinutes, setRideMinutes] = React.useState(30)
-  const [selectedIds, setSelectedIds] = React.useState<string[]>(['food', 'harbour'])
+  const [selectedIds, setSelectedIds] = React.useState<string[]>(() => ['food', 'harbour', ...(requestedActivity && PLAN_ACTIVITIES.some((activity) => activity.id === requestedActivity) ? [requestedActivity] : [])])
   const [copied, setCopied] = React.useState(false)
-  const [partnerForm, setPartnerForm] = React.useState({ business: '', contact: '', email: '', phone: '', category: 'Accommodation · B&B or guesthouse', area: '', website: '', logoUrl: '', details: '', consent: false })
-  const [partnerSubmitting, setPartnerSubmitting] = React.useState(false)
-  const [partnerSuccess, setPartnerSuccess] = React.useState(false)
-  const [partnerError, setPartnerError] = React.useState<string | null>(null)
 
   const selectedActivities = selectedIds.flatMap((id) => {
     const activity = PLAN_ACTIVITIES.find((item) => item.id === id)
@@ -133,40 +128,6 @@ function PlanPage() {
       window.setTimeout(() => setCopied(false), 2200)
     } catch {
       setCopied(false)
-    }
-  }
-
-  async function submitPartnerApplication(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setPartnerSuccess(false)
-    setPartnerError(null)
-    try {
-      setPartnerSubmitting(true)
-      await postJSON<{ ok: boolean; id: string }>('/api/contact', {
-        fullName: `${partnerForm.contact} · ${partnerForm.business}`,
-        phone: partnerForm.phone,
-        email: partnerForm.email,
-        subject: `Travel partner application · ${partnerForm.business}`,
-        message: [
-          `Business: ${partnerForm.business}`,
-          `Contact: ${partnerForm.contact}`,
-          `Category: ${partnerForm.category}`,
-          `Service area: ${partnerForm.area}`,
-          `Website or social profile: ${partnerForm.website || 'Not provided'}`,
-          `Public logo image URL: ${partnerForm.logoUrl || 'Not provided'}`,
-          '',
-          'Service details and credentials:',
-          partnerForm.details,
-          '',
-          'Contact consent: Yes',
-        ].join('\n'),
-      })
-      setPartnerSuccess(true)
-      setPartnerForm({ business: '', contact: '', email: '', phone: '', category: 'Accommodation · B&B or guesthouse', area: '', website: '', logoUrl: '', details: '', consent: false })
-    } catch (caught) {
-      setPartnerError(caught instanceof Error ? caught.message : 'We could not send your application. Please email us directly.')
-    } finally {
-      setPartnerSubmitting(false)
     }
   }
 
@@ -259,6 +220,7 @@ function PlanPage() {
                 <Eyebrow>YOUR DAY PLAN</Eyebrow>
                 <h2 className="mt-2 font-display text-2xl font-extrabold text-brand-ink">A schedule you can use</h2>
                 <p className="mt-1 text-sm text-brand-muted">Times are estimates; travel and wait times can vary.</p>
+                <Link to={ROUTES.vendors} className="mt-2 inline-flex text-xs font-bold text-brand-teal underline">Local venture? Become a vendor</Link>
               </div>
               <span className="rounded-full bg-brand-deep/5 px-3 py-1.5 text-xs font-semibold text-brand-teal">{dayPlan.length} stops</span>
             </div>
@@ -326,64 +288,28 @@ function PlanPage() {
           </div>
         </section>
 
-        <section className="mt-14 rounded-[28px] bg-brand-deep px-6 py-8 text-white sm:px-10 sm:py-10" aria-labelledby="travel-partners-title">
-          <div className="grid gap-8 lg:grid-cols-[.9fr_1.1fr] lg:items-start">
-            <div>
-              <Eyebrow>YOUR WESTERN CAPE TRIP, CONNECTED</Eyebrow>
-              <h2 id="travel-partners-title" className="mt-3 font-display text-3xl font-extrabold">Find trusted local stays, rides and guides.</h2>
-              <p className="mt-4 text-sm leading-6 text-white/75">We’re building a carefully reviewed directory of local businesses visitors can add to a Gordon’s Bay day plan. Start with a stay, airport transfer or guided experience; approved listings can be added to your itinerary and map route.</p>
-              <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                {[
-                  { icon: Building2, title: 'B&Bs & guesthouses', text: 'A welcoming base near the bay.' },
-                  { icon: BusFront, title: 'Airport transfers', text: 'Shuttles and private transfers.' },
-                  { icon: Compass, title: 'Tour guides', text: 'Local knowledge, made practical.' },
-                  { icon: Waves, title: 'Local experiences', text: 'Things worth building a day around.' },
-                ].map(({ icon: Icon, title, text }) => <div key={title} className="rounded-2xl border border-white/15 bg-white/5 p-4"><Icon className="h-5 w-5 text-brand-amber" /><h3 className="mt-3 font-bold">{title}</h3><p className="mt-1 text-sm text-white/65">{text}</p></div>)}
-              </div>
-              <div className="mt-5 flex gap-3 rounded-2xl border border-white/15 bg-white/5 p-4 text-sm leading-6 text-white/75">
-                <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-brand-amber" />
-                <p>Every application is reviewed before a business appears here. We’ll check relevant operating details and references; applying does not guarantee approval or imply an existing partnership.</p>
-              </div>
-            </div>
+        <section className="mt-14 grid gap-6 lg:grid-cols-[1fr_1.1fr]" aria-labelledby="planner-partners-title">
+          <div className="rounded-[26px] bg-brand-deep p-7 text-white sm:p-9">
+            <Eyebrow>LOCAL TRAVEL NETWORK</Eyebrow>
+            <h2 id="planner-partners-title" className="mt-3 font-display text-3xl font-extrabold">Are you part of the visitor journey?</h2>
+            <p className="mt-3 text-sm leading-6 text-white/75">We’re connecting visitors with local stays, transfers, guides, travel planners and creators. Tell us what you do and explore working with Jet Ski &amp; More.</p>
+            <BrandButton to={ROUTES.vendors} tone="amber" className="mt-6">Become a vendor</BrandButton>
+          </div>
 
-            <div>
-              <h3 className="font-display text-xl font-extrabold">Local partners to add to your day</h3>
-              {TRAVEL_PARTNERS.length > 0 ? <div className="mt-4 grid gap-3">
-                {TRAVEL_PARTNERS.map((partner) => <article key={partner.id} className="rounded-2xl bg-white p-4 text-brand-ink">
-                  <div className="flex items-center gap-3">{partner.logoUrl && <img src={partner.logoUrl} alt={partner.logoAlt || `${partner.name} logo`} className="h-12 w-12 rounded-lg border border-brand-line bg-white object-contain p-1.5" />}<div><p className="text-xs font-bold uppercase tracking-wider text-brand-teal">{partner.category} · reviewed listing</p><h4 className="mt-1 font-bold">{partner.name}</h4></div></div>
-                  <p className="mt-2 text-sm text-brand-muted">{partner.summary}</p>
-                  <div className="mt-3 flex flex-wrap gap-3">
-                    <button type="button" onClick={() => toggleActivity(`partner:${partner.id}`)} className="inline-flex items-center gap-1 text-sm font-bold text-brand-teal">{selectedIds.includes(`partner:${partner.id}`) ? 'Added to your day' : 'Add to your day'} <Plus className="h-4 w-4" /></button>
-                    {partner.websiteUrl && <a href={partner.websiteUrl} target="_blank" rel="noreferrer" className="text-sm font-bold text-brand-teal underline">Visit provider</a>}
-                  </div>
-                </article>)}
-              </div> : <div className="mt-4 rounded-2xl border border-dashed border-white/25 p-5">
-                <p className="font-bold">We’re inviting the first local businesses.</p>
-                <p className="mt-1 text-sm leading-6 text-white/65">No providers are listed yet. Send us your details below; we’ll review applications before publishing anything in the planner.</p>
-              </div>}
-
-              <form onSubmit={submitPartnerApplication} className="mt-5 space-y-4 rounded-2xl bg-white p-5 text-brand-ink sm:p-6">
-                <div><h3 className="font-display text-xl font-extrabold">Apply to be featured</h3><p className="mt-1 text-sm text-brand-muted">For accommodation, transfers, guides and visitor experiences serving the Western Cape.</p></div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <label className="text-sm font-semibold">Business name<input required maxLength={90} value={partnerForm.business} onChange={(e) => setPartnerForm({ ...partnerForm, business: e.target.value })} className={fieldClass} /></label>
-                  <label className="text-sm font-semibold">Your name<input required maxLength={90} value={partnerForm.contact} onChange={(e) => setPartnerForm({ ...partnerForm, contact: e.target.value })} className={fieldClass} /></label>
-                  <label className="text-sm font-semibold">Email<input required type="email" value={partnerForm.email} onChange={(e) => setPartnerForm({ ...partnerForm, email: e.target.value })} className={fieldClass} /></label>
-                  <label className="text-sm font-semibold">Phone or WhatsApp<input required type="tel" value={partnerForm.phone} onChange={(e) => setPartnerForm({ ...partnerForm, phone: e.target.value })} className={fieldClass} /></label>
-                  <label className="text-sm font-semibold">Service type<select value={partnerForm.category} onChange={(e) => setPartnerForm({ ...partnerForm, category: e.target.value })} className={fieldClass}><option>Accommodation · B&amp;B or guesthouse</option><option>Airport shuttle or private transfer</option><option>Tour guide</option><option>Local visitor experience</option></select></label>
-                  <label className="text-sm font-semibold">Area served<input required maxLength={200} placeholder="e.g. Gordon’s Bay, Cape Town" value={partnerForm.area} onChange={(e) => setPartnerForm({ ...partnerForm, area: e.target.value })} className={fieldClass} /></label>
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <label className="block text-sm font-semibold">Website or social page <span className="font-normal text-brand-faint">(optional)</span><input type="url" maxLength={300} placeholder="https://" value={partnerForm.website} onChange={(e) => setPartnerForm({ ...partnerForm, website: e.target.value })} className={fieldClass} /></label>
-                  <label className="block text-sm font-semibold">Public logo image URL <span className="font-normal text-brand-faint">(optional)</span><input type="url" maxLength={500} placeholder="https://yourbusiness.co.za/logo.png" value={partnerForm.logoUrl} onChange={(e) => setPartnerForm({ ...partnerForm, logoUrl: e.target.value })} className={fieldClass} /></label>
-                </div>
-                <label className="block text-sm font-semibold">Tell us about your service and relevant permits, insurance, registrations or references<textarea required minLength={20} maxLength={2000} rows={4} value={partnerForm.details} onChange={(e) => setPartnerForm({ ...partnerForm, details: e.target.value })} className={fieldClass} /></label>
-                <label className="flex items-start gap-3 text-sm leading-5 text-brand-muted"><input required type="checkbox" checked={partnerForm.consent} onChange={(e) => setPartnerForm({ ...partnerForm, consent: e.target.checked })} className="mt-1 accent-brand-teal" /><span>I agree Jet Ski &amp; More may contact me about this application.</span></label>
-                <p className="text-xs leading-5 text-brand-faint">Applications are sent to our team for manual review. We’ll contact you before any listing is published. This is not a booking or payment service.</p>
-                {partnerSuccess && <p role="status" className="rounded-xl bg-emerald-50 p-3 text-sm font-semibold text-emerald-800">Thanks — your application has been sent for review. We’ll contact you using the details provided.</p>}
-                {partnerError && <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-800">{partnerError} You can also reach us at <a className="underline" href={CONTACT.emailHref}>{CONTACT.email}</a>.</p>}
-                <button disabled={partnerSubmitting} type="submit" className="inline-flex items-center gap-2 rounded-xl bg-brand-teal px-5 py-3 text-sm font-bold text-white hover:bg-brand-teal-dark disabled:opacity-60">{partnerSubmitting ? 'Sending…' : 'Send partner application'} <Send className="h-4 w-4" /></button>
-              </form>
-            </div>
+          <div className="rounded-[26px] border border-brand-line bg-white p-7 sm:p-9">
+            <Eyebrow>LOCAL PARTNERS IN YOUR PLAN</Eyebrow>
+            <h2 className="mt-2 font-display text-2xl font-extrabold text-brand-ink">Find trusted local stays, rides and guides.</h2>
+            {TRAVEL_PARTNERS.length > 0 ? <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              {TRAVEL_PARTNERS.map((partner) => <article key={partner.id} className="rounded-2xl border border-brand-line p-4">
+                <div className="flex items-center gap-3">{partner.logoUrl && <img src={partner.logoUrl} alt={partner.logoAlt || `${partner.name} logo`} className="h-11 w-11 rounded-lg border border-brand-line bg-white object-contain p-1" />}<div><p className="text-[11px] font-bold uppercase tracking-wider text-brand-teal">{partner.category}</p><h3 className="font-bold text-brand-ink">{partner.name}</h3></div></div>
+                <p className="mt-2 text-sm leading-5 text-brand-muted">{partner.summary}</p>
+                <div className="mt-3 flex flex-wrap gap-3"><button type="button" onClick={() => toggleActivity(`partner:${partner.id}`)} className="text-sm font-bold text-brand-teal hover:underline">{selectedIds.includes(`partner:${partner.id}`) ? 'Added to your day' : 'Add to your day'}</button>{partner.websiteUrl && <a href={partner.websiteUrl} target="_blank" rel="noreferrer" className="text-sm font-bold text-brand-teal underline">Visit provider</a>}</div>
+              </article>)}
+            </div> : <div className="mt-4 rounded-2xl bg-brand-tint/60 p-5">
+              <p className="font-bold text-brand-ink">We’re inviting the first local providers.</p>
+              <p className="mt-1 text-sm leading-6 text-brand-muted">Approved partners will appear here so you can add them to your itinerary and Maps route.</p>
+              <Link to={ROUTES.vendors} className="mt-3 inline-flex font-bold text-brand-teal underline">Are you a provider? Join the network</Link>
+            </div>}
           </div>
         </section>
       </Shell>
