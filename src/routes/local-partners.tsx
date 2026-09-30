@@ -57,12 +57,26 @@ function LocalPartnersPage() {
         </div>
       </section>
 
-      <section className="mt-14 grid gap-6 rounded-[26px] bg-brand-deep p-6 text-white sm:p-8 lg:grid-cols-[.8fr_1.2fr] lg:items-center" aria-label="Vendor reach and listing fee">
+      <section className="mt-14 grid gap-6 rounded-[26px] bg-brand-deep p-6 text-white sm:p-8 lg:grid-cols-[1.05fr_1fr] lg:items-center" aria-label="Vendor reach and listing fee">
         <div className="border-b border-white/15 pb-5 lg:border-b-0 lg:border-r lg:pb-0 lg:pr-8">
-          <p className="text-xs font-bold uppercase tracking-[.15em] text-white/65">Site analytics · 1 Oct 2023–30 Sep 2026</p>
-          <p className="mt-2 font-display text-4xl font-extrabold sm:text-5xl">18,185</p>
-          <p className="mt-1 text-sm text-white/75">recorded page views · 3,976 sessions</p>
-          <p className="mt-3 text-xs leading-5 text-white/55">Today so far: 91 page views · 14 sessions. Country-level data is not currently available in this dashboard, so these are whole-site totals—not overseas-only reach or guaranteed enquiries.</p>
+          <p className="text-xs font-bold uppercase tracking-[.15em] text-white/65">International site reach · past 3 years</p>
+          <p className="mt-2 font-display text-4xl font-extrabold sm:text-5xl">1.7M+</p>
+          <p className="mt-1 text-sm text-white/75">reported overseas site traffic · historical Google Ads accounts</p>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-xl bg-white/10 p-3">
+              <p className="text-[10px] font-bold uppercase tracking-[.12em] text-white/60">Google Ads export · 2022–23</p>
+              <p className="mt-1 text-lg font-extrabold">144,670 <span className="text-xs font-semibold text-white/70">impressions</span></p>
+              <p className="mt-1 text-xs text-white/75">4,888 interactions · 3.38% interaction rate</p>
+              <p className="mt-1.5 text-[11px] leading-4 text-white/55">Mobile 4,216 · computer 343 · tablet 329</p>
+            </div>
+            <div className="rounded-xl bg-white/10 p-3">
+              <p className="text-[10px] font-bold uppercase tracking-[.12em] text-white/60">Jet Ski &amp; More admin analytics · 2023–26</p>
+              <p className="mt-1 text-lg font-extrabold">18,185 <span className="text-xs font-semibold text-white/70">page views</span></p>
+              <p className="mt-1 text-xs text-white/75">3,976 tracked sessions</p>
+              <p className="mt-1.5 text-[11px] leading-4 text-white/55">First-party activity recorded by our site analytics.</p>
+            </div>
+          </div>
+          <p className="mt-3 text-[11px] leading-4 text-white/55">Google Ads reports and first-party analytics have different coverage and are not added together. These are whole-site figures, not Jet Ski customers or guaranteed vendor enquiries.</p>
         </div>
         <div>
           <div className="flex flex-wrap items-baseline justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-[.15em] text-white/65">Vendor listing</p><p className="mt-1 font-display text-3xl font-extrabold">R1,200 <span className="text-base font-semibold text-white/70">per month</span></p></div><BrandButton to={ROUTES.vendorJoin} tone="amber">Apply to join</BrandButton></div>
