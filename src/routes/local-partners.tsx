@@ -61,7 +61,7 @@ const EVIDENCE_PROMPTS: Record<string, string> = {
 const fieldClass = 'mt-2 w-full rounded-xl border border-brand-line-strong bg-brand-surface px-4 py-3 text-[15px] text-brand-ink outline-none transition placeholder:text-brand-faint focus:border-brand-teal focus:ring-2 focus:ring-brand-teal/15'
 
 function LocalPartnersPage() {
-  const [form, setForm] = React.useState({ category: VENDOR_CATEGORIES[0], name: '', business: '', email: '', phone: '', area: '', bookingUrl: '', credentials: '', offer: '', consent: false })
+  const [form, setForm] = React.useState({ category: VENDOR_CATEGORIES[0], name: '', business: '', email: '', phone: '', area: '', bookingUrl: '', credentials: '', offer: '', consent: false, feeAcknowledged: false })
   const [submitting, setSubmitting] = React.useState(false)
   const [success, setSuccess] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
@@ -95,10 +95,11 @@ function LocalPartnersPage() {
           form.offer,
           '',
           'Contact consent: Yes',
+          'Monthly listing fee acknowledgement: R1,200/month if approved; no charge at application: Yes',
         ].join('\n'),
       })
       setSuccess(true)
-      setForm({ category: VENDOR_CATEGORIES[0], name: '', business: '', email: '', phone: '', area: '', bookingUrl: '', credentials: '', offer: '', consent: false })
+      setForm({ category: VENDOR_CATEGORIES[0], name: '', business: '', email: '', phone: '', area: '', bookingUrl: '', credentials: '', offer: '', consent: false, feeAcknowledged: false })
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'We could not send the application. Please contact our team directly.')
     } finally {
@@ -155,6 +156,26 @@ function LocalPartnersPage() {
         </div>
       </section>
 
+      <section className="mt-14 grid gap-6 overflow-hidden rounded-[28px] bg-brand-deep p-6 text-white sm:p-9 lg:grid-cols-[1.1fr_.9fr] lg:items-center" aria-label="Vendor listing value and price">
+        <div>
+          <Eyebrow>REACH VISITORS PLANNING A CAPE TOWN TRIP</Eyebrow>
+          <h2 className="mt-2 max-w-2xl font-display text-3xl font-extrabold leading-tight sm:text-4xl">Be part of the trip they’re already planning.</h2>
+          <p className="mt-4 max-w-2xl text-sm leading-6 text-white/75">Jet Ski &amp; More has recorded more than 1.7 million visits from overseas audiences across the site over the last three years. That is platform-wide reach—not a claim that those visitors booked a jet ski or will choose a vendor. We’re building useful local discovery around that audience, starting in Gordon’s Bay and the Helderberg.</p>
+        </div>
+        <div className="rounded-2xl border border-white/15 bg-white/10 p-5 sm:p-6">
+          <p className="text-xs font-extrabold uppercase tracking-[.14em] text-white/65">Vendor listing</p>
+          <p className="mt-2 font-display text-4xl font-extrabold">R1,200 <span className="text-lg font-semibold text-white/70">/ month</span></p>
+          <ul className="mt-4 space-y-2 text-sm leading-6 text-white/85">
+            <li>• A reviewed listing in the relevant local service category</li>
+            <li>• A place in relevant visitor day plans and mapped itineraries</li>
+            <li>• Your logo and booking/contact link shown with your listing in itinerary PDFs</li>
+            <li>• Visitors plan with you for free; they arrange and pay you directly</li>
+          </ul>
+          <p className="mt-4 border-t border-white/15 pt-4 text-xs leading-5 text-white/60">Applications are reviewed first. If accepted, the monthly fee is due to activate your listing. A listing does not guarantee impressions, enquiries or bookings.</p>
+          <a href="#become-a-vendor" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-bold text-brand-deep no-underline hover:bg-white/90">Apply to join <ArrowRight className="h-4 w-4" /></a>
+        </div>
+      </section>
+
       <section className="mt-14 grid gap-6 lg:grid-cols-[.9fr_1.1fr]" aria-label="Partner review standards and vendor application">
         <div><Eyebrow>HOW WE EARN GUEST TRUST</Eyebrow><DisplayHeading as="h2" className="mt-2" size="md">Clear checks, matched to the service.</DisplayHeading><p className="mt-3 text-sm leading-6 text-brand-muted">This is a curated referral and itinerary network, not a regulator or blanket certification. We review the details guests rely on, verify relevant evidence with the provider, and show only status we can substantiate.</p>
           <div className="mt-6 space-y-4">{REVIEW_STANDARDS.map((item, index) => <div key={item.title} className="flex gap-3"><span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-tint text-xs font-extrabold text-brand-teal">{index + 1}</span><div><h3 className="font-bold text-brand-ink">{item.title}</h3><p className="mt-1 text-sm leading-6 text-brand-muted">{item.detail}</p></div></div>)}</div>
@@ -162,7 +183,7 @@ function LocalPartnersPage() {
           <div className="mt-6 rounded-2xl bg-brand-tint/60 p-4"><div className="flex gap-2 text-sm font-bold text-brand-ink"><ShieldCheck className="h-5 w-5 shrink-0 text-brand-teal" />A listing is not a guarantee of a guest’s experience.</div><p className="mt-2 text-xs leading-5 text-brand-muted">We show the business’s own booking route and terms. Guests should check availability, inclusions and cancellation terms with the provider before paying.</p></div>
         </div>
         <Panel id="become-a-vendor" className="scroll-mt-28 p-6 sm:p-8">
-          <Eyebrow>FOR LOCAL VENTURES</Eyebrow><h2 className="mt-2 font-display text-2xl font-extrabold text-brand-ink">Become a vendor and be part of the trip.</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Tell us what you offer and who it helps. If there’s a fit, we’ll review the relevant details with you and agree the listing, referral and booking terms before it goes live.</p>
+          <Eyebrow>FOR LOCAL VENTURES</Eyebrow><h2 className="mt-2 font-display text-2xl font-extrabold text-brand-ink">Become a vendor and be part of the trip.</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Apply for a reviewed listing at R1,200 per month. We check service fit and relevant credentials first; if accepted, you pay the monthly fee to activate your listing. Travellers can add your service to their itinerary at no charge and book/pay you directly.</p>
           <form onSubmit={submitApplication} className="mt-5 space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="text-sm font-semibold text-brand-ink">Venture type<select required value={form.category} onChange={(event) => setForm({ ...form, category: event.target.value })} className={fieldClass}>{VENDOR_CATEGORIES.map((category) => <option key={category}>{category}</option>)}</select></label>
@@ -177,6 +198,7 @@ function LocalPartnersPage() {
             <label className="block text-sm font-semibold text-brand-ink">{isCreator ? 'What could you create with us?' : 'What can a visitor book with you?'}<textarea required minLength={20} maxLength={2200} rows={4} placeholder={isCreator ? 'Describe your audience, content idea, deliverables, usage rights, expected fee and how you disclose paid partnerships.' : 'Describe your service, inclusions, typical capacity, indicative price range and how guests enquire or book.'} value={form.offer} onChange={(event) => setForm({ ...form, offer: event.target.value })} className={fieldClass} /></label>
             <p className="rounded-xl bg-brand-surface p-3 text-xs leading-5 text-brand-muted">Please don’t attach identity documents or sensitive records here. We’ll tell you which supporting evidence is needed and arrange a suitable way to verify it. Applying does not guarantee approval, a listing, bookings or paid work.</p>
             <label className="flex items-start gap-3 text-sm leading-5 text-brand-muted"><input required type="checkbox" checked={form.consent} onChange={(event) => setForm({ ...form, consent: event.target.checked })} className="mt-1 accent-brand-teal" /><span>I agree Jet Ski &amp; More may contact me about this vendor application.</span></label>
+            <label className="flex items-start gap-3 text-sm leading-5 text-brand-muted"><input required type="checkbox" checked={form.feeAcknowledged} onChange={(event) => setForm({ ...form, feeAcknowledged: event.target.checked })} className="mt-1 accent-brand-teal" /><span>I understand that, if approved, my listing costs R1,200 per month and only goes live once the fee is paid. This application does not charge me.</span></label>
             {success && <p role="status" className="rounded-xl bg-emerald-50 p-3 text-sm font-semibold text-emerald-800">Thanks—your application has reached our team. We’ll follow up using the details you provided.</p>}
             {error && <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-800">{error} You can also reach us at <a className="underline" href={CONTACT.emailHref}>{CONTACT.email}</a>.</p>}
             <button disabled={submitting} type="submit" className="inline-flex items-center gap-2 rounded-xl bg-brand-teal px-5 py-3 text-sm font-bold text-white hover:bg-brand-teal-dark disabled:opacity-60">{submitting ? 'Sending…' : 'Apply to join the network'} <Check className="h-4 w-4" /></button>
