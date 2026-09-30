@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PartnerPackRouteImport } from './routes/partner-pack'
 import { Route as LocalPartnersRouteImport } from './routes/local-partners'
+import { Route as BecomeAVendorRouteImport } from './routes/become-a-vendor'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WhyRideWithUsIndexRouteImport } from './routes/why-ride-with-us/index'
@@ -57,6 +58,11 @@ const PartnerPackRoute = PartnerPackRouteImport.update({
 const LocalPartnersRoute = LocalPartnersRouteImport.update({
   id: '/local-partners',
   path: '/local-partners',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BecomeAVendorRoute = BecomeAVendorRouteImport.update({
+  id: '/become-a-vendor',
+  path: '/become-a-vendor',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -253,6 +259,7 @@ const WeatherCalmSlotsIndexRoute = WeatherCalmSlotsIndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/become-a-vendor': typeof BecomeAVendorRoute
   '/local-partners': typeof LocalPartnersRoute
   '/partner-pack': typeof PartnerPackRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
@@ -294,6 +301,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/become-a-vendor': typeof BecomeAVendorRoute
   '/local-partners': typeof LocalPartnersRoute
   '/partner-pack': typeof PartnerPackRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
@@ -336,6 +344,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/become-a-vendor': typeof BecomeAVendorRoute
   '/local-partners': typeof LocalPartnersRoute
   '/partner-pack': typeof PartnerPackRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
@@ -379,6 +388,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/become-a-vendor'
     | '/local-partners'
     | '/partner-pack'
     | '/admin/analytics'
@@ -420,6 +430,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/become-a-vendor'
     | '/local-partners'
     | '/partner-pack'
     | '/admin/analytics'
@@ -461,6 +472,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/become-a-vendor'
     | '/local-partners'
     | '/partner-pack'
     | '/admin/analytics'
@@ -503,6 +515,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
+  BecomeAVendorRoute: typeof BecomeAVendorRoute
   LocalPartnersRoute: typeof LocalPartnersRoute
   PartnerPackRoute: typeof PartnerPackRoute
   PaymentsCancelledRoute: typeof PaymentsCancelledRoute
@@ -546,6 +559,13 @@ declare module '@tanstack/react-router' {
       path: '/local-partners'
       fullPath: '/local-partners'
       preLoaderRoute: typeof LocalPartnersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/become-a-vendor': {
+      id: '/become-a-vendor'
+      path: '/become-a-vendor'
+      fullPath: '/become-a-vendor'
+      preLoaderRoute: typeof BecomeAVendorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -841,6 +861,7 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
+  BecomeAVendorRoute: BecomeAVendorRoute,
   LocalPartnersRoute: LocalPartnersRoute,
   PartnerPackRoute: PartnerPackRoute,
   PaymentsCancelledRoute: PaymentsCancelledRoute,
