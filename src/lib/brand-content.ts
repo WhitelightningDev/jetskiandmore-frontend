@@ -35,7 +35,7 @@ export const ROUTES = {
   safety: '/safety',
   boats: '/boat-ride',
   plan: '/things-to-do-gordons-bay-on-the-water',
-  collaborations: '/careers-collaborations',
+  vendors: '/local-partners',
   faq: '/jet-ski-faqs-gordons-bay',
   contact: '/contact',
   legal: '/terms',
@@ -369,11 +369,12 @@ export const THINGS_TO_DO = [
 /** Reviewed local businesses that visitors can add to a day plan and map route. */
 export type TravelPartnerListing = {
   id: string
-  category: 'Stay' | 'Airport transfer' | 'Tour guide' | 'Local experience'
+  category: 'Stay' | 'Airport transfer' | 'Tour guide' | 'Local experience' | 'Travel agency' | 'Food & drink' | 'Car hire' | 'Creator' | 'Destination partner'
   name: string
   summary: string
   location: string
   websiteUrl: string
+  bookingUrl?: string
   logoUrl?: string
   logoAlt?: string
   imageUrl?: string

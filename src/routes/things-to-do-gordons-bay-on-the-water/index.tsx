@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, useRouterState } from '@tanstack/react-router'
 import { ArrowDown, ArrowUp, CalendarClock, Check, Clock3, Copy, FileDown, MapPinned, Plus, Route as RouteIcon, Waves, Compass } from 'lucide-react'
 
 import {
@@ -44,7 +44,7 @@ const PLAN_ACTIVITIES = [
     isPartner: true as const,
     partnerLogoUrl: partner.logoUrl,
     partnerLogoAlt: partner.logoAlt || `${partner.name} logo`,
-    partnerWebsiteUrl: partner.websiteUrl,
+    partnerWebsiteUrl: partner.bookingUrl || partner.websiteUrl,
   })),
 ]
 
@@ -62,9 +62,11 @@ function routeUrl(activities: Array<{ location: string }>) {
 }
 
 function PlanPage() {
+  const searchStr = useRouterState({ select: (state) => state.location.searchStr })
+  const requestedActivity = new URLSearchParams(searchStr).get('add')
   const [rideStart, setRideStart] = React.useState('08:00')
   const [rideMinutes, setRideMinutes] = React.useState(30)
-  const [selectedIds, setSelectedIds] = React.useState<string[]>(['food', 'harbour'])
+  const [selectedIds, setSelectedIds] = React.useState<string[]>(() => ['food', 'harbour', ...(requestedActivity && PLAN_ACTIVITIES.some((activity) => activity.id === requestedActivity) ? [requestedActivity] : [])])
   const [copied, setCopied] = React.useState(false)
 
   const selectedActivities = selectedIds.flatMap((id) => {
@@ -218,7 +220,7 @@ function PlanPage() {
                 <Eyebrow>YOUR DAY PLAN</Eyebrow>
                 <h2 className="mt-2 font-display text-2xl font-extrabold text-brand-ink">A schedule you can use</h2>
                 <p className="mt-1 text-sm text-brand-muted">Times are estimates; travel and wait times can vary.</p>
-                <Link to={ROUTES.collaborations} className="mt-2 inline-flex text-xs font-bold text-brand-teal underline">Local provider, travel business or creator? Work with us</Link>
+                <Link to={ROUTES.vendors} className="mt-2 inline-flex text-xs font-bold text-brand-teal underline">Local venture? Become a vendor</Link>
               </div>
               <span className="rounded-full bg-brand-deep/5 px-3 py-1.5 text-xs font-semibold text-brand-teal">{dayPlan.length} stops</span>
             </div>
@@ -288,10 +290,10 @@ function PlanPage() {
 
         <section className="mt-14 grid gap-6 lg:grid-cols-[1fr_1.1fr]" aria-labelledby="planner-partners-title">
           <div className="rounded-[26px] bg-brand-deep p-7 text-white sm:p-9">
-            <Eyebrow>CAREERS &amp; COLLABORATIONS</Eyebrow>
+            <Eyebrow>LOCAL TRAVEL NETWORK</Eyebrow>
             <h2 id="planner-partners-title" className="mt-3 font-display text-3xl font-extrabold">Are you part of the visitor journey?</h2>
             <p className="mt-3 text-sm leading-6 text-white/75">We’re connecting visitors with local stays, transfers, guides, travel planners and creators. Tell us what you do and explore working with Jet Ski &amp; More.</p>
-            <BrandButton to={ROUTES.collaborations} tone="amber" className="mt-6">Careers &amp; collaborations</BrandButton>
+            <BrandButton to={ROUTES.vendors} tone="amber" className="mt-6">Become a vendor</BrandButton>
           </div>
 
           <div className="rounded-[26px] border border-brand-line bg-white p-7 sm:p-9">
@@ -306,7 +308,7 @@ function PlanPage() {
             </div> : <div className="mt-4 rounded-2xl bg-brand-tint/60 p-5">
               <p className="font-bold text-brand-ink">We’re inviting the first local providers.</p>
               <p className="mt-1 text-sm leading-6 text-brand-muted">Approved partners will appear here so you can add them to your itinerary and Maps route.</p>
-              <Link to={ROUTES.collaborations} className="mt-3 inline-flex font-bold text-brand-teal underline">Are you a provider? Join the network</Link>
+              <Link to={ROUTES.vendors} className="mt-3 inline-flex font-bold text-brand-teal underline">Are you a provider? Join the network</Link>
             </div>}
           </div>
         </section>

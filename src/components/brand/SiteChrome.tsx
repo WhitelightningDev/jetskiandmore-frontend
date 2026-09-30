@@ -63,11 +63,12 @@ export function SiteHeader() {
   const [menuOpen, setMenuOpen] = React.useState(false)
   const isActive = useIsActive()
   const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const hash = useRouterState({ select: (s) => s.location.hash })
 
   // Close the drawer whenever navigation happens.
   React.useEffect(() => {
     setMenuOpen(false)
-  }, [pathname])
+  }, [pathname, hash])
 
   React.useEffect(() => {
     if (!menuOpen) return
@@ -115,7 +116,7 @@ export function SiteHeader() {
               </DropdownMenuContent>
             </DropdownMenu>
           })}
-          <Link to={ROUTES.collaborations} aria-current={isActive(ROUTES.collaborations) ? 'page' : undefined} className={cn('rounded-lg px-3 py-2.5 text-[14.5px] font-semibold no-underline transition-colors hover:bg-brand-tint/70', isActive(ROUTES.collaborations) ? 'text-brand-teal' : 'text-brand-body hover:text-brand-teal')}>Careers &amp; collaborations</Link>
+          <Link to={ROUTES.vendors} hash="become-a-vendor" aria-current={isActive(ROUTES.vendors) ? 'page' : undefined} className={cn('rounded-lg px-3 py-2.5 text-[14.5px] font-bold no-underline transition-colors hover:bg-brand-tint/70', isActive(ROUTES.vendors) ? 'text-brand-teal' : 'text-brand-body hover:text-brand-teal')}>Become a vendor</Link>
           <Link to={ROUTES.contact} aria-current={isActive(ROUTES.contact) ? 'page' : undefined} className="rounded-lg px-3 py-2.5 text-[14.5px] font-semibold text-brand-body no-underline transition-colors hover:bg-brand-tint/70 hover:text-brand-teal">Contact</Link>
         </nav>
 
@@ -154,7 +155,7 @@ export function SiteHeader() {
                 <span className="block">{item.label}</span><span className="mt-0.5 block text-xs font-normal text-brand-faint">{item.description}</span>
               </Link>)}
             </section>)}
-            <Link to={ROUTES.collaborations} aria-current={isActive(ROUTES.collaborations) ? 'page' : undefined} className={cn('mt-2 block rounded-xl px-4 py-3 text-[15px] no-underline', isActive(ROUTES.collaborations) ? 'bg-brand-tint font-bold text-brand-teal-dark' : 'font-semibold text-brand-body')}>Careers &amp; collaborations</Link>
+            <Link to={ROUTES.vendors} hash="become-a-vendor" aria-current={isActive(ROUTES.vendors) ? 'page' : undefined} className={cn('mt-2 block rounded-xl px-4 py-3 text-[15px] no-underline', isActive(ROUTES.vendors) ? 'bg-brand-tint font-bold text-brand-teal-dark' : 'font-bold text-brand-body')}>Become a vendor</Link>
             <Link to={ROUTES.contact} aria-current={isActive(ROUTES.contact) ? 'page' : undefined} className={cn('mt-2 block rounded-xl px-4 py-3 text-[15px] no-underline', isActive(ROUTES.contact) ? 'bg-brand-tint font-bold text-brand-teal-dark' : 'font-semibold text-brand-body')}>Contact</Link>
             <a
               href={CONTACT.whatsapp}
@@ -171,10 +172,11 @@ export function SiteHeader() {
   )
 }
 
-function FooterLink({ to, children }: { to: string; children: React.ReactNode }) {
+function FooterLink({ to, hash, children }: { to: string; hash?: string; children: React.ReactNode }) {
   return (
     <Link
       to={to}
+      hash={hash}
       className="text-[14.5px] text-brand-on-dark no-underline transition-colors hover:text-white"
     >
       {children}
@@ -224,7 +226,7 @@ export function SiteFooter() {
           <div className="mt-[18px] flex flex-col items-start gap-2.5">
             <FooterLink to={ROUTES.boats}>Boat &amp; fishing</FooterLink>
             <FooterLink to={ROUTES.plan}>Plan your day</FooterLink>
-            <FooterLink to={ROUTES.collaborations}>Careers &amp; collaborations</FooterLink>
+            <FooterLink to={ROUTES.vendors} hash="become-a-vendor">Become a vendor</FooterLink>
             <FooterLink to={ROUTES.faq}>FAQs</FooterLink>
             <FooterLink to={ROUTES.legal}>Terms &amp; privacy</FooterLink>
           </div>
