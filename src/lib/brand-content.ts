@@ -36,6 +36,7 @@ export const ROUTES = {
   boats: '/boat-ride',
   plan: '/things-to-do-gordons-bay-on-the-water',
   vendors: '/local-partners',
+  vendorJoin: '/become-a-vendor',
   faq: '/jet-ski-faqs-gordons-bay',
   contact: '/contact',
   legal: '/terms',
@@ -49,6 +50,7 @@ export const NAV_GROUPS = [
       { label: 'Jet ski rides', to: ROUTES.rides, description: 'Guided rides from Gordon’s Bay Harbour' },
       { label: 'Boat & fishing', to: ROUTES.boats, description: 'Skippered trips and fishing charters' },
       { label: 'Plan your day', to: ROUTES.plan, description: 'Build a route around the bay' },
+      { label: 'Local partners', to: ROUTES.vendors, description: 'Stays, transfers, guides and experiences' },
     ],
   },
   {

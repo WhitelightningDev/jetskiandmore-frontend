@@ -116,7 +116,7 @@ export function SiteHeader() {
               </DropdownMenuContent>
             </DropdownMenu>
           })}
-          <Link to={ROUTES.vendors} hash="become-a-vendor" aria-current={isActive(ROUTES.vendors) ? 'page' : undefined} className={cn('rounded-lg px-3 py-2.5 text-[14.5px] font-bold no-underline transition-colors hover:bg-brand-tint/70', isActive(ROUTES.vendors) ? 'text-brand-teal' : 'text-brand-body hover:text-brand-teal')}>Become a vendor</Link>
+          <Link to={ROUTES.vendorJoin} aria-current={isActive(ROUTES.vendorJoin) ? 'page' : undefined} className={cn('rounded-lg px-3 py-2.5 text-[14.5px] font-bold no-underline transition-colors hover:bg-brand-tint/70', isActive(ROUTES.vendorJoin) ? 'text-brand-teal' : 'text-brand-body hover:text-brand-teal')}>Become a vendor</Link>
           <Link to={ROUTES.contact} aria-current={isActive(ROUTES.contact) ? 'page' : undefined} className="rounded-lg px-3 py-2.5 text-[14.5px] font-semibold text-brand-body no-underline transition-colors hover:bg-brand-tint/70 hover:text-brand-teal">Contact</Link>
         </nav>
 
@@ -155,7 +155,7 @@ export function SiteHeader() {
                 <span className="block">{item.label}</span><span className="mt-0.5 block text-xs font-normal text-brand-faint">{item.description}</span>
               </Link>)}
             </section>)}
-            <Link to={ROUTES.vendors} hash="become-a-vendor" aria-current={isActive(ROUTES.vendors) ? 'page' : undefined} className={cn('mt-2 block rounded-xl px-4 py-3 text-[15px] no-underline', isActive(ROUTES.vendors) ? 'bg-brand-tint font-bold text-brand-teal-dark' : 'font-bold text-brand-body')}>Become a vendor</Link>
+            <Link to={ROUTES.vendorJoin} aria-current={isActive(ROUTES.vendorJoin) ? 'page' : undefined} className={cn('mt-2 block rounded-xl px-4 py-3 text-[15px] no-underline', isActive(ROUTES.vendorJoin) ? 'bg-brand-tint font-bold text-brand-teal-dark' : 'font-bold text-brand-body')}>Become a vendor</Link>
             <Link to={ROUTES.contact} aria-current={isActive(ROUTES.contact) ? 'page' : undefined} className={cn('mt-2 block rounded-xl px-4 py-3 text-[15px] no-underline', isActive(ROUTES.contact) ? 'bg-brand-tint font-bold text-brand-teal-dark' : 'font-semibold text-brand-body')}>Contact</Link>
             <a
               href={CONTACT.whatsapp}
@@ -226,7 +226,7 @@ export function SiteFooter() {
           <div className="mt-[18px] flex flex-col items-start gap-2.5">
             <FooterLink to={ROUTES.boats}>Boat &amp; fishing</FooterLink>
             <FooterLink to={ROUTES.plan}>Plan your day</FooterLink>
-            <FooterLink to={ROUTES.vendors} hash="become-a-vendor">Become a vendor</FooterLink>
+            <FooterLink to={ROUTES.vendorJoin}>Become a vendor</FooterLink>
             <FooterLink to={ROUTES.faq}>FAQs</FooterLink>
             <FooterLink to={ROUTES.legal}>Terms &amp; privacy</FooterLink>
           </div>

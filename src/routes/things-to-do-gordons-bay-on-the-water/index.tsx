@@ -220,7 +220,7 @@ function PlanPage() {
                 <Eyebrow>YOUR DAY PLAN</Eyebrow>
                 <h2 className="mt-2 font-display text-2xl font-extrabold text-brand-ink">A schedule you can use</h2>
                 <p className="mt-1 text-sm text-brand-muted">Times are estimates; travel and wait times can vary.</p>
-                <Link to={ROUTES.vendors} className="mt-2 inline-flex text-xs font-bold text-brand-teal underline">Local venture? Become a vendor</Link>
+                <Link to={ROUTES.vendorJoin} className="mt-2 inline-flex text-xs font-bold text-brand-teal underline">Local venture? Become a vendor</Link>
               </div>
               <span className="rounded-full bg-brand-deep/5 px-3 py-1.5 text-xs font-semibold text-brand-teal">{dayPlan.length} stops</span>
             </div>
@@ -293,7 +293,7 @@ function PlanPage() {
             <Eyebrow>LOCAL TRAVEL NETWORK</Eyebrow>
             <h2 id="planner-partners-title" className="mt-3 font-display text-3xl font-extrabold">Are you part of the visitor journey?</h2>
             <p className="mt-3 text-sm leading-6 text-white/75">We’re connecting visitors with local stays, transfers, guides, travel planners and creators. Tell us what you do and explore working with Jet Ski &amp; More.</p>
-            <BrandButton to={ROUTES.vendors} tone="amber" className="mt-6">Become a vendor</BrandButton>
+            <BrandButton to={ROUTES.vendorJoin} tone="amber" className="mt-6">Become a vendor</BrandButton>
           </div>
 
           <div className="rounded-[26px] border border-brand-line bg-white p-7 sm:p-9">
@@ -308,7 +308,7 @@ function PlanPage() {
             </div> : <div className="mt-4 rounded-2xl bg-brand-tint/60 p-5">
               <p className="font-bold text-brand-ink">We’re inviting the first local providers.</p>
               <p className="mt-1 text-sm leading-6 text-brand-muted">Approved partners will appear here so you can add them to your itinerary and Maps route.</p>
-              <Link to={ROUTES.vendors} className="mt-3 inline-flex font-bold text-brand-teal underline">Are you a provider? Join the network</Link>
+              <Link to={ROUTES.vendorJoin} className="mt-3 inline-flex font-bold text-brand-teal underline">Are you a provider? Join the network</Link>
             </div>}
           </div>
         </section>
